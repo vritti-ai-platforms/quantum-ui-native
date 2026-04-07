@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig",
+  "include": ["src", "nativewind-env.d.ts"],
+  "exclude": ["example", "lib"]
+}

@@ -1,0 +1,23 @@
+{
+  "cxxNamespace": ["yes"],
+  "ios": {
+    "iosModuleName": "Yes"
+  },
+  "android": {
+    "androidNamespace": ["yes"],
+    "androidCxxLibName": "yes"
+  },
+  "autolinking": {
+    "Yes": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "Yes"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "Yes"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
