@@ -2,30 +2,22 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "yes": ["./src/index"]
+      "yes": ["./src/index"],
+      "@vritti/react-native-ui": ["./src/index"]
     },
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "customConditions": ["react-native-strict-api"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "nativewind",
     "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitUseStrict": false,
-    "noStrictGenericChecks": false,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
-    "verbatimModuleSyntax": true
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true
   }
 }

@@ -10,27 +10,36 @@
     "build:ios": "react-native build-ios --mode Debug"
   },
   "dependencies": {
-    "nativewind": "^4.2.3",
+    "colorjs.io": "^0.5.0",
+    "nativewind": "5.0.0-preview.3",
     "react": "19.2.0",
     "react-native": "0.83.0",
+    "react-native-css": "*",
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": "^4.3.0",
-    "react-native-safe-area-context": "^5.7.0"
+    "react-native-safe-area-context": "^5.7.0",
+    "react-native-worklets": "^0.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@callstack/repack": "^5.2.5",
+    "@callstack/repack-plugin-reanimated": "^5.2.5",
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
     "@react-native/babel-preset": "0.83.0",
-    "@react-native/metro-config": "0.83.0",
     "@react-native/typescript-config": "0.83.0",
+    "@rspack/core": "^1.7.11",
+    "@swc/helpers": "^0.5.0",
+    "@tailwindcss/postcss": "^4.2.0",
     "@types/react": "^19.2.0",
+    "babel-loader": "^9.2.1",
+    "postcss": "^8.5.0",
+    "postcss-loader": "^8.1.0",
     "react-native-builder-bob": "^0.41.0",
-    "react-native-monorepo-config": "^0.3.3",
-    "tailwindcss": "~3.4.19"
+    "tailwindcss": "^4.2.0"
   },
   "engines": {
     "node": ">=20"
