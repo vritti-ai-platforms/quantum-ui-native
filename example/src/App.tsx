@@ -55,7 +55,7 @@ import {
   CountBadge,
   TagGroup,
   KeyValue,
-} from '@vritti/react-native-ui';
+} from '@vritti/quantum-ui-native';
 import {
   Bell,
   Mail,
@@ -417,7 +417,7 @@ function DemoContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
+    <ThemeProvider defaultScheme='dark'>
       <DemoContent />
     </ThemeProvider>
   );

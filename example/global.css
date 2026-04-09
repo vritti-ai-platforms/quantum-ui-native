@@ -2,8 +2,8 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 @import "nativewind/theme";
-@import "../src/preset.css";
+@import "../lib/index.css";
 
 /* Scan library + app source for className usage */
-@source "../src/**/*.{ts,tsx}";
+@source "../lib/**/*.{ts,tsx}";
 @source "./src/**/*.{ts,tsx}";

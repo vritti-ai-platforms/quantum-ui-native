@@ -1,5 +1,5 @@
 buildscript {
-  ext.Yes = [
+  ext.QuantumUI = [
     kotlinVersion: "2.0.21",
     minSdkVersion: 24,
     compileSdkVersion: 36,
@@ -11,7 +11,7 @@ buildscript {
       return rootProject.ext.get(prop)
     }
 
-    return Yes[prop]
+    return QuantumUI[prop]
   }
 
   repositories {
@@ -33,12 +33,12 @@ def reactNativeArchitectures() {
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
-apply from: '../nitrogen/generated/android/yes+autolinking.gradle'
+apply from: '../nitrogen/generated/android/quantumui+autolinking.gradle'
 
 apply plugin: "com.facebook.react"
 
 android {
-  namespace "com.margelo.nitro.yes"
+  namespace "com.vritti.quantumui"
 
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 

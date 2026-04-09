@@ -1,21 +1,21 @@
 {
-  "cxxNamespace": ["yes"],
+  "cxxNamespace": ["quantumui"],
   "ios": {
-    "iosModuleName": "Yes"
+    "iosModuleName": "QuantumUI"
   },
   "android": {
-    "androidNamespace": ["yes"],
-    "androidCxxLibName": "yes"
+    "androidNamespace": ["com", "vritti", "quantumui"],
+    "androidCxxLibName": "quantumui"
   },
   "autolinking": {
-    "Yes": {
+    "QuantumUI": {
       "ios": {
         "language": "swift",
-        "implementationClassName": "Yes"
+        "implementationClassName": "QuantumUI"
       },
       "android": {
         "language": "kotlin",
-        "implementationClassName": "Yes"
+        "implementationClassName": "QuantumUI"
       }
     }
   },

@@ -82,9 +82,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "yes.example"
+    namespace "com.vritti.quantumui.example"
     defaultConfig {
-        applicationId "yes.example"
+        applicationId "com.vritti.quantumui.example"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

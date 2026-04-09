@@ -40,7 +40,7 @@ module.exports = (env) => {
         'node_modules',
       ],
       alias: {
-        [pak.name]: path.resolve(root, 'src', 'index.tsx'),
+        [pak.name]: path.resolve(root, 'lib', 'index.tsx'),
         ...rnCssAliases,
         'react-native-css/components': path.join(rnCssRoot, 'dist/commonjs/components'),
         'colorjs.io/fn': require.resolve('colorjs.io/fn'),
@@ -48,7 +48,7 @@ module.exports = (env) => {
     },
 
     output: {
-      uniqueName: 'yes-example',
+      uniqueName: 'quantum-ui-native-example',
     },
 
     module: {

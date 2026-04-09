@@ -2,8 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "yes": ["./src/index"],
-      "@vritti/react-native-ui": ["./src/index"]
+      "@vritti/quantum-ui-native": ["./lib/index"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
