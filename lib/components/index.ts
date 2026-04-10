@@ -18,6 +18,4 @@ export * from './Switch';
 export * from './TextArea';
 export * from './TextField';
 export * from './Typography';
-// BottomNavBar is NOT re-exported from the barrel to avoid pulling
-// @react-navigation/bottom-tabs as an eager dependency.
-// Import from '@vritti/quantum-ui-native/BottomNavBar' instead.
+export * from './BottomNavigation';

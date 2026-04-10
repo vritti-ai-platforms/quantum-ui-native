@@ -44,6 +44,11 @@ module.exports = (env) => {
         ...rnCssAliases,
         'react-native-css/components': path.join(rnCssRoot, 'dist/commonjs/components'),
         'colorjs.io/fn': require.resolve('colorjs.io/fn'),
+        // React Navigation v8 subpath exports (Rspack doesn't resolve them automatically)
+        '@react-navigation/elements/internal': path.join(
+          path.dirname(require.resolve('@react-navigation/elements/package.json')),
+          'lib/module/internal.js'
+        ),
       },
     },
 
