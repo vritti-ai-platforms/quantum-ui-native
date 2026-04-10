@@ -9,6 +9,9 @@
 .vscode/
 jsconfig.json
 
+#dist
+dist/
+
 # Xcode
 #
 build/

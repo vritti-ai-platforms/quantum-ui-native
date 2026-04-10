@@ -1,5 +1,5 @@
-// Nitro native module
-export { multiply } from './multiply';
+// Nitro native modules
+export * from './nitro';
 
 // Utilities
 export { cn } from './utils/cn';

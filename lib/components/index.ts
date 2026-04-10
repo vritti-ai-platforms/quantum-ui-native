@@ -8,6 +8,7 @@ export * from './Form';
 export * from './Icon';
 export * from './Input';
 export * from './Label';
+export * from './FlashList';
 export * from './Progress';
 export * from './RadioGroup';
 export * from './Separator';

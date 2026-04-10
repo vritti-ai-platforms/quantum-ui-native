@@ -1,9 +1,9 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import type { QuantumUI } from './QuantumUI.nitro';
+import type { QuantumUI } from './specs/QuantumUI.nitro';
 
-const QuantumUIHybridObject =
+const QuantumUIModule =
   NitroModules.createHybridObject<QuantumUI>('QuantumUI');
 
 export function multiply(a: number, b: number): number {
-  return QuantumUIHybridObject.multiply(a, b);
+  return QuantumUIModule.multiply(a, b);
 }

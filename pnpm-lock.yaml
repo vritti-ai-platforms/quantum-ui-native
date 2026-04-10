@@ -89,6 +89,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.18.1
       react-native-css:
         specifier: '*'
         version: 3.0.6(@expo/metro-config@55.0.14(expo@55.0.12)(typescript@6.0.2))(lightningcss@1.30.1)(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -129,12 +132,18 @@ importers:
       '@release-it/conventional-changelog':
         specifier: ^10.0.6
         version: 10.0.6(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(release-it@19.2.4(@types/node@25.5.2))
+      '@shopify/flash-list':
+        specifier: ^2.3.1
+        version: 2.3.1(@babel/runtime@7.29.2)(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       '@tailwindcss/postcss':
         specifier: ^4.2.0
         version: 4.2.2
       '@tanstack/react-query':
         specifier: ^5.96.2
         version: 5.96.2(react@19.2.0)
+      '@types/lodash':
+        specifier: ^4.17.0
+        version: 4.17.24
       '@types/react':
         specifier: ^19.2.0
         version: 19.2.14
@@ -222,6 +231,12 @@ importers:
 
   example:
     dependencies:
+      '@react-navigation/bottom-tabs':
+        specifier: ^7.15.9
+        version: 7.15.9(@react-navigation/native@7.2.2(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native-safe-area-context@5.7.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native-screens@4.24.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      '@react-navigation/native':
+        specifier: ^7.2.2
+        version: 7.2.2(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       colorjs.io:
         specifier: ^0.5.0
         version: 0.5.2
@@ -246,6 +261,12 @@ importers:
       react-native-safe-area-context:
         specifier: ^5.7.0
         version: 5.7.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      react-native-screens:
+        specifier: ^4.4.0
+        version: 4.24.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      react-native-svg:
+        specifier: ^15.15.4
+        version: 15.15.4(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       react-native-worklets:
         specifier: ^0.8.1
         version: 0.8.1(@babel/core@7.29.0)(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -3112,6 +3133,13 @@ packages:
       react-refresh:
         optional: true
 
+  '@shopify/flash-list@2.3.1':
+    resolution: {integrity: sha512-7oktg2NQR7KAODjFoDaWe8/OBzyYbdTE3zQTrUBMxjIbxHTHN7UXRX1hX3DHk8KvtkgQdRfZOV8Gjj2l4fGrXw==}
+    peerDependencies:
+      '@babel/runtime': '*'
+      react: '*'
+      react-native: '*'
+
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
 
@@ -3334,6 +3362,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -11722,6 +11753,12 @@ snapshots:
     optionalDependencies:
       react-refresh: 0.14.2
 
+  '@shopify/flash-list@2.3.1(@babel/runtime@7.29.2)(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@babel/runtime': 7.29.2
+      react: 19.2.0
+      react-native: 0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
+
   '@sideway/address@4.1.5':
     dependencies:
       '@hapi/hoek': 9.3.0
@@ -11925,6 +11962,8 @@ snapshots:
       '@types/istanbul-lib-report': 3.0.3
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/lodash@4.17.24': {}
 
   '@types/ms@2.1.0': {}
 
