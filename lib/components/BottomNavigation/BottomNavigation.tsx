@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 import type { ColorValue } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createBottomTabNavigator, type BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../../hooks/useTheme';
 import { NAV_THEME } from '../../theme/colors';
 import type { BottomNavigationProps, RouteConfig } from './types';
@@ -27,49 +27,25 @@ function resolveIcon(route: RouteConfig) {
  * - **iOS**: UITabBarController with SF Symbols (Liquid Glass on iOS 26+)
  * - **Android**: Material 3 BottomNavigationView
  *
- * Pass a `routes` array and the component handles everything:
- * NavigationContainer, theming, icons, badges, safe area.
- *
- * ```tsx
- * <BottomNavigation
- *   routes={[
- *     { name: 'Home', component: HomeScreen, icon: { sfSymbol: 'house', component: HomeIcon } },
- *     { name: 'Settings', component: SettingsScreen, icon: { sfSymbol: 'gear', component: GearIcon }, badge: 3 },
- *   ]}
- * />
- * ```
+ * The navigation theme is the **single source of truth** for all native view colors.
+ * JS props like tabBarStyle/sceneStyle are ignored by the native implementation.
  */
 export function BottomNavigation({
   routes,
   initialRoute,
-  showLabels = true,
   screenOptions,
 }: BottomNavigationProps) {
   const { isDark } = useTheme();
-  const colors = NAV_THEME[isDark ? 'dark' : 'light'];
-
-  const navTheme = useMemo(
-    () => ({
-      ...(isDark ? DarkTheme : DefaultTheme),
-      colors: {
-        ...(isDark ? DarkTheme : DefaultTheme).colors,
-        ...colors,
-      },
-    }),
-    [isDark, colors],
-  );
-
+  const theme = isDark ? DarkTheme : DefaultTheme;
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={theme} >
       <Tab.Navigator
         initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
-          lazy: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.border,
-          tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
-          sceneStyle: { backgroundColor: colors.background },
+          tabBarActiveBackgroundColor:'transparent',
+          tabBarStyle: { backgroundColor: 'transparent' },
+          sceneStyle: { backgroundColor: theme.colors.background, },
           ...screenOptions,
         }}
       >

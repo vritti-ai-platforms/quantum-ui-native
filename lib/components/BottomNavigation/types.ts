@@ -21,6 +21,5 @@ export interface RouteConfig {
 export interface BottomNavigationProps {
   routes: RouteConfig[];
   initialRoute?: string;
-  showLabels?: boolean;
   screenOptions?: BottomTabNavigationOptions;
 }
