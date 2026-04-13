@@ -10,6 +10,151 @@
       "types": "./dist/typescript/lib/index.d.ts",
       "default": "./dist/module/index.js"
     },
+    "./Alert": {
+      "source": "./lib/components/Alert/index.ts",
+      "types": "./dist/typescript/lib/components/Alert/index.d.ts",
+      "default": "./dist/module/components/Alert/index.js"
+    },
+    "./Avatar": {
+      "source": "./lib/components/Avatar/index.ts",
+      "types": "./dist/typescript/lib/components/Avatar/index.d.ts",
+      "default": "./dist/module/components/Avatar/index.js"
+    },
+    "./Badge": {
+      "source": "./lib/components/Badge/index.ts",
+      "types": "./dist/typescript/lib/components/Badge/index.d.ts",
+      "default": "./dist/module/components/Badge/index.js"
+    },
+    "./BottomNavigation": {
+      "source": "./lib/components/BottomNavigation/index.ts",
+      "types": "./dist/typescript/lib/components/BottomNavigation/index.d.ts",
+      "default": "./dist/module/components/BottomNavigation/index.js"
+    },
+    "./Button": {
+      "source": "./lib/components/Button/index.ts",
+      "types": "./dist/typescript/lib/components/Button/index.d.ts",
+      "default": "./dist/module/components/Button/index.js"
+    },
+    "./Card": {
+      "source": "./lib/components/Card/index.ts",
+      "types": "./dist/typescript/lib/components/Card/index.d.ts",
+      "default": "./dist/module/components/Card/index.js"
+    },
+    "./Checkbox": {
+      "source": "./lib/components/Checkbox/index.ts",
+      "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
+      "default": "./dist/module/components/Checkbox/index.js"
+    },
+    "./FlashList": {
+      "source": "./lib/components/FlashList/index.ts",
+      "types": "./dist/typescript/lib/components/FlashList/index.d.ts",
+      "default": "./dist/module/components/FlashList/index.js"
+    },
+    "./Form": {
+      "source": "./lib/components/Form/index.ts",
+      "types": "./dist/typescript/lib/components/Form/index.d.ts",
+      "default": "./dist/module/components/Form/index.js"
+    },
+    "./Icon": {
+      "source": "./lib/components/Icon/index.ts",
+      "types": "./dist/typescript/lib/components/Icon/index.d.ts",
+      "default": "./dist/module/components/Icon/index.js"
+    },
+    "./Input": {
+      "source": "./lib/components/Input/index.ts",
+      "types": "./dist/typescript/lib/components/Input/index.d.ts",
+      "default": "./dist/module/components/Input/index.js"
+    },
+    "./Label": {
+      "source": "./lib/components/Label/index.ts",
+      "types": "./dist/typescript/lib/components/Label/index.d.ts",
+      "default": "./dist/module/components/Label/index.js"
+    },
+    "./NativeStack": {
+      "source": "./lib/components/NativeStack/index.ts",
+      "types": "./dist/typescript/lib/components/NativeStack/index.d.ts",
+      "default": "./dist/module/components/NativeStack/index.js"
+    },
+    "./Progress": {
+      "source": "./lib/components/Progress/index.ts",
+      "types": "./dist/typescript/lib/components/Progress/index.d.ts",
+      "default": "./dist/module/components/Progress/index.js"
+    },
+    "./RadioGroup": {
+      "source": "./lib/components/RadioGroup/index.ts",
+      "types": "./dist/typescript/lib/components/RadioGroup/index.d.ts",
+      "default": "./dist/module/components/RadioGroup/index.js"
+    },
+    "./Separator": {
+      "source": "./lib/components/Separator/index.ts",
+      "types": "./dist/typescript/lib/components/Separator/index.d.ts",
+      "default": "./dist/module/components/Separator/index.js"
+    },
+    "./Skeleton": {
+      "source": "./lib/components/Skeleton/index.ts",
+      "types": "./dist/typescript/lib/components/Skeleton/index.d.ts",
+      "default": "./dist/module/components/Skeleton/index.js"
+    },
+    "./Spinner": {
+      "source": "./lib/components/Spinner/index.ts",
+      "types": "./dist/typescript/lib/components/Spinner/index.d.ts",
+      "default": "./dist/module/components/Spinner/index.js"
+    },
+    "./Switch": {
+      "source": "./lib/components/Switch/index.ts",
+      "types": "./dist/typescript/lib/components/Switch/index.d.ts",
+      "default": "./dist/module/components/Switch/index.js"
+    },
+    "./TextArea": {
+      "source": "./lib/components/TextArea/index.ts",
+      "types": "./dist/typescript/lib/components/TextArea/index.d.ts",
+      "default": "./dist/module/components/TextArea/index.js"
+    },
+    "./TextField": {
+      "source": "./lib/components/TextField/index.ts",
+      "types": "./dist/typescript/lib/components/TextField/index.d.ts",
+      "default": "./dist/module/components/TextField/index.js"
+    },
+    "./Typography": {
+      "source": "./lib/components/Typography/index.ts",
+      "types": "./dist/typescript/lib/components/Typography/index.d.ts",
+      "default": "./dist/module/components/Typography/index.js"
+    },
+    "./theme": {
+      "source": "./lib/theme/index.ts",
+      "types": "./dist/typescript/lib/theme/index.d.ts",
+      "default": "./dist/module/theme/index.js"
+    },
+    "./context": {
+      "source": "./lib/context/index.ts",
+      "types": "./dist/typescript/lib/context/index.d.ts",
+      "default": "./dist/module/context/index.js"
+    },
+    "./hooks": {
+      "source": "./lib/hooks/index.ts",
+      "types": "./dist/typescript/lib/hooks/index.d.ts",
+      "default": "./dist/module/hooks/index.js"
+    },
+    "./config": {
+      "source": "./lib/config/index.ts",
+      "types": "./dist/typescript/lib/config/index.d.ts",
+      "default": "./dist/module/config/index.js"
+    },
+    "./types": {
+      "source": "./lib/types/index.ts",
+      "types": "./dist/typescript/lib/types/index.d.ts",
+      "default": "./dist/module/types/index.js"
+    },
+    "./utils/axios": {
+      "source": "./lib/utils/axios.ts",
+      "types": "./dist/typescript/lib/utils/axios.d.ts",
+      "default": "./dist/module/utils/axios.js"
+    },
+    "./utils/cn": {
+      "source": "./lib/utils/cn.ts",
+      "types": "./dist/typescript/lib/utils/cn.d.ts",
+      "default": "./dist/module/utils/cn.js"
+    },
     "./index.css": "./lib/index.css",
     "./package.json": "./package.json"
   },
@@ -158,7 +303,8 @@
     "singleQuote": true,
     "tabWidth": 2,
     "trailingComma": "es5",
-    "useTabs": false
+    "useTabs": false,
+    "endOfLine": "lf"
   },
   "jest": {
     "preset": "react-native",

@@ -56,6 +56,101 @@ module.exports = (env) => {
       ],
       alias: {
         [pak.name]: path.resolve(root, 'lib', 'index.tsx'),
+        [`${pak.name}/Alert`]: path.resolve(
+          root,
+          'lib/components/Alert/index.ts'
+        ),
+        [`${pak.name}/Avatar`]: path.resolve(
+          root,
+          'lib/components/Avatar/index.ts'
+        ),
+        [`${pak.name}/Badge`]: path.resolve(
+          root,
+          'lib/components/Badge/index.ts'
+        ),
+        [`${pak.name}/BottomNavigation`]: path.resolve(
+          root,
+          'lib/components/BottomNavigation/index.ts'
+        ),
+        [`${pak.name}/Button`]: path.resolve(
+          root,
+          'lib/components/Button/index.ts'
+        ),
+        [`${pak.name}/Card`]: path.resolve(
+          root,
+          'lib/components/Card/index.ts'
+        ),
+        [`${pak.name}/Checkbox`]: path.resolve(
+          root,
+          'lib/components/Checkbox/index.ts'
+        ),
+        [`${pak.name}/FlashList`]: path.resolve(
+          root,
+          'lib/components/FlashList/index.ts'
+        ),
+        [`${pak.name}/Form`]: path.resolve(
+          root,
+          'lib/components/Form/index.ts'
+        ),
+        [`${pak.name}/Icon`]: path.resolve(
+          root,
+          'lib/components/Icon/index.ts'
+        ),
+        [`${pak.name}/Input`]: path.resolve(
+          root,
+          'lib/components/Input/index.ts'
+        ),
+        [`${pak.name}/Label`]: path.resolve(
+          root,
+          'lib/components/Label/index.ts'
+        ),
+        [`${pak.name}/NativeStack`]: path.resolve(
+          root,
+          'lib/components/NativeStack/index.ts'
+        ),
+        [`${pak.name}/Progress`]: path.resolve(
+          root,
+          'lib/components/Progress/index.ts'
+        ),
+        [`${pak.name}/RadioGroup`]: path.resolve(
+          root,
+          'lib/components/RadioGroup/index.ts'
+        ),
+        [`${pak.name}/Separator`]: path.resolve(
+          root,
+          'lib/components/Separator/index.ts'
+        ),
+        [`${pak.name}/Skeleton`]: path.resolve(
+          root,
+          'lib/components/Skeleton/index.ts'
+        ),
+        [`${pak.name}/Spinner`]: path.resolve(
+          root,
+          'lib/components/Spinner/index.ts'
+        ),
+        [`${pak.name}/Switch`]: path.resolve(
+          root,
+          'lib/components/Switch/index.ts'
+        ),
+        [`${pak.name}/TextArea`]: path.resolve(
+          root,
+          'lib/components/TextArea/index.ts'
+        ),
+        [`${pak.name}/TextField`]: path.resolve(
+          root,
+          'lib/components/TextField/index.ts'
+        ),
+        [`${pak.name}/Typography`]: path.resolve(
+          root,
+          'lib/components/Typography/index.ts'
+        ),
+        [`${pak.name}/theme`]: path.resolve(root, 'lib/theme/index.ts'),
+        [`${pak.name}/context`]: path.resolve(root, 'lib/context/index.ts'),
+        [`${pak.name}/hooks`]: path.resolve(root, 'lib/hooks/index.ts'),
+        [`${pak.name}/config`]: path.resolve(root, 'lib/config/index.ts'),
+        [`${pak.name}/types`]: path.resolve(root, 'lib/types/index.ts'),
+        [`${pak.name}/utils/axios`]: path.resolve(root, 'lib/utils/axios.ts'),
+        [`${pak.name}/utils/cn`]: path.resolve(root, 'lib/utils/cn.ts'),
         ...rnCssAliases,
         'react-native-css/components': path.join(
           rnCssRoot,

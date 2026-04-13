@@ -1,17 +1,36 @@
 import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Progress } from '@vritti/quantum-ui-native/Progress';
+import { Separator } from '@vritti/quantum-ui-native/Separator';
+import { Skeleton } from '@vritti/quantum-ui-native/Skeleton';
+import { Spinner } from '@vritti/quantum-ui-native/Spinner';
 import {
-  Text, Progress, Separator, Skeleton, Spinner,
-  FormLabel, Chip, StatusDot, SectionHeader, CountBadge, TagGroup, KeyValue,
-} from '@vritti/quantum-ui-native';
+  FormLabel,
+  Chip,
+  StatusDot,
+  SectionHeader,
+  CountBadge,
+  TagGroup,
+  KeyValue,
+} from '@vritti/quantum-ui-native/Label';
 import { Section } from '../components/Section';
 
 export default function FeedbackScreen() {
-  const [chips, setChips] = useState(['React Native', 'NativeWind', 'Tailwind']);
+  const [chips, setChips] = useState([
+    'React Native',
+    'NativeWind',
+    'Tailwind',
+  ]);
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-5 pb-6 gap-6">
-      <Text variant="h2" className="text-foreground">Feedback</Text>
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="p-5 pb-6 gap-6"
+    >
+      <Text variant="h2" className="text-foreground">
+        Feedback
+      </Text>
 
       {/* Progress */}
       <Section title="Progress">
@@ -85,7 +104,11 @@ export default function FeedbackScreen() {
 
       {/* SectionHeader */}
       <Section title="Section Header">
-        <SectionHeader title="Recent Activity" actionLabel="See All" onAction={() => {}} />
+        <SectionHeader
+          title="Recent Activity"
+          actionLabel="See All"
+          onAction={() => {}}
+        />
       </Section>
 
       {/* CountBadge */}

@@ -1,11 +1,25 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
+import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Button } from '@vritti/quantum-ui-native/Button';
+import { Alert } from '@vritti/quantum-ui-native/Alert';
 import {
-  Text, Button, Alert, Avatar, AvatarImage, AvatarFallback,
-  Badge, Icon, useTheme,
-} from '@vritti/quantum-ui-native';
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from '@vritti/quantum-ui-native/Avatar';
+import { Badge } from '@vritti/quantum-ui-native/Badge';
+import { Icon } from '@vritti/quantum-ui-native/Icon';
+import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import {
-  Heart, Star, Check, Bell, ArrowRight, Settings, Moon, Sun,
+  Heart,
+  Star,
+  Check,
+  Bell,
+  ArrowRight,
+  Settings,
+  Moon,
+  Sun,
 } from 'lucide-react-native';
 import { Section } from '../components/Section';
 
@@ -13,12 +27,21 @@ export default function ComponentsScreen() {
   const { isDark, toggleColorScheme } = useTheme();
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-5 pb-6 gap-6">
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="p-5 pb-6 gap-6"
+    >
       {/* Header */}
       <View className="flex-row items-center justify-between">
-        <Text variant="h2" className="text-foreground">Elements</Text>
+        <Text variant="h2" className="text-foreground">
+          Elements
+        </Text>
         <Button variant="outline" size="icon" onPress={toggleColorScheme}>
-          <Icon as={isDark ? Sun : Moon} className="text-foreground" size={18} />
+          <Icon
+            as={isDark ? Sun : Moon}
+            className="text-foreground"
+            size={18}
+          />
         </Button>
       </View>
 
@@ -40,21 +63,45 @@ export default function ComponentsScreen() {
       {/* Buttons */}
       <Section title="Buttons">
         <View className="flex-row flex-wrap gap-2">
-          <Button variant="default"><Text>Default</Text></Button>
-          <Button variant="destructive"><Text>Destructive</Text></Button>
-          <Button variant="outline"><Text>Outline</Text></Button>
-          <Button variant="secondary"><Text>Secondary</Text></Button>
-          <Button variant="ghost"><Text>Ghost</Text></Button>
-          <Button variant="link"><Text>Link</Text></Button>
+          <Button variant="default">
+            <Text>Default</Text>
+          </Button>
+          <Button variant="destructive">
+            <Text>Destructive</Text>
+          </Button>
+          <Button variant="outline">
+            <Text>Outline</Text>
+          </Button>
+          <Button variant="secondary">
+            <Text>Secondary</Text>
+          </Button>
+          <Button variant="ghost">
+            <Text>Ghost</Text>
+          </Button>
+          <Button variant="link">
+            <Text>Link</Text>
+          </Button>
         </View>
         <View className="flex-row flex-wrap gap-2">
-          <Button size="sm"><Text>Small</Text></Button>
-          <Button size="default"><Text>Default</Text></Button>
-          <Button size="lg"><Text>Large</Text></Button>
-          <Button size="icon"><Icon as={Heart} className="text-primary-foreground" size={16} /></Button>
+          <Button size="sm">
+            <Text>Small</Text>
+          </Button>
+          <Button size="default">
+            <Text>Default</Text>
+          </Button>
+          <Button size="lg">
+            <Text>Large</Text>
+          </Button>
+          <Button size="icon">
+            <Icon as={Heart} className="text-primary-foreground" size={16} />
+          </Button>
         </View>
-        <Button isLoading loadingText="Saving..."><Text>Save</Text></Button>
-        <Button disabled><Text>Disabled</Text></Button>
+        <Button isLoading loadingText="Saving...">
+          <Text>Save</Text>
+        </Button>
+        <Button disabled>
+          <Text>Disabled</Text>
+        </Button>
       </Section>
 
       {/* Icons */}
@@ -71,11 +118,31 @@ export default function ComponentsScreen() {
 
       {/* Alerts */}
       <Section title="Alerts">
-        <Alert variant="default" title="Heads up" description="This is a default alert." />
-        <Alert variant="success" title="Saved!" description="Your changes were saved successfully." />
-        <Alert variant="warning" title="Warning" description="This action is irreversible." />
-        <Alert variant="destructive" title="Error" description="Something went wrong." />
-        <Alert variant="info" title="Info" description="A new version is available." />
+        <Alert
+          variant="default"
+          title="Heads up"
+          description="This is a default alert."
+        />
+        <Alert
+          variant="success"
+          title="Saved!"
+          description="Your changes were saved successfully."
+        />
+        <Alert
+          variant="warning"
+          title="Warning"
+          description="This action is irreversible."
+        />
+        <Alert
+          variant="destructive"
+          title="Error"
+          description="Something went wrong."
+        />
+        <Alert
+          variant="info"
+          title="Info"
+          description="A new version is available."
+        />
       </Section>
 
       {/* Avatars */}
@@ -83,14 +150,20 @@ export default function ComponentsScreen() {
         <View className="flex-row gap-4 items-center">
           <Avatar alt="User">
             <AvatarImage source={{ uri: 'https://i.pravatar.cc/150?img=1' }} />
-            <AvatarFallback><Text>JD</Text></AvatarFallback>
+            <AvatarFallback>
+              <Text>JD</Text>
+            </AvatarFallback>
           </Avatar>
           <Avatar alt="User">
             <AvatarImage source={{ uri: 'https://i.pravatar.cc/150?img=2' }} />
-            <AvatarFallback><Text>AB</Text></AvatarFallback>
+            <AvatarFallback>
+              <Text>AB</Text>
+            </AvatarFallback>
           </Avatar>
           <Avatar alt="User">
-            <AvatarFallback><Text>SM</Text></AvatarFallback>
+            <AvatarFallback>
+              <Text>SM</Text>
+            </AvatarFallback>
           </Avatar>
         </View>
       </Section>
@@ -98,10 +171,18 @@ export default function ComponentsScreen() {
       {/* Badges */}
       <Section title="Badges">
         <View className="flex-row gap-2">
-          <Badge><Text>Default</Text></Badge>
-          <Badge className="bg-primary"><Text className="text-primary-foreground">Primary</Text></Badge>
-          <Badge className="bg-destructive"><Text className="text-destructive-foreground">Error</Text></Badge>
-          <Badge className="bg-success"><Text className="text-success-foreground">Success</Text></Badge>
+          <Badge>
+            <Text>Default</Text>
+          </Badge>
+          <Badge className="bg-primary">
+            <Text className="text-primary-foreground">Primary</Text>
+          </Badge>
+          <Badge className="bg-destructive">
+            <Text className="text-destructive-foreground">Error</Text>
+          </Badge>
+          <Badge className="bg-success">
+            <Text className="text-success-foreground">Success</Text>
+          </Badge>
         </View>
       </Section>
     </ScrollView>

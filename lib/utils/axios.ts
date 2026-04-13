@@ -358,4 +358,27 @@ axios.interceptors.response.use(
   },
 );
 
+// Returns the configured axios instance
+export function getAxios(): AxiosInstance {
+  return axios;
+}
+
+// Adds a response interceptor that suppresses error toasts — returns the interceptor ID
+export function suppressErrorToasts(axiosInstance: AxiosInstance): number {
+  return axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      if (error.config) {
+        (error.config as { showErrorToast?: boolean }).showErrorToast = false;
+      }
+      return Promise.reject(error);
+    },
+  );
+}
+
+// Removes a previously added suppress interceptor
+export function restoreErrorToasts(axiosInstance: AxiosInstance, interceptorId: number): void {
+  axiosInstance.interceptors.response.eject(interceptorId);
+}
+
 export default axios;

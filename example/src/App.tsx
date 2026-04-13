@@ -1,6 +1,10 @@
 import '../global.css';
 import React from 'react';
-import { ThemeProvider, BottomNavigation, type RouteConfig } from '@vritti/quantum-ui-native';
+import { ThemeProvider } from '@vritti/quantum-ui-native/theme';
+import {
+  BottomNavigation,
+  type RouteConfig,
+} from '@vritti/quantum-ui-native/BottomNavigation';
 import { Layers, LayoutGrid, FileText, Activity } from 'lucide-react-native';
 
 import ComponentsScreen from './screens/ComponentsScreen';
