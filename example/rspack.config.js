@@ -12,14 +12,28 @@ const rnCssRoot = path.dirname(
   require.resolve('react-native-css/package.json')
 );
 const rnCssAliases = {
-  'react-native-css/native-internal': path.join(rnCssRoot, 'dist/commonjs/native-internal/index.js'),
-  'react-native-css/utilities': path.join(rnCssRoot, 'dist/commonjs/utilities/index.js'),
-  'react-native-css/compiler': path.join(rnCssRoot, 'dist/commonjs/compiler/index.js'),
-  'react-native-css/native': path.join(rnCssRoot, 'dist/commonjs/native/index.js'),
+  'react-native-css/native-internal': path.join(
+    rnCssRoot,
+    'dist/commonjs/native-internal/index.js'
+  ),
+  'react-native-css/utilities': path.join(
+    rnCssRoot,
+    'dist/commonjs/utilities/index.js'
+  ),
+  'react-native-css/compiler': path.join(
+    rnCssRoot,
+    'dist/commonjs/compiler/index.js'
+  ),
+  'react-native-css/native': path.join(
+    rnCssRoot,
+    'dist/commonjs/native/index.js'
+  ),
 };
 
-const rnCssComponentsPath = path.join(rnCssRoot, 'dist/commonjs/components/index.cjs');
-const rnCssSafeAreaPath = path.join(rnCssRoot, 'dist/commonjs/components/react-native-safe-area-context.js');
+const rnCssComponentsPath = path.join(
+  rnCssRoot,
+  'dist/commonjs/components/index.cjs'
+);
 
 /** @type {(env: import('@callstack/repack').EnvOptions) => import('@rspack/core').Configuration} */
 module.exports = (env) => {
@@ -30,6 +44,7 @@ module.exports = (env) => {
     mode,
     context: __dirname,
     entry: './index.js',
+    devtool: mode === 'development' ? 'cheap-module-source-map' : false,
 
     resolve: {
       ...Repack.getResolveOptions(platform),
@@ -42,11 +57,16 @@ module.exports = (env) => {
       alias: {
         [pak.name]: path.resolve(root, 'lib', 'index.tsx'),
         ...rnCssAliases,
-        'react-native-css/components': path.join(rnCssRoot, 'dist/commonjs/components'),
+        'react-native-css/components': path.join(
+          rnCssRoot,
+          'dist/commonjs/components'
+        ),
         'colorjs.io/fn': require.resolve('colorjs.io/fn'),
         // React Navigation v8 subpath exports (Rspack doesn't resolve them automatically)
         '@react-navigation/elements/internal': path.join(
-          path.dirname(require.resolve('@react-navigation/elements/package.json')),
+          path.dirname(
+            require.resolve('@react-navigation/elements/package.json')
+          ),
           'lib/module/internal.js'
         ),
       },
@@ -91,13 +111,25 @@ module.exports = (env) => {
 
         // CSS: PostCSS (Tailwind v4) → rn-css-loader (react-native-css compiler)
         ...(isNative
-          ? [{
-              test: /\.css$/,
-              use: [
-                { loader: path.resolve(__dirname, 'rn-css-loader.js'), options: { projectRoot: __dirname } },
-                { loader: 'postcss-loader', options: { postcssOptions: { plugins: { '@tailwindcss/postcss': {} } } } },
-              ],
-            }]
+          ? [
+              {
+                test: /\.css$/,
+                use: [
+                  {
+                    loader: path.resolve(__dirname, 'rn-css-loader.js'),
+                    options: { projectRoot: __dirname },
+                  },
+                  {
+                    loader: 'postcss-loader',
+                    options: {
+                      postcssOptions: {
+                        plugins: { '@tailwindcss/postcss': {} },
+                      },
+                    },
+                  },
+                ],
+              },
+            ]
           : []),
       ],
     },

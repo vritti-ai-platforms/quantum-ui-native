@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react';
-import { Platform } from 'react-native';
-import type { ColorValue } from 'react-native';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { useMemo } from 'react';
+import { Platform, type ColorValue } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { NAV_THEME } from '../../theme/colors';
 import type { BottomNavigationProps, RouteConfig } from './types';
@@ -13,6 +12,9 @@ const isIOS = Platform.OS === 'ios';
 function resolveIcon(route: RouteConfig) {
   if (isIOS && route.icon.sfSymbol) {
     return { type: 'sfSymbol' as const, name: route.icon.sfSymbol } as any;
+  }
+  if (!isIOS && route.icon.materialSymbol) {
+    return { type: 'materialSymbol' as const, name: route.icon.materialSymbol } as any;
   }
   const IconComponent = route.icon.component;
   if (!IconComponent) return undefined;
@@ -36,16 +38,34 @@ export function BottomNavigation({
   screenOptions,
 }: BottomNavigationProps) {
   const { isDark } = useTheme();
-  const theme = isDark ? DarkTheme : DefaultTheme;
+  const colors = NAV_THEME[isDark ? 'dark' : 'light'];
+
+  // Android native tab bar doesn't support React element icons — use JS implementation
+  // when routes don't have materialSymbol native icons
+  const needsCustomImpl = !isIOS && routes.some((r) => !r.icon.materialSymbol);
+
+  const navTheme = useMemo(
+    () => ({
+      ...(isDark ? DarkTheme : DefaultTheme),
+      colors: {
+        ...(isDark ? DarkTheme : DefaultTheme).colors,
+        ...colors,
+      },
+    }),
+    [isDark, colors],
+  );
+
   return (
-    <NavigationContainer theme={theme} >
+    <NavigationContainer theme={navTheme}>
       <Tab.Navigator
         initialRouteName={initialRoute}
+        // @ts-ignore — `implementation` is typed in v8 alpha but may not be in d.ts yet
+        implementation={needsCustomImpl ? 'custom' : undefined}
         screenOptions={{
           headerShown: false,
           tabBarActiveBackgroundColor:'transparent',
           tabBarStyle: { backgroundColor: 'transparent' },
-          sceneStyle: { backgroundColor: theme.colors.background, },
+          sceneStyle: { backgroundColor: navTheme.colors.background },
           ...screenOptions,
         }}
       >
