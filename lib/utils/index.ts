@@ -6,7 +6,7 @@ export {
   type MapApiErrorsOptions,
   mapApiErrorsToForm,
 } from './formHelpers';
-export { configureAxios, getAxios } from './axios';
+export { axios, setToken, getToken, clearToken, setToastAdapter } from './axios';
 export { buildSlug, parseSlug, slugify } from './slug';
 export {
   chunk,

@@ -4,6 +4,22 @@ export * from './nitro';
 // Utilities
 export { cn } from './utils/cn';
 
+// Axios
+export {
+  axios,
+  setToken,
+  getToken,
+  clearToken,
+  setCsrfToken,
+  getCsrfToken,
+  clearCsrfToken,
+  recoverToken,
+  scheduleTokenRefresh,
+  cancelTokenRefresh,
+  setToastAdapter,
+  type ToastAdapter,
+} from './utils/axios';
+
 // Components
 export * from './components';
 
