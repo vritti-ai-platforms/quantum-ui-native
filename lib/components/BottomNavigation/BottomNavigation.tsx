@@ -36,6 +36,7 @@ export function BottomNavigation({
   routes,
   initialRoute,
   screenOptions,
+  standalone = true,
 }: BottomNavigationProps) {
   const { isDark } = useTheme();
   const colors = NAV_THEME[isDark ? 'dark' : 'light'];
@@ -55,34 +56,40 @@ export function BottomNavigation({
     [isDark, colors],
   );
 
+  const navigator = (
+    <Tab.Navigator
+      initialRouteName={initialRoute}
+      // @ts-ignore — `implementation` is typed in v8 alpha but may not be in d.ts yet
+      implementation={needsCustomImpl ? 'custom' : undefined}
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveBackgroundColor:'transparent',
+        tabBarStyle: { backgroundColor: 'transparent' },
+        sceneStyle: { backgroundColor: navTheme.colors.background },
+        ...screenOptions,
+      }}
+    >
+      {routes.map((route) => (
+        <Tab.Screen
+          key={route.name}
+          name={route.name}
+          component={route.component}
+          options={{
+            tabBarLabel: route.label ?? route.name,
+            tabBarIcon: resolveIcon(route),
+            tabBarBadge: route.badge,
+            ...route.options,
+          }}
+        />
+      ))}
+    </Tab.Navigator>
+  );
+
+  if (!standalone) return navigator;
+
   return (
     <NavigationContainer theme={navTheme}>
-      <Tab.Navigator
-        initialRouteName={initialRoute}
-        // @ts-ignore — `implementation` is typed in v8 alpha but may not be in d.ts yet
-        implementation={needsCustomImpl ? 'custom' : undefined}
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveBackgroundColor:'transparent',
-          tabBarStyle: { backgroundColor: 'transparent' },
-          sceneStyle: { backgroundColor: navTheme.colors.background },
-          ...screenOptions,
-        }}
-      >
-        {routes.map((route) => (
-          <Tab.Screen
-            key={route.name}
-            name={route.name}
-            component={route.component}
-            options={{
-              tabBarLabel: route.label ?? route.name,
-              tabBarIcon: resolveIcon(route),
-              tabBarBadge: route.badge,
-              ...route.options,
-            }}
-          />
-        ))}
-      </Tab.Navigator>
+      {navigator}
     </NavigationContainer>
   );
 }

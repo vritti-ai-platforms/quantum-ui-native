@@ -23,4 +23,6 @@ export interface BottomNavigationProps {
   routes: RouteConfig[];
   initialRoute?: string;
   screenOptions?: BottomTabNavigationOptions;
+  /** When false, skips NavigationContainer wrapper (for embedding in existing navigation tree). Default: true */
+  standalone?: boolean;
 }

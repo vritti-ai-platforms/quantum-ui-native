@@ -6,6 +6,8 @@ import { Textarea as RnrTextarea } from '../../reusables/textarea';
 import { cn } from '../../utils/cn';
 
 export interface TextAreaProps extends React.ComponentProps<typeof RnrTextarea> {
+  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
+  name?: string;
   label?: string;
   error?: string;
   hint?: string;

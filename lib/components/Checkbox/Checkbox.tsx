@@ -5,6 +5,8 @@ import { Label } from '../../reusables/label';
 import { Text } from '../../reusables/text';
 
 export interface CheckboxProps extends React.ComponentProps<typeof RnrCheckbox> {
+  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
+  name?: string;
   label?: string;
   description?: string;
   error?: string;

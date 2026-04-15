@@ -6,6 +6,8 @@ import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
 
 export interface TextFieldProps extends React.ComponentProps<typeof Input> {
+  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
+  name?: string;
   label?: string;
   error?: string;
   hint?: string;

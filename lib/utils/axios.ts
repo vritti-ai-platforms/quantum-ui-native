@@ -3,7 +3,7 @@ import Axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig,
 } from 'axios';
-import { getConfig } from '../config';
+import { getConfig, configureQuantumUI } from '../config';
 
 // ---------------------------------------------------------------------------
 // Module augmentation — custom options on every request
@@ -73,6 +73,49 @@ let csrfToken: string | null = null;
 let csrfFetchPromise: Promise<string | null> | null = null;
 
 // ---------------------------------------------------------------------------
+// Mobile Storage Adapter
+// ---------------------------------------------------------------------------
+
+export interface MobileStorageAdapter {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  deleteItem: (key: string) => Promise<void>;
+}
+
+export interface MobileAxiosConfig {
+  baseURL: string;
+  auth?: {
+    refreshEndpoint?: string;
+  };
+  storage: MobileStorageAdapter;
+  onSessionExpired?: () => void;
+}
+
+let _storage: MobileStorageAdapter | null = null;
+let _onSessionExpired: (() => void) | null = null;
+
+const REFRESH_TOKEN_KEY = 'vritti_refresh_token';
+
+/**
+ * Configure axios for mobile usage with secure token storage.
+ * Call once at app startup before any API calls.
+ */
+export function configureMobileAxios(config: MobileAxiosConfig): void {
+  _storage = config.storage;
+  _onSessionExpired = config.onSessionExpired ?? null;
+
+  configureQuantumUI({
+    axios: { baseURL: config.baseURL },
+    auth: {
+      refreshEndpoint: config.auth?.refreshEndpoint ?? 'auth/mobile/refresh-tokens',
+      sessionRecoveryEnabled: false, // mobile uses stored refresh tokens, not cookies
+    },
+    csrf: { enabled: false }, // mobile doesn't use CSRF
+    views: { viewsEndpoint: 'table-views', statesEndpoint: 'table-states' },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Token Management
 // ---------------------------------------------------------------------------
 
@@ -88,6 +131,32 @@ export const clearToken = (): void => {
   accessToken = null;
   cancelTokenRefresh();
 };
+
+/** Store refresh token in secure storage (mobile) */
+export async function storeRefreshToken(token: string): Promise<void> {
+  if (_storage && token) {
+    await _storage.setItem(REFRESH_TOKEN_KEY, token);
+  }
+}
+
+/** Retrieve stored refresh token (mobile) */
+export async function getRefreshToken(): Promise<string | null> {
+  if (!_storage) return null;
+  return _storage.getItem(REFRESH_TOKEN_KEY);
+}
+
+/** Clear all tokens (access + stored refresh) */
+export async function clearTokens(): Promise<void> {
+  clearToken();
+  if (_storage) {
+    await _storage.deleteItem(REFRESH_TOKEN_KEY);
+  }
+}
+
+/** Get the session expired callback */
+export function getOnSessionExpired(): (() => void) | null {
+  return _onSessionExpired;
+}
 
 // ---------------------------------------------------------------------------
 // CSRF Token Management
@@ -243,6 +312,36 @@ function createAxiosInstance(): AxiosInstance {
 }
 
 export const axios: AxiosInstance = createAxiosInstance();
+
+/**
+ * Returns the shared axios instance used across the package.
+ * Kept as a stable helper because Form relies on it to temporarily
+ * suppress duplicate error toasts during mutation submissions.
+ */
+export function getAxios(): AxiosInstance {
+  return axios;
+}
+
+/**
+ * Temporarily disables automatic error toasts for requests sent through
+ * the provided axios instance unless the caller explicitly opts back in.
+ */
+export function suppressErrorToasts(instance: AxiosInstance = axios): number {
+  return instance.interceptors.request.use((config) => {
+    if (config.showErrorToast === undefined) {
+      config.showErrorToast = false;
+    }
+    return config;
+  });
+}
+
+/** Removes a temporary request interceptor created by suppressErrorToasts(). */
+export function restoreErrorToasts(
+  instance: AxiosInstance = axios,
+  interceptorId: number,
+): void {
+  instance.interceptors.request.eject(interceptorId);
+}
 
 // Request interceptor
 axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {

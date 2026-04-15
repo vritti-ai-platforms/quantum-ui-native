@@ -8,6 +8,8 @@ import {
 import { Text } from '../../reusables/text';
 
 export interface RadioGroupProps extends React.ComponentProps<typeof RnrRadioGroup> {
+  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
+  name?: string;
   label?: string;
   error?: string;
 }

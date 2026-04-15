@@ -5,6 +5,8 @@ import { Switch as RnrSwitch } from '../../reusables/switch';
 import { Text } from '../../reusables/text';
 
 export interface SwitchProps extends React.ComponentProps<typeof RnrSwitch> {
+  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
+  name?: string;
   label?: string;
   error?: string;
 }
