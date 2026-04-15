@@ -313,35 +313,8 @@ function createAxiosInstance(): AxiosInstance {
 
 export const axios: AxiosInstance = createAxiosInstance();
 
-/**
- * Returns the shared axios instance used across the package.
- * Kept as a stable helper because Form relies on it to temporarily
- * suppress duplicate error toasts during mutation submissions.
- */
-export function getAxios(): AxiosInstance {
-  return axios;
-}
 
-/**
- * Temporarily disables automatic error toasts for requests sent through
- * the provided axios instance unless the caller explicitly opts back in.
- */
-export function suppressErrorToasts(instance: AxiosInstance = axios): number {
-  return instance.interceptors.request.use((config) => {
-    if (config.showErrorToast === undefined) {
-      config.showErrorToast = false;
-    }
-    return config;
-  });
-}
 
-/** Removes a temporary request interceptor created by suppressErrorToasts(). */
-export function restoreErrorToasts(
-  instance: AxiosInstance = axios,
-  interceptorId: number,
-): void {
-  instance.interceptors.request.eject(interceptorId);
-}
 
 // Request interceptor
 axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
