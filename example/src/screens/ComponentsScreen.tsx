@@ -1,18 +1,16 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Typography';
-import { Button } from '@vritti/quantum-ui-native/Button';
 import { Alert } from '@vritti/quantum-ui-native/Alert';
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback,
+  AvatarImage,
 } from '@vritti/quantum-ui-native/Avatar';
 import { Badge } from '@vritti/quantum-ui-native/Badge';
-import { DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
+import { Button } from '@vritti/quantum-ui-native/Button';
 import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
-import { COMMON_ICONS } from '@vritti/quantum-ui-native/DynamicIcon';
+import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
+import { Text } from '@vritti/quantum-ui-native/Typography';
+import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
 
 const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
@@ -26,7 +24,9 @@ const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
   sun: { sfSymbol: 'sun.max.fill', materialIcon: 'light-mode' },
 };
 
-export default function ComponentsScreen() {
+export default function ComponentsScreen({
+  navigation,
+}: ComponentsScreenProps) {
   const { isDark, toggleColorScheme } = useTheme();
 
   return (
@@ -47,6 +47,15 @@ export default function ComponentsScreen() {
           />
         </Button>
       </View>
+
+      <Section title="Development">
+        <Text variant="muted">
+          Open the embedded Storybook browser without leaving the example app.
+        </Text>
+        <Button onPress={() => navigation.navigate('Storybook')}>
+          <Text>Open Storybook</Text>
+        </Button>
+      </Section>
 
       {/* Typography */}
       <Section title="Typography">

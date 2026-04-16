@@ -19,3 +19,4 @@ export * from './Switch';
 export * from './TextField';
 export * from './Typography';
 export * from './BottomNavigation';
+export * from './NativeStack';
