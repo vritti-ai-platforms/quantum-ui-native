@@ -95,6 +95,32 @@ let _storage: MobileStorageAdapter | null = null;
 let _onSessionExpired: (() => void) | null = null;
 
 const REFRESH_TOKEN_KEY = 'vritti_refresh_token';
+const BASE_URL_KEY = 'vritti_api_base_url';
+const DEPLOYMENT_BASE_URL_KEY = 'vritti_deployment_base_url';
+
+interface MobileSessionResponse {
+  accessToken: string;
+  expiresIn: number;
+  refreshToken?: string;
+}
+
+interface MobileLoginSession {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+function syncAxiosDefaults(): void {
+  const config = getConfig();
+
+  axios.defaults.baseURL = config.axios.baseURL;
+  axios.defaults.timeout = config.axios.timeout;
+  axios.defaults.withCredentials = config.axios.withCredentials;
+
+  if (config.axios.headers) {
+    Object.assign(axios.defaults.headers.common, config.axios.headers);
+  }
+}
 
 /**
  * Configure axios for mobile usage with secure token storage.
@@ -102,7 +128,7 @@ const REFRESH_TOKEN_KEY = 'vritti_refresh_token';
  */
 export function configureMobileAxios(config: MobileAxiosConfig): void {
   _storage = config.storage;
-  _onSessionExpired = config.onSessionExpired ?? null;
+  _onSessionExpired = config.onSessionExpired ?? _onSessionExpired;
 
   configureQuantumUI({
     axios: { baseURL: config.baseURL },
@@ -113,6 +139,8 @@ export function configureMobileAxios(config: MobileAxiosConfig): void {
     csrf: { enabled: false }, // mobile doesn't use CSRF
     views: { viewsEndpoint: 'table-views', statesEndpoint: 'table-states' },
   });
+
+  syncAxiosDefaults();
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +184,130 @@ export async function clearTokens(): Promise<void> {
 /** Get the session expired callback */
 export function getOnSessionExpired(): (() => void) | null {
   return _onSessionExpired;
+}
+
+/** Persist and apply the active mobile API base URL. */
+export async function setMobileBaseURL(baseURL: string): Promise<void> {
+  if (!_storage) {
+    throw new Error('Mobile axios storage is not configured');
+  }
+
+  configureMobileAxios({
+    baseURL,
+    auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
+    storage: _storage,
+  });
+  await _storage.setItem(BASE_URL_KEY, baseURL);
+}
+
+/** Persist the selected deployment URL and use it for the pre-login flow. */
+export async function setSelectedDeploymentBaseURL(baseURL: string): Promise<void> {
+  if (!_storage) {
+    throw new Error('Mobile axios storage is not configured');
+  }
+
+  configureMobileAxios({
+    baseURL,
+    auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
+    storage: _storage,
+  });
+  await _storage.setItem(DEPLOYMENT_BASE_URL_KEY, baseURL);
+}
+
+/** Read the last selected mobile API base URL from secure storage. */
+export async function getStoredMobileBaseURL(): Promise<string | null> {
+  if (!_storage) return null;
+  return _storage.getItem(BASE_URL_KEY);
+}
+
+/** Read the last selected deployment URL from secure storage. */
+export async function getSelectedDeploymentBaseURL(): Promise<string | null> {
+  if (!_storage) return null;
+  return _storage.getItem(DEPLOYMENT_BASE_URL_KEY);
+}
+
+async function refreshMobileSession(options?: { notifyOnFailure?: boolean }): Promise<{ success: boolean; expiresIn: number }> {
+  const notifyOnFailure = options?.notifyOnFailure ?? true;
+  const config = getConfig();
+  const refreshToken = await getRefreshToken();
+
+  if (!refreshToken) {
+    return { success: false, expiresIn: 0 };
+  }
+
+  try {
+    const response = await Axios.post<MobileSessionResponse>(
+      config.auth.refreshEndpoint,
+      { refreshToken },
+      {
+        baseURL: config.axios.baseURL,
+        timeout: config.axios.timeout,
+        headers: config.axios.headers,
+      },
+    );
+
+    if (response.data.accessToken) {
+      setToken(response.data.accessToken);
+      if (response.data.refreshToken) {
+        await storeRefreshToken(response.data.refreshToken);
+      }
+      return { success: true, expiresIn: response.data.expiresIn };
+    }
+
+    await clearTokens();
+    if (notifyOnFailure) {
+      _onSessionExpired?.();
+    }
+    return { success: false, expiresIn: 0 };
+  } catch (error) {
+    await clearTokens();
+    if (notifyOnFailure) {
+      if (Axios.isAxiosError(error) && error.response?.status === 401) {
+        const data = error.response.data as ApiErrorResponse;
+        _toast?.error(data?.label || data?.title || 'Session expired', {
+          description: data?.detail,
+        });
+      }
+      _onSessionExpired?.();
+    }
+    return { success: false, expiresIn: 0 };
+  }
+}
+
+/**
+ * Initialize the mobile HTTP/session runtime at app startup.
+ * Restores the last selected base URL, then exchanges the stored refresh token
+ * for a fresh in-memory access token.
+ */
+export async function initializeMobileSession(config: MobileAxiosConfig): Promise<boolean> {
+  _storage = config.storage;
+
+  const storedBaseURL = await _storage.getItem(BASE_URL_KEY);
+  const effectiveBaseURL = storedBaseURL ?? config.baseURL;
+
+  configureMobileAxios({
+    ...config,
+    baseURL: effectiveBaseURL,
+  });
+
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+
+  const result = await refreshMobileSession({ notifyOnFailure: false });
+  if (result.success) {
+    scheduleTokenRefresh(result.expiresIn);
+  }
+
+  return result.success;
+}
+
+/** Store a successful mobile login and start proactive refresh scheduling. */
+export async function completeMobileLoginSession(session: MobileLoginSession): Promise<void> {
+  setToken(session.accessToken);
+  await storeRefreshToken(session.refreshToken);
+  scheduleTokenRefresh(session.expiresIn);
 }
 
 // ---------------------------------------------------------------------------
@@ -239,19 +391,9 @@ export function scheduleTokenRefresh(expiresIn: number): void {
   const refreshAt = expiresIn * 0.8 * 1000;
 
   refreshTimer = setTimeout(async () => {
-    const config = getConfig();
-    try {
-      const response = await axios.post<{ accessToken: string; expiresIn: number }>(
-        config.auth.refreshEndpoint,
-        {},
-        { withCredentials: true, timeout: config.axios.timeout },
-      );
-      if (response.data.accessToken) {
-        setToken(response.data.accessToken);
-        scheduleTokenRefresh(response.data.expiresIn);
-      }
-    } catch {
-      clearToken();
+    const result = await refreshMobileSession({ notifyOnFailure: true });
+    if (result.success) {
+      scheduleTokenRefresh(result.expiresIn);
     }
   }, refreshAt);
 }
@@ -386,7 +528,7 @@ axios.interceptors.response.use(
 
     return response;
   },
-  (error: AxiosError<ApiErrorResponse>) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
     const config = error.config;
     const method = config?.method?.toUpperCase();
     const isGet = method === 'GET';
@@ -402,8 +544,8 @@ axios.interceptors.response.use(
         const title = errorData?.label || errorData?.title || 'Session expired';
         _toast.error(title, { id: toastId, description: errorData?.detail });
       }
-      clearToken();
-      cancelTokenRefresh();
+      await clearTokens();
+      _onSessionExpired?.();
       return Promise.reject(error);
     }
 
