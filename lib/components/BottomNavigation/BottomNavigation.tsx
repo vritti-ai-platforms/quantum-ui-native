@@ -70,17 +70,32 @@ export function BottomNavigation({
       }}
     >
       {routes.map((route) => (
-        <Tab.Screen
-          key={route.name}
-          name={route.name}
-          component={route.component}
-          options={{
-            tabBarLabel: route.label ?? route.name,
-            tabBarIcon: resolveIcon(route),
-            tabBarBadge: route.badge,
-            ...route.options,
-          }}
-        />
+        'render' in route ? (
+          <Tab.Screen
+            key={route.name}
+            name={route.name}
+            options={{
+              tabBarLabel: route.label ?? route.name,
+              tabBarIcon: resolveIcon(route),
+              tabBarBadge: route.badge,
+              ...route.options,
+            }}
+          >
+            {() => route.render!()}
+          </Tab.Screen>
+        ) : (
+          <Tab.Screen
+            key={route.name}
+            name={route.name}
+            component={route.component}
+            options={{
+              tabBarLabel: route.label ?? route.name,
+              tabBarIcon: resolveIcon(route),
+              tabBarBadge: route.badge,
+              ...route.options,
+            }}
+          />
+        )
       ))}
     </Tab.Navigator>
   );

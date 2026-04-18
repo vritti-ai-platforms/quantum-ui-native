@@ -8,15 +8,24 @@ export interface TabIcon {
   component?: React.ComponentType<{ color: string; size: number }>;
 }
 
-/** Single route definition */
-export interface RouteConfig {
+interface RouteConfigBase {
   name: string;
-  component: React.ComponentType<any>;
   icon: TabIcon;
   label?: string;
   badge?: string | number;
   options?: BottomTabNavigationOptions;
 }
+
+/** Single route definition */
+export type RouteConfig =
+  | (RouteConfigBase & {
+      component: React.ComponentType<any>;
+      render?: never;
+    })
+  | (RouteConfigBase & {
+      component?: never;
+      render: () => React.ReactNode;
+    });
 
 /** Props for `<BottomNavigation>` */
 export interface BottomNavigationProps {
