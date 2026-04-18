@@ -13,6 +13,7 @@ export * from './Progress';
 export * from './RadioGroup';
 export * from './Separator';
 export * from './Skeleton';
+export * from './SplashScreen';
 export * from './Spinner';
 export * from './Switch';
 export * from './TextArea';

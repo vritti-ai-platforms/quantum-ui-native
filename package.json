@@ -95,6 +95,11 @@
       "types": "./dist/typescript/lib/components/Skeleton/index.d.ts",
       "default": "./dist/module/components/Skeleton/index.js"
     },
+    "./SplashScreen": {
+      "source": "./lib/components/SplashScreen/index.ts",
+      "types": "./dist/typescript/lib/components/SplashScreen/index.d.ts",
+      "default": "./dist/module/components/SplashScreen/index.js"
+    },
     "./Spinner": {
       "source": "./lib/components/Spinner/index.ts",
       "types": "./dist/typescript/lib/components/Spinner/index.d.ts",

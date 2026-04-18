@@ -16,16 +16,9 @@
  * ```
  */
 
-export interface CsrfConfig {
-  endpoint: string;
-  enabled: boolean;
-  headerName: string;
-}
-
 export interface AxiosConfig {
   baseURL: string;
   timeout: number;
-  withCredentials: boolean;
   headers?: Record<string, string>;
   onRequest?: (config: import('axios').InternalAxiosRequestConfig) => void | Promise<void>;
 }
@@ -33,9 +26,7 @@ export interface AxiosConfig {
 export interface AuthConfig {
   tokenHeaderName: string;
   tokenPrefix: string;
-  tokenEndpoint: string;
   refreshEndpoint: string;
-  sessionRecoveryEnabled: boolean;
 }
 
 export interface ViewsConfig {
@@ -44,29 +35,21 @@ export interface ViewsConfig {
 }
 
 export interface QuantumUIConfig {
-  csrf?: Partial<CsrfConfig>;
   axios?: Partial<AxiosConfig>;
   auth?: Partial<AuthConfig>;
   views: ViewsConfig;
 }
 
 type ResolvedConfig = {
-  csrf: CsrfConfig;
   axios: AxiosConfig;
   auth: AuthConfig;
   views: Required<ViewsConfig>;
 };
 
 const defaultConfig: ResolvedConfig = {
-  csrf: {
-    endpoint: 'csrf/token',
-    enabled: true,
-    headerName: 'x-csrf-token',
-  },
   axios: {
     baseURL: '/api',
     timeout: 30000,
-    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -75,9 +58,7 @@ const defaultConfig: ResolvedConfig = {
   auth: {
     tokenHeaderName: 'Authorization',
     tokenPrefix: 'Bearer',
-    tokenEndpoint: 'auth/access-token',
     refreshEndpoint: 'auth/refresh-tokens',
-    sessionRecoveryEnabled: true,
   },
   views: {
     viewsEndpoint: 'table-views',
@@ -96,7 +77,6 @@ export function defineConfig(config: QuantumUIConfig): QuantumUIConfig {
 /** Call once at app startup to configure the library. */
 export function configureQuantumUI(userConfig: QuantumUIConfig): void {
   _config = {
-    csrf: { ...defaultConfig.csrf, ...(userConfig.csrf ?? {}) },
     axios: {
       ...defaultConfig.axios,
       ...(userConfig.axios ?? {}),

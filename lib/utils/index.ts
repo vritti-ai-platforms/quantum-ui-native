@@ -24,7 +24,6 @@ export {
   setMobileBaseURL,
   getStoredMobileBaseURL,
   setSelectedDeploymentBaseURL,
-  getSelectedDeploymentBaseURL,
   getOnSessionExpired,
   type MobileAxiosConfig,
   type MobileStorageAdapter,

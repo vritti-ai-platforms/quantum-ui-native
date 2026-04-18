@@ -4,6 +4,18 @@ import Axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { getConfig, configureQuantumUI } from '../config';
+import {
+  deleteRefreshToken,
+  readRefreshToken,
+  readStoredMobileBaseURL,
+  requireMobileStorageAdapter,
+  setMobileStorageAdapter,
+  type MobileStorageAdapter,
+  writeRefreshToken,
+  writeSelectedDeploymentBaseURL,
+  writeStoredMobileBaseURL,
+} from './storage';
+export type { MobileStorageAdapter } from './storage';
 
 // ---------------------------------------------------------------------------
 // Module augmentation — custom options on every request
@@ -68,19 +80,6 @@ function generateToastId(): string {
 
 let accessToken: string | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
-let sessionRecoveryPromise: Promise<boolean> | null = null;
-let csrfToken: string | null = null;
-let csrfFetchPromise: Promise<string | null> | null = null;
-
-// ---------------------------------------------------------------------------
-// Mobile Storage Adapter
-// ---------------------------------------------------------------------------
-
-export interface MobileStorageAdapter {
-  getItem: (key: string) => Promise<string | null>;
-  setItem: (key: string, value: string) => Promise<void>;
-  deleteItem: (key: string) => Promise<void>;
-}
 
 export interface MobileAxiosConfig {
   baseURL: string;
@@ -91,12 +90,7 @@ export interface MobileAxiosConfig {
   onSessionExpired?: () => void;
 }
 
-let _storage: MobileStorageAdapter | null = null;
 let _onSessionExpired: (() => void) | null = null;
-
-const REFRESH_TOKEN_KEY = 'vritti_refresh_token';
-const BASE_URL_KEY = 'vritti_api_base_url';
-const DEPLOYMENT_BASE_URL_KEY = 'vritti_deployment_base_url';
 
 interface MobileSessionResponse {
   accessToken: string;
@@ -115,7 +109,6 @@ function syncAxiosDefaults(): void {
 
   axios.defaults.baseURL = config.axios.baseURL;
   axios.defaults.timeout = config.axios.timeout;
-  axios.defaults.withCredentials = config.axios.withCredentials;
 
   if (config.axios.headers) {
     Object.assign(axios.defaults.headers.common, config.axios.headers);
@@ -127,16 +120,14 @@ function syncAxiosDefaults(): void {
  * Call once at app startup before any API calls.
  */
 export function configureMobileAxios(config: MobileAxiosConfig): void {
-  _storage = config.storage;
+  setMobileStorageAdapter(config.storage);
   _onSessionExpired = config.onSessionExpired ?? _onSessionExpired;
 
   configureQuantumUI({
     axios: { baseURL: config.baseURL },
     auth: {
       refreshEndpoint: config.auth?.refreshEndpoint ?? 'auth/mobile/refresh-tokens',
-      sessionRecoveryEnabled: false, // mobile uses stored refresh tokens, not cookies
     },
-    csrf: { enabled: false }, // mobile doesn't use CSRF
     views: { viewsEndpoint: 'table-views', statesEndpoint: 'table-states' },
   });
 
@@ -162,23 +153,18 @@ export const clearToken = (): void => {
 
 /** Store refresh token in secure storage (mobile) */
 export async function storeRefreshToken(token: string): Promise<void> {
-  if (_storage && token) {
-    await _storage.setItem(REFRESH_TOKEN_KEY, token);
-  }
+  await writeRefreshToken(token);
 }
 
 /** Retrieve stored refresh token (mobile) */
 export async function getRefreshToken(): Promise<string | null> {
-  if (!_storage) return null;
-  return _storage.getItem(REFRESH_TOKEN_KEY);
+  return readRefreshToken();
 }
 
 /** Clear all tokens (access + stored refresh) */
 export async function clearTokens(): Promise<void> {
   clearToken();
-  if (_storage) {
-    await _storage.deleteItem(REFRESH_TOKEN_KEY);
-  }
+  await deleteRefreshToken();
 }
 
 /** Get the session expired callback */
@@ -188,44 +174,34 @@ export function getOnSessionExpired(): (() => void) | null {
 
 /** Persist and apply the active mobile API base URL. */
 export async function setMobileBaseURL(baseURL: string): Promise<void> {
-  if (!_storage) {
-    throw new Error('Mobile axios storage is not configured');
-  }
+  const storage = requireMobileStorageAdapter();
 
   configureMobileAxios({
     baseURL,
     auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
-    storage: _storage,
+    storage,
   });
-  await _storage.setItem(BASE_URL_KEY, baseURL);
+  await writeStoredMobileBaseURL(baseURL);
 }
 
 /** Persist the selected deployment URL and use it for the pre-login flow. */
 export async function setSelectedDeploymentBaseURL(baseURL: string): Promise<void> {
-  if (!_storage) {
-    throw new Error('Mobile axios storage is not configured');
-  }
+  const storage = requireMobileStorageAdapter();
 
   configureMobileAxios({
     baseURL,
     auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
-    storage: _storage,
+    storage,
   });
-  await _storage.setItem(DEPLOYMENT_BASE_URL_KEY, baseURL);
+  await writeSelectedDeploymentBaseURL(baseURL);
 }
 
 /** Read the last selected mobile API base URL from secure storage. */
 export async function getStoredMobileBaseURL(): Promise<string | null> {
-  if (!_storage) return null;
-  return _storage.getItem(BASE_URL_KEY);
+  return readStoredMobileBaseURL();
 }
 
 /** Read the last selected deployment URL from secure storage. */
-export async function getSelectedDeploymentBaseURL(): Promise<string | null> {
-  if (!_storage) return null;
-  return _storage.getItem(DEPLOYMENT_BASE_URL_KEY);
-}
-
 async function refreshMobileSession(options?: { notifyOnFailure?: boolean }): Promise<{ success: boolean; expiresIn: number }> {
   const notifyOnFailure = options?.notifyOnFailure ?? true;
   const config = getConfig();
@@ -280,9 +256,9 @@ async function refreshMobileSession(options?: { notifyOnFailure?: boolean }): Pr
  * for a fresh in-memory access token.
  */
 export async function initializeMobileSession(config: MobileAxiosConfig): Promise<boolean> {
-  _storage = config.storage;
+  setMobileStorageAdapter(config.storage);
 
-  const storedBaseURL = await _storage.getItem(BASE_URL_KEY);
+  const storedBaseURL = await readStoredMobileBaseURL();
   const effectiveBaseURL = storedBaseURL ?? config.baseURL;
 
   configureMobileAxios({
@@ -310,82 +286,6 @@ export async function completeMobileLoginSession(session: MobileLoginSession): P
   scheduleTokenRefresh(session.expiresIn);
 }
 
-// ---------------------------------------------------------------------------
-// CSRF Token Management
-// ---------------------------------------------------------------------------
-
-export const setCsrfToken = (token: string): void => {
-  if (token && typeof token === 'string') {
-    csrfToken = token;
-  }
-};
-
-export const getCsrfToken = (): string | null => csrfToken;
-
-export const clearCsrfToken = (): void => {
-  csrfToken = null;
-};
-
-// ---------------------------------------------------------------------------
-// Session Recovery & Refresh
-// ---------------------------------------------------------------------------
-
-export async function recoverToken(): Promise<{ success: boolean; expiresIn: number }> {
-  const config = getConfig();
-
-  try {
-    const response = await Axios.get<{ accessToken: string; expiresIn: number }>(
-      config.auth.tokenEndpoint,
-      {
-        baseURL: config.axios.baseURL,
-        withCredentials: true,
-        timeout: config.axios.timeout,
-      },
-    );
-
-    if (response.data.accessToken) {
-      setToken(response.data.accessToken);
-      return { success: true, expiresIn: response.data.expiresIn };
-    }
-
-    return { success: false, expiresIn: 0 };
-  } catch (error) {
-    clearToken();
-    if (Axios.isAxiosError(error) && error.response?.status === 401) {
-      const data = error.response.data as ApiErrorResponse;
-      _toast?.error(data?.label || data?.title || 'Session expired', {
-        description: data?.detail,
-      });
-    }
-    return { success: false, expiresIn: 0 };
-  }
-}
-
-async function recoverTokenIfNeeded(): Promise<boolean> {
-  const config = getConfig();
-  if (!config.auth.sessionRecoveryEnabled) return true;
-  if (accessToken) return true;
-
-  if (sessionRecoveryPromise) return sessionRecoveryPromise;
-
-  sessionRecoveryPromise = (async () => {
-    try {
-      const result = await recoverToken();
-      if (result.success) {
-        scheduleTokenRefresh(result.expiresIn);
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    } finally {
-      sessionRecoveryPromise = null;
-    }
-  })();
-
-  return sessionRecoveryPromise;
-}
-
 export function scheduleTokenRefresh(expiresIn: number): void {
   cancelTokenRefresh();
   const refreshAt = expiresIn * 0.8 * 1000;
@@ -406,40 +306,6 @@ export function cancelTokenRefresh(): void {
 }
 
 // ---------------------------------------------------------------------------
-// CSRF Token Fetching
-// ---------------------------------------------------------------------------
-
-async function fetchCsrfToken(): Promise<string | null> {
-  if (csrfFetchPromise) return csrfFetchPromise;
-
-  csrfFetchPromise = (async () => {
-    try {
-      const config = getConfig();
-      if (!config.csrf.enabled) return null;
-
-      const response = await Axios.get(config.csrf.endpoint, {
-        baseURL: config.axios.baseURL,
-        withCredentials: config.axios.withCredentials,
-        timeout: config.axios.timeout,
-      });
-
-      const token = response.data?.csrfToken;
-      if (token && typeof token === 'string') {
-        setCsrfToken(token);
-        return token;
-      }
-      return null;
-    } catch {
-      return null;
-    } finally {
-      csrfFetchPromise = null;
-    }
-  })();
-
-  return csrfFetchPromise;
-}
-
-// ---------------------------------------------------------------------------
 // Axios Instance & Interceptors
 // ---------------------------------------------------------------------------
 
@@ -447,7 +313,6 @@ function createAxiosInstance(): AxiosInstance {
   const config = getConfig();
   return Axios.create({
     baseURL: config.axios.baseURL,
-    withCredentials: config.axios.withCredentials,
     headers: config.axios.headers,
     timeout: config.axios.timeout,
   });
@@ -461,15 +326,6 @@ export const axios: AxiosInstance = createAxiosInstance();
 // Request interceptor
 axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const quantumConfig = getConfig();
-  const isPublicRequest = (config as { public?: boolean }).public === true;
-
-  // Auto-recover session for protected requests
-  if (!isPublicRequest) {
-    const hasSession = await recoverTokenIfNeeded();
-    if (!hasSession) {
-      return Promise.reject(new Error('No valid session'));
-    }
-  }
 
   // Add Authorization header
   const token = getToken();
@@ -481,17 +337,6 @@ axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   // Custom request interceptor
   if (quantumConfig.axios.onRequest) {
     await quantumConfig.axios.onRequest(config);
-  }
-
-  // CSRF for state-changing requests
-  const isStateChanging = ['post', 'put', 'patch', 'delete'].includes(
-    config.method?.toLowerCase() || '',
-  );
-
-  if (isStateChanging && quantumConfig.csrf.enabled) {
-    let csrf = getCsrfToken();
-    if (!csrf) csrf = await fetchCsrfToken();
-    if (csrf) config.headers[quantumConfig.csrf.headerName] = csrf;
   }
 
   // Loading feedback
