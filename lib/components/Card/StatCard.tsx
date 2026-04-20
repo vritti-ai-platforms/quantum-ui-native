@@ -1,6 +1,6 @@
 import { View } from 'react-native';
-import { TrendingDown, TrendingUp } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import { COMMON_ICONS } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Skeleton } from '../../reusables/skeleton';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
@@ -45,7 +45,7 @@ function StatCard({
     );
   }
 
-  const TrendIcon = trendDirection === 'down' ? TrendingDown : TrendingUp;
+  const trendIcon = trendDirection === 'down' ? COMMON_ICONS.trendDown : COMMON_ICONS.trendUp;
   const trendColor =
     trendDirection === 'down' ? 'text-destructive' : 'text-success';
 
@@ -67,7 +67,7 @@ function StatCard({
       </Text>
       {trendValue && trendDirection && (
         <View className="flex-row items-center gap-1">
-          <Icon as={TrendIcon} size={14} className={trendColor} />
+          <DynamicIcon icon={trendIcon} size={14} className={trendColor} />
           <Text className={cn('text-[13px] font-semibold', trendColor)}>
             {trendValue}
           </Text>

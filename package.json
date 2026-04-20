@@ -45,6 +45,11 @@
       "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
       "default": "./dist/module/components/Checkbox/index.js"
     },
+    "./DynamicIcon": {
+      "source": "./lib/components/DynamicIcon/index.ts",
+      "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
+      "default": "./dist/module/components/DynamicIcon/index.js"
+    },
     "./FlashList": {
       "source": "./lib/components/FlashList/index.ts",
       "types": "./dist/typescript/lib/components/FlashList/index.d.ts",
@@ -54,11 +59,6 @@
       "source": "./lib/components/Form/index.ts",
       "types": "./dist/typescript/lib/components/Form/index.d.ts",
       "default": "./dist/module/components/Form/index.js"
-    },
-    "./Icon": {
-      "source": "./lib/components/Icon/index.ts",
-      "types": "./dist/typescript/lib/components/Icon/index.d.ts",
-      "default": "./dist/module/components/Icon/index.js"
     },
     "./Input": {
       "source": "./lib/components/Input/index.ts",
@@ -240,6 +240,7 @@
     "@tanstack/react-query": "^5.96.2",
     "@types/lodash": "^4.17.0",
     "@types/react": "^19.2.0",
+    "@react-native-vector-icons/material-icons": "^12.3.0",
     "axios": "^1.14.0",
     "commitlint": "^20.5.0",
     "del-cli": "^7.0.0",
@@ -249,7 +250,6 @@
     "eslint-plugin-prettier": "^5.5.5",
     "jest": "^30.3.0",
     "lefthook": "^2.1.4",
-    "lucide-react-native": "^1.7.0",
     "nativewind": "5.0.0-preview.3",
     "nitrogen": "^0.35.3",
     "postcss": "^8.5.0",
@@ -261,6 +261,7 @@
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": "^4.3.0",
     "react-native-safe-area-context": "^5.7.0",
+    "react-native-sfsymbols": "^1.2.2",
     "react-native-screens": "^4.24.0",
     "react-native-svg": "^15.15.4",
     "release-it": "^19.2.4",
@@ -271,8 +272,8 @@
   "peerDependencies": {
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
+    "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@shopify/flash-list": ">=2.0.0",
-    "lucide-react-native": ">=0.400.0",
     "nativewind": ">=5.0.0-preview.1",
     "react": "*",
     "react-native": "*",
@@ -280,6 +281,7 @@
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": ">=3.3.0",
     "react-native-safe-area-context": ">=4.0.0",
+    "react-native-sfsymbols": ">=1.0.0",
     "react-native-screens": ">=4.20.0",
     "react-native-svg": ">=13.0.0"
   },

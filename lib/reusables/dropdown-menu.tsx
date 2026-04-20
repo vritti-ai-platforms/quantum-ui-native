@@ -1,9 +1,9 @@
-import { Icon } from './icon';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { NativeOnlyAnimatedView } from './native-only-animated-view';
 import { TextClassContext } from './text';
 import { cn } from '../utils/index';
+import { COMMON_ICONS } from '../components/DynamicIcon';
 import * as DropdownMenuPrimitive from '@rn-primitives/dropdown-menu';
-import { Check, ChevronDown, ChevronRight, ChevronUp } from 'lucide-react-native';
 import * as React from 'react';
 import {
   Platform,
@@ -42,7 +42,12 @@ function DropdownMenuSubTrigger({
     inset?: boolean;
   }) {
   const { open } = DropdownMenuPrimitive.useSubContext();
-  const icon = Platform.OS === 'web' ? ChevronRight : open ? ChevronUp : ChevronDown;
+  const icon =
+    Platform.OS === 'web'
+      ? COMMON_ICONS.chevronRight
+      : open
+        ? COMMON_ICONS.chevronUp
+        : COMMON_ICONS.chevronDown;
   return (
     <TextClassContext.Provider
       value={cn(
@@ -61,7 +66,7 @@ function DropdownMenuSubTrigger({
         )}
         {...props}>
         <>{children}</>
-        <Icon as={icon} className={cn('text-foreground ml-auto size-4 shrink-0', iconClassName)} />
+        <DynamicIcon icon={icon} className={cn('text-foreground ml-auto size-4 shrink-0', iconClassName)} />
       </DropdownMenuPrimitive.SubTrigger>
     </TextClassContext.Provider>
   );
@@ -199,8 +204,8 @@ function DropdownMenuCheckboxItem({
         {...props}>
         <View className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
           <DropdownMenuPrimitive.ItemIndicator>
-            <Icon
-              as={Check}
+            <DynamicIcon
+              icon={COMMON_ICONS.check}
               className={cn(
                 'text-foreground size-4',
                 Platform.select({ web: 'pointer-events-none' })

@@ -1,4 +1,4 @@
-import { Icon } from './icon';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { TextClassContext } from './text';
 import { toggleVariants } from './toggle';
 import { cn } from '../utils/index';
@@ -94,9 +94,9 @@ function ToggleGroupItem({
   );
 }
 
-function ToggleGroupIcon({ className, ...props }: React.ComponentProps<typeof Icon>) {
+function ToggleGroupIcon({ className, ...props }: React.ComponentProps<typeof DynamicIcon>) {
   const textClass = React.useContext(TextClassContext);
-  return <Icon className={cn('size-4 shrink-0', textClass, className)} {...props} />;
+  return <DynamicIcon className={cn('size-4 shrink-0', textClass, className)} {...props} />;
 }
 
 export { ToggleGroup, ToggleGroupIcon, ToggleGroupItem };

@@ -1,7 +1,7 @@
-import { Icon } from './icon';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { Text, TextClassContext } from './text';
 import { cn } from '../utils/index';
-import type { LucideIcon } from 'lucide-react-native';
+import type { PlatformIconDescriptor } from '../components/DynamicIcon';
 import * as React from 'react';
 import { View, type ViewProps } from 'react-native';
 
@@ -14,7 +14,7 @@ function Alert({
   ...props
 }: ViewProps &
   React.RefAttributes<View> & {
-    icon: LucideIcon;
+    icon: PlatformIconDescriptor;
     variant?: 'default' | 'destructive';
     iconClassName?: string;
   }) {
@@ -33,8 +33,8 @@ function Alert({
         )}
         {...props}>
         <View className="absolute left-3.5 top-3">
-          <Icon
-            as={icon}
+          <DynamicIcon
+            icon={icon}
             className={cn('size-4', variant === 'destructive' && 'text-destructive', iconClassName)}
           />
         </View>

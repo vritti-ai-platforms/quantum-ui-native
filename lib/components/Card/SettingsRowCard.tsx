@@ -1,14 +1,14 @@
 import { View } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import { ChevronRight } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import type { PlatformIconDescriptor } from '../DynamicIcon';
+import { COMMON_ICONS } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Skeleton } from '../../reusables/skeleton';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
 import { PressableCard } from './PressableCard';
 
 export interface SettingsRowCardProps {
-  icon?: LucideIcon;
+  icon?: PlatformIconDescriptor;
   label: string;
   description?: string;
   onPress?: () => void;
@@ -56,7 +56,7 @@ function SettingsRowCard({
     >
       {icon && (
         <View className="w-8 h-8 rounded-lg bg-muted items-center justify-center">
-          <Icon as={icon} size={18} className="text-muted-foreground" />
+          <DynamicIcon icon={icon} size={18} className="text-muted-foreground" />
         </View>
       )}
       <View className="flex-1 gap-0.5">
@@ -65,7 +65,7 @@ function SettingsRowCard({
           <Text className="text-xs text-muted-foreground">{description}</Text>
         )}
       </View>
-      <Icon as={ChevronRight} size={18} className="text-muted-foreground" />
+      <DynamicIcon icon={COMMON_ICONS.chevronRight} size={18} className="text-muted-foreground" />
     </PressableCard>
   );
 }

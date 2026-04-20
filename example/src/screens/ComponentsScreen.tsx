@@ -9,19 +9,22 @@ import {
   AvatarFallback,
 } from '@vritti/quantum-ui-native/Avatar';
 import { Badge } from '@vritti/quantum-ui-native/Badge';
-import { Icon } from '@vritti/quantum-ui-native/Icon';
+import { DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
+import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
+import { COMMON_ICONS } from '@vritti/quantum-ui-native/DynamicIcon';
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
-import {
-  Heart,
-  Star,
-  Check,
-  Bell,
-  ArrowRight,
-  Settings,
-  Moon,
-  Sun,
-} from 'lucide-react-native';
 import { Section } from '../components/Section';
+
+const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
+  arrowForward: COMMON_ICONS.arrowForward,
+  bell: { sfSymbol: 'bell', materialIcon: 'notifications' },
+  check: COMMON_ICONS.check,
+  favorite: { sfSymbol: 'heart', materialIcon: 'favorite' },
+  moon: { sfSymbol: 'moon.fill', materialIcon: 'dark-mode' },
+  settings: { sfSymbol: 'gearshape', materialIcon: 'settings' },
+  star: { sfSymbol: 'star.fill', materialIcon: 'star' },
+  sun: { sfSymbol: 'sun.max.fill', materialIcon: 'light-mode' },
+};
 
 export default function ComponentsScreen() {
   const { isDark, toggleColorScheme } = useTheme();
@@ -37,8 +40,8 @@ export default function ComponentsScreen() {
           Elements
         </Text>
         <Button variant="outline" size="icon" onPress={toggleColorScheme}>
-          <Icon
-            as={isDark ? Sun : Moon}
+          <DynamicIcon
+            icon={isDark ? SCREEN_ICONS.sun : SCREEN_ICONS.moon}
             className="text-foreground"
             size={18}
           />
@@ -93,7 +96,7 @@ export default function ComponentsScreen() {
             <Text>Large</Text>
           </Button>
           <Button size="icon">
-            <Icon as={Heart} className="text-primary-foreground" size={16} />
+            <DynamicIcon icon={SCREEN_ICONS.favorite} className="text-primary-foreground" size={16} />
           </Button>
         </View>
         <Button isLoading loadingText="Saving...">
@@ -107,12 +110,12 @@ export default function ComponentsScreen() {
       {/* Icons */}
       <Section title="Icons">
         <View className="flex-row gap-4 items-center">
-          <Icon as={Heart} className="text-destructive" size={20} />
-          <Icon as={Star} className="text-warning" size={20} />
-          <Icon as={Check} className="text-success" size={20} />
-          <Icon as={Bell} className="text-info" size={20} />
-          <Icon as={ArrowRight} className="text-primary" size={20} />
-          <Icon as={Settings} className="text-muted-foreground" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.favorite} className="text-destructive" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.star} className="text-warning" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.check} className="text-success" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.bell} className="text-info" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.arrowForward} className="text-primary" size={20} />
+          <DynamicIcon icon={SCREEN_ICONS.settings} className="text-muted-foreground" size={20} />
         </View>
       </Section>
 

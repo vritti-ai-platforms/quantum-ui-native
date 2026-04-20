@@ -5,7 +5,6 @@ import {
   BottomNavigation,
   type RouteConfig,
 } from '@vritti/quantum-ui-native/BottomNavigation';
-import { Layers, LayoutGrid, FileText, Activity } from 'lucide-react-native';
 
 import ComponentsScreen from './screens/ComponentsScreen';
 import CardsScreen from './screens/CardsScreen';
@@ -16,22 +15,22 @@ const routes: RouteConfig[] = [
   {
     name: 'Elements',
     component: ComponentsScreen,
-    icon: { sfSymbol: 'square.stack.3d.up', component: Layers },
+    icon: { sfSymbol: 'square.stack.3d.up', materialSymbol: 'layers' },
   },
   {
     name: 'Cards',
     component: CardsScreen,
-    icon: { sfSymbol: 'rectangle.grid.2x2', component: LayoutGrid },
+    icon: { sfSymbol: 'rectangle.grid.2x2', materialSymbol: 'grid-view' },
   },
   {
     name: 'Forms',
     component: FormsScreen,
-    icon: { sfSymbol: 'doc.text', component: FileText },
+    icon: { sfSymbol: 'doc.text', materialSymbol: 'description' },
   },
   {
     name: 'Feedback',
     component: FeedbackScreen,
-    icon: { sfSymbol: 'waveform.path.ecg', component: Activity },
+    icon: { sfSymbol: 'waveform.path.ecg', materialSymbol: 'monitor-heart' },
   },
 ];
 

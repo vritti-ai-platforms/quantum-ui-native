@@ -1,13 +1,13 @@
 import { Pressable, View } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import type { PlatformIconDescriptor } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Skeleton } from '../../reusables/skeleton';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
 import { PressableCard } from './PressableCard';
 
 export interface ProfileCardAction {
-  icon: LucideIcon;
+  icon: PlatformIconDescriptor;
   onPress: () => void;
 }
 
@@ -89,8 +89,8 @@ function ProfileCard({
               onPress={action.onPress}
               className="w-9 h-9 rounded-[10px] bg-muted items-center justify-center active:bg-accent"
             >
-              <Icon
-                as={action.icon}
+              <DynamicIcon
+                icon={action.icon}
                 size={18}
                 className="text-muted-foreground"
               />

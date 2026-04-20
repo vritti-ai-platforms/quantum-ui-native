@@ -84,6 +84,10 @@ module.exports = (env) => {
           root,
           'lib/components/Checkbox/index.ts'
         ),
+        [`${pak.name}/DynamicIcon`]: path.resolve(
+          root,
+          'lib/components/DynamicIcon/index.ts'
+        ),
         [`${pak.name}/FlashList`]: path.resolve(
           root,
           'lib/components/FlashList/index.ts'
@@ -91,10 +95,6 @@ module.exports = (env) => {
         [`${pak.name}/Form`]: path.resolve(
           root,
           'lib/components/Form/index.ts'
-        ),
-        [`${pak.name}/Icon`]: path.resolve(
-          root,
-          'lib/components/Icon/index.ts'
         ),
         [`${pak.name}/Input`]: path.resolve(
           root,
@@ -173,26 +173,8 @@ module.exports = (env) => {
 
     module: {
       rules: [
-        // lucide-react-native: skip hermes-parser (it rejects `const Infinity` shadowing global)
         {
           test: /\.[cm]?[jt]sx?$/,
-          include: [/node_modules[\\/]+lucide-react-native/],
-          type: 'javascript/auto',
-          use: {
-            loader: 'builtin:swc-loader',
-            options: {
-              jsc: {
-                parser: { syntax: 'ecmascript', jsx: true },
-                transform: { react: { runtime: 'automatic' } },
-              },
-            },
-          },
-        },
-
-        // Everything else: babel-swc-loader (RN 0.81+ compatible)
-        {
-          test: /\.[cm]?[jt]sx?$/,
-          exclude: [/node_modules[\\/]+lucide-react-native/],
           type: 'javascript/auto',
           use: {
             loader: '@callstack/repack/babel-swc-loader',

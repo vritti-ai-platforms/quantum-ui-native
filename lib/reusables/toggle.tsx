@@ -1,4 +1,4 @@
-import { Icon } from './icon';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { TextClassContext } from './text';
 import { cn } from '../utils/index';
 import * as TogglePrimitive from '@rn-primitives/toggle';
@@ -67,9 +67,9 @@ function Toggle({
   );
 }
 
-function ToggleIcon({ className, ...props }: React.ComponentProps<typeof Icon>) {
+function ToggleIcon({ className, ...props }: React.ComponentProps<typeof DynamicIcon>) {
   const textClass = React.useContext(TextClassContext);
-  return <Icon className={cn('size-4 shrink-0', textClass, className)} {...props} />;
+  return <DynamicIcon className={cn('size-4 shrink-0', textClass, className)} {...props} />;
 }
 
 export { Toggle, ToggleIcon, toggleVariants };

@@ -1,6 +1,6 @@
 import { View } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import type { PlatformIconDescriptor } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Skeleton } from '../../reusables/skeleton';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
@@ -8,7 +8,7 @@ import { Button } from '../Button';
 import { PressableCard } from './PressableCard';
 
 export interface ActionCardProps {
-  icon?: LucideIcon;
+  icon?: PlatformIconDescriptor;
   title: string;
   description?: string;
   actionLabel: string;
@@ -63,7 +63,7 @@ function ActionCard({
     >
       {icon && (
         <View className="w-12 h-12 rounded-full bg-primary/5 items-center justify-center">
-          <Icon as={icon} size={22} className="text-primary" />
+          <DynamicIcon icon={icon} size={22} className="text-primary" />
         </View>
       )}
       <View className="gap-1.5 px-6 w-full">

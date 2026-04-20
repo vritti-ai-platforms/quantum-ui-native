@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
-import { X } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import { COMMON_ICONS } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
 
@@ -22,7 +22,7 @@ function Chip({ label, onRemove, className }: ChipProps) {
       <Text className="text-[13px] font-medium text-foreground">{label}</Text>
       {onRemove && (
         <Pressable onPress={onRemove} hitSlop={6}>
-          <Icon as={X} size={14} className="text-muted-foreground" />
+          <DynamicIcon icon={COMMON_ICONS.close} size={14} className="text-muted-foreground" />
         </Pressable>
       )}
     </View>

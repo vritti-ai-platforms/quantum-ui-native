@@ -1,8 +1,8 @@
-import { Icon } from './icon';
+import { DynamicIcon } from '../components/DynamicIcon';
 import { TextClassContext } from './text';
 import { cn } from '../utils/index';
+import { COMMON_ICONS } from '../components/DynamicIcon';
 import * as AccordionPrimitive from '@rn-primitives/accordion';
-import { ChevronDown } from 'lucide-react-native';
 import { Platform, Pressable, View } from 'react-native';
 import Animated, {
   FadeOutUp,
@@ -94,8 +94,8 @@ function AccordionTrigger({
             )}>
             <>{children}</>
             <Animated.View style={chevronStyle}>
-              <Icon
-                as={ChevronDown}
+              <DynamicIcon
+                icon={COMMON_ICONS.chevronDown}
                 size={16}
                 className={cn(
                   'text-muted-foreground shrink-0',

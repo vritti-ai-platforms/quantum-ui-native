@@ -17,18 +17,20 @@ import {
   ListItemCard,
   ActionCard,
 } from '@vritti/quantum-ui-native/Card';
-import { Icon } from '@vritti/quantum-ui-native/Icon';
+import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
+import { COMMON_ICONS } from '@vritti/quantum-ui-native/DynamicIcon';
 import { FlashList } from '@vritti/quantum-ui-native/FlashList';
-import {
-  AlertCircle,
-  Bell,
-  Mail,
-  Phone,
-  Settings,
-  Upload,
-  User,
-} from 'lucide-react-native';
 import { Section } from '../components/Section';
+
+const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
+  account: { sfSymbol: 'person.crop.circle', materialIcon: 'person' },
+  alert: COMMON_ICONS.alertError,
+  bell: { sfSymbol: 'bell', materialIcon: 'notifications' },
+  mail: { sfSymbol: 'envelope', materialIcon: 'mail' },
+  phone: { sfSymbol: 'phone', materialIcon: 'phone' },
+  settings: { sfSymbol: 'gearshape', materialIcon: 'settings' },
+  upload: { sfSymbol: 'square.and.arrow.up', materialIcon: 'upload' },
+};
 
 export default function CardsScreen() {
   return (
@@ -62,7 +64,7 @@ export default function CardsScreen() {
       <Section title="Banner Card">
         <BannerCard message="Your trial expires in 3 days" onClose={() => {}} />
         <BannerCard
-          icon={AlertCircle}
+          icon={SCREEN_ICONS.alert}
           message="Action required: verify your email"
           onPress={() => {}}
         />
@@ -91,18 +93,18 @@ export default function CardsScreen() {
       {/* SettingsRowCard */}
       <Section title="Settings Row Card">
         <SettingsRowCard
-          icon={Bell}
+          icon={SCREEN_ICONS.bell}
           label="Notifications"
           description="Manage alerts"
           onPress={() => {}}
         />
         <SettingsRowCard
-          icon={Settings}
+          icon={SCREEN_ICONS.settings}
           label="Preferences"
           onPress={() => {}}
         />
         <SettingsRowCard
-          icon={User}
+          icon={SCREEN_ICONS.account}
           label="Account"
           description="Profile & security"
           onPress={() => {}}
@@ -140,8 +142,8 @@ export default function CardsScreen() {
           name="Jane Doe"
           role="Product Designer"
           actions={[
-            { icon: Mail, onPress: () => {} },
-            { icon: Phone, onPress: () => {} },
+            { icon: SCREEN_ICONS.mail, onPress: () => {} },
+            { icon: SCREEN_ICONS.phone, onPress: () => {} },
           ]}
         />
         <ProfileCard isLoading initials="" name="" />
@@ -226,7 +228,7 @@ export default function CardsScreen() {
       {/* ActionCard */}
       <Section title="Action Card">
         <ActionCard
-          icon={Upload}
+          icon={SCREEN_ICONS.upload}
           title="Upload Documents"
           description="Drag and drop or click to upload"
           actionLabel="Choose Files"

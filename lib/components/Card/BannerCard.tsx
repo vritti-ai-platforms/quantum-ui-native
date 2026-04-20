@@ -1,14 +1,14 @@
 import { Pressable, View } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import { Info, X } from 'lucide-react-native';
-import { Icon } from '../../reusables/icon';
+import type { PlatformIconDescriptor } from '../DynamicIcon';
+import { COMMON_ICONS } from '../DynamicIcon';
+import { DynamicIcon } from '../DynamicIcon';
 import { Skeleton } from '../../reusables/skeleton';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
 import { PressableCard } from './PressableCard';
 
 export interface BannerCardProps {
-  icon?: LucideIcon;
+  icon?: PlatformIconDescriptor;
   iconClassName?: string;
   message: string;
   onClose?: () => void;
@@ -20,7 +20,7 @@ export interface BannerCardProps {
 
 // Compact horizontal banner with icon, message, and optional close button
 function BannerCard({
-  icon = Info,
+  icon = COMMON_ICONS.info,
   iconClassName,
   message,
   onClose,
@@ -53,8 +53,8 @@ function BannerCard({
         className
       )}
     >
-      <Icon
-        as={icon}
+      <DynamicIcon
+        icon={icon}
         size={16}
         className={cn('text-info', iconClassName)}
       />
@@ -63,7 +63,7 @@ function BannerCard({
       </Text>
       {onClose && (
         <Pressable onPress={onClose} hitSlop={8}>
-          <Icon as={X} size={14} className="text-muted-foreground" />
+          <DynamicIcon icon={COMMON_ICONS.close} size={14} className="text-muted-foreground" />
         </Pressable>
       )}
     </PressableCard>
