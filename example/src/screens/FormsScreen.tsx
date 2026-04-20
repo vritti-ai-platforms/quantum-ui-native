@@ -4,7 +4,6 @@ import { Text } from '@vritti/quantum-ui-native/Typography';
 import { Checkbox } from '@vritti/quantum-ui-native/Checkbox';
 import { Input } from '@vritti/quantum-ui-native/Input';
 import { TextField } from '@vritti/quantum-ui-native/TextField';
-import { TextArea } from '@vritti/quantum-ui-native/TextArea';
 import {
   RadioGroup,
   RadioGroupItem,
@@ -45,17 +44,19 @@ export default function FormsScreen() {
         />
       </Section>
 
-      {/* TextArea */}
-      <Section title="Text Area">
-        <TextArea
+      {/* Multiline TextField */}
+      <Section title="Multiline Text Field">
+        <TextField
           label="Bio"
           placeholder="Tell us about yourself..."
           hint="Max 500 characters"
+          multiline
         />
-        <TextArea
+        <TextField
           label="Notes"
           placeholder="Add notes..."
           error="Notes cannot be empty"
+          multiline
         />
       </Section>
 

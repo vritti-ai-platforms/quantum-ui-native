@@ -16,7 +16,6 @@ export * from './Skeleton';
 export * from './SplashScreen';
 export * from './Spinner';
 export * from './Switch';
-export * from './TextArea';
 export * from './TextField';
 export * from './Typography';
 export * from './BottomNavigation';

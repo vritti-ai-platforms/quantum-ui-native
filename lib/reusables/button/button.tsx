@@ -1,5 +1,5 @@
-import { TextClassContext } from './text';
-import { cn } from '../utils/index';
+import { TextClassContext } from '../text';
+import { cn } from '../../utils/index';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
 
@@ -88,9 +88,11 @@ const buttonTextVariants = cva(
   }
 );
 
-type ButtonProps = React.ComponentProps<typeof Pressable> &
+type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   React.RefAttributes<typeof Pressable> &
-  VariantProps<typeof buttonVariants>;
+  VariantProps<typeof buttonVariants> & {
+    children?: React.ReactNode;
+  };
 
 function Button({ className, variant, size, ...props }: ButtonProps) {
   return (

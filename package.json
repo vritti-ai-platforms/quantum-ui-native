@@ -110,11 +110,6 @@
       "types": "./dist/typescript/lib/components/Switch/index.d.ts",
       "default": "./dist/module/components/Switch/index.js"
     },
-    "./TextArea": {
-      "source": "./lib/components/TextArea/index.ts",
-      "types": "./dist/typescript/lib/components/TextArea/index.d.ts",
-      "default": "./dist/module/components/TextArea/index.js"
-    },
     "./TextField": {
       "source": "./lib/components/TextField/index.ts",
       "types": "./dist/typescript/lib/components/TextField/index.d.ts",

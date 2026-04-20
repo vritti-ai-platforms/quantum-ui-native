@@ -14,7 +14,7 @@ export const lightColors = {
   '--popover-foreground': '222 47% 11%',
 
   '--primary': '221 83% 53%',
-  '--primary-foreground': '0 0% 100%',
+  '--primary-foreground': '100% 0% 0%',
 
   '--secondary': '214 95% 93%',
   '--secondary-foreground': '221 83% 53%',

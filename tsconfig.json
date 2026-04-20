@@ -22,7 +22,6 @@
       "@vritti/quantum-ui-native/Skeleton": ["./lib/components/Skeleton/index"],
       "@vritti/quantum-ui-native/Spinner": ["./lib/components/Spinner/index"],
       "@vritti/quantum-ui-native/Switch": ["./lib/components/Switch/index"],
-      "@vritti/quantum-ui-native/TextArea": ["./lib/components/TextArea/index"],
       "@vritti/quantum-ui-native/TextField": ["./lib/components/TextField/index"],
       "@vritti/quantum-ui-native/Typography": ["./lib/components/Typography/index"],
       "@vritti/quantum-ui-native/theme": ["./lib/theme/index"],

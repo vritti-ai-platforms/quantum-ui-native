@@ -132,10 +132,6 @@ module.exports = (env) => {
           root,
           'lib/components/Switch/index.ts'
         ),
-        [`${pak.name}/TextArea`]: path.resolve(
-          root,
-          'lib/components/TextArea/index.ts'
-        ),
         [`${pak.name}/TextField`]: path.resolve(
           root,
           'lib/components/TextField/index.ts'
