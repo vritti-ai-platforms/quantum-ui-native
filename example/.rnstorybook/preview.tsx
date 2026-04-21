@@ -1,17 +1,14 @@
 import type { Decorator, Preview } from '@storybook/react-native';
 import { View } from 'react-native';
-import { ThemeProvider } from '../../lib/theme';
 
-const withThemeProvider: Decorator = (Story) => (
-  <ThemeProvider defaultScheme="light">
-    <View className="flex-1 bg-background p-4 justify-center">
-      <Story />
-    </View>
-  </ThemeProvider>
+const withStoryLayout: Decorator = (Story) => (
+  <View className="flex-1 bg-background p-4 justify-center">
+    <Story />
+  </View>
 );
 
 const preview: Preview = {
-  decorators: [withThemeProvider],
+  decorators: [withStoryLayout],
   parameters: {
     actions: {
       argTypesRegex: '^on[A-Z].*',

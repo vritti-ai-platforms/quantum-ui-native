@@ -1,5 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer
+} from '@react-navigation/native';
 import { useMemo } from 'react';
 import { Platform, type ColorValue } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -31,6 +35,8 @@ function resolveIcon(route: RouteConfig) {
  *
  * The navigation theme is the **single source of truth** for all native view colors.
  * JS props like tabBarStyle/sceneStyle are ignored by the native implementation.
+ * This component owns an isolated navigation tree, so it can render inside Storybook
+ * or other host navigators without joining their navigation state.
  */
 export function BottomNavigation({
   routes,

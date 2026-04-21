@@ -18,5 +18,6 @@ export * from './Spinner';
 export * from './Switch';
 export * from './TextField';
 export * from './Typography';
+export * from './BottomSheet';
 export * from './BottomNavigation';
 export * from './NativeStack';

@@ -2,6 +2,7 @@ import {
   BottomNavigation,
   type RouteConfig,
 } from '@vritti/quantum-ui-native/BottomNavigation';
+import { BottomSheetHost } from '@vritti/quantum-ui-native/BottomSheet';
 import { ThemeProvider } from '@vritti/quantum-ui-native/theme';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -48,6 +49,7 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider defaultScheme="dark">
           <BottomNavigation routes={routes} />
+          <BottomSheetHost />
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

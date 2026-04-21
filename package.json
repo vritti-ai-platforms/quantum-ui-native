@@ -30,6 +30,11 @@
       "types": "./dist/typescript/lib/components/BottomNavigation/index.d.ts",
       "default": "./dist/module/components/BottomNavigation/index.js"
     },
+    "./BottomSheet": {
+      "source": "./lib/components/BottomSheet/index.ts",
+      "types": "./dist/typescript/lib/components/BottomSheet/index.d.ts",
+      "default": "./dist/module/components/BottomSheet/index.js"
+    },
     "./Button": {
       "source": "./lib/components/Button/index.ts",
       "types": "./dist/typescript/lib/components/Button/index.d.ts",
@@ -230,6 +235,7 @@
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
+    "@gorhom/bottom-sheet": "^5.2.6",
     "@jest/globals": "^30.0.0",
     "@react-native/babel-preset": "0.83.0",
     "@react-native/eslint-config": "0.83.0",
@@ -265,6 +271,7 @@
     "react-hook-form": "^7.72.1",
     "react-native": "0.83.0",
     "react-native-builder-bob": "^0.41.0",
+    "react-native-gesture-handler": "^2.29.1",
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": "^4.3.0",
     "react-native-safe-area-context": "^5.7.0",
@@ -278,6 +285,7 @@
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
+    "@gorhom/bottom-sheet": ">=5.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
     "@react-native-vector-icons/material-icons": ">=12.0.0",
@@ -287,6 +295,7 @@
     "react": "*",
     "react-native": "*",
     "react-native-css": "*",
+    "react-native-gesture-handler": ">=2.20.0",
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": ">=3.3.0",
     "react-native-safe-area-context": ">=4.0.0",

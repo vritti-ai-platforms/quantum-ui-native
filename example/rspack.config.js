@@ -122,6 +122,10 @@ module.exports = (env) => {
           root,
           'lib/components/Badge/index.ts'
         ),
+        [`${pak.name}/BottomSheet`]: path.resolve(
+          root,
+          'lib/components/BottomSheet/index.ts'
+        ),
         [`${pak.name}/BottomNavigation`]: path.resolve(
           root,
           'lib/components/BottomNavigation/index.ts'

@@ -3,6 +3,7 @@ import { Home, Search, Settings, User } from 'lucide-react-native';
 import { View } from 'react-native';
 import { Text } from '../Typography';
 import { BottomNavigation } from './BottomNavigation';
+import type { RouteConfig } from './types';
 
 // Placeholder screen components — defined outside story for referential stability
 function HomeScreen() {
@@ -41,7 +42,7 @@ function SettingsScreen() {
   );
 }
 
-const demoRoutes = [
+const demoRoutes: RouteConfig[] = [
   {
     name: 'Home',
     component: HomeScreen,
@@ -85,6 +86,10 @@ const meta = {
   title: 'Components/BottomNavigation',
   component: BottomNavigation,
   tags: ['autodocs'],
+  args: {
+    routes: demoRoutes,
+    initialRoute: 'Home',
+  },
 } satisfies Meta<typeof BottomNavigation>;
 
 export default meta;
@@ -92,17 +97,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Demo: Story = {
-  render: () => (
+  render: (args) => (
     <View style={{ height: 500, width: '100%' }}>
-      <BottomNavigation routes={demoRoutes} initialRoute="Home" />
+      <BottomNavigation {...args} />
     </View>
   ),
 };
 
 export const ThreeTabs: Story = {
-  render: () => (
+  args: {
+    routes: demoRoutes.slice(0, 3),
+    initialRoute: 'Search',
+  },
+  render: (args) => (
     <View style={{ height: 500, width: '100%' }}>
-      <BottomNavigation routes={demoRoutes.slice(0, 3)} initialRoute="Search" />
+      <BottomNavigation {...args} />
     </View>
   ),
 };
