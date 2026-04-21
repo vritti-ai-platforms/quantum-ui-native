@@ -3,8 +3,9 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/
 import { useMemo } from 'react';
 import { Platform, type ColorValue } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { NAV_THEME } from '../../theme/colors';
+import { getTheme } from '../../theme/colors';
 import type { BottomNavigationProps, RouteConfig } from './types';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 const isIOS = Platform.OS === 'ios';
@@ -39,7 +40,7 @@ export function BottomNavigation({
   standalone = true,
 }: BottomNavigationProps) {
   const { isDark } = useTheme();
-  const colors = NAV_THEME[isDark ? 'dark' : 'light'];
+  const colors = useMemo(() => getTheme(isDark ? 'dark' : 'light'), [isDark]);
 
   // Android native tab bar doesn't support React element icons — use JS implementation
   // when routes don't have materialSymbol native icons
@@ -63,7 +64,7 @@ export function BottomNavigation({
       implementation={needsCustomImpl ? 'custom' : undefined}
       screenOptions={{
         headerShown: false,
-        tabBarActiveBackgroundColor:'transparent',
+        tabBarActiveBackgroundColor: 'transparent',
         tabBarStyle: { backgroundColor: 'transparent' },
         sceneStyle: { backgroundColor: navTheme.colors.background },
         ...screenOptions,
@@ -81,7 +82,7 @@ export function BottomNavigation({
               ...route.options,
             }}
           >
-            {() => route.render!()}
+            {() => <SafeAreaView style={{ flex: 1 }}>{route.render!()}</SafeAreaView>}
           </Tab.Screen>
         ) : (
           <Tab.Screen

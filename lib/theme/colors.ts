@@ -3,139 +3,141 @@
 // Used by ThemeProvider via NativeWind's VariableContextProvider to inject CSS variables at runtime.
 
 export const lightColors = {
-  // ── Core palette ──────────────────────────────────────────────────────
   '--background': '0 0% 100%',
-  '--foreground': '222 47% 11%',
-
+  '--foreground': '214.09 68.81% 12.55%',
   '--card': '0 0% 100%',
-  '--card-foreground': '222 47% 11%',
-
+  '--card-foreground': '214.09 68.81% 12.55%',
   '--popover': '0 0% 100%',
-  '--popover-foreground': '222 47% 11%',
-
-  '--primary': '221 83% 53%',
-  '--primary-foreground': '100% 0% 0%',
-
-  '--secondary': '214 95% 93%',
-  '--secondary-foreground': '221 83% 53%',
-
-  '--muted': '214 32% 96%',
-  '--muted-foreground': '215 16% 47%',
-
-  '--accent': '214 60% 92%',
-  '--accent-foreground': '221 83% 53%',
-
-  '--destructive': '0 72% 51%',
+  '--popover-foreground': '214.09 68.81% 12.55%',
+  '--primary': '212.56 78.04% 50%',
+  '--primary-foreground': '0 0% 100%',
+  '--secondary': '211.93 100% 97.06%',
+  '--secondary-foreground': '212.56 78.04% 50%',
+  '--muted': '210 66.2% 97.64%',
+  '--muted-foreground': '211.76 22.1% 45.3%',
+  '--accent': '212.73 78.65% 94.52%',
+  '--accent-foreground': '212.56 78.04% 50%',
+  '--destructive': '359.99 72.24% 50.58%',
   '--destructive-foreground': '0 0% 100%',
-
-  '--warning': '45 93% 47%',
-  '--warning-foreground': '222 47% 11%',
-
-  '--success': '142 71% 45%',
+  '--warning': '44.06 82.77% 46.59%',
+  '--warning-foreground': '214.09 68.81% 12.55%',
+  '--success': '124.51 38.16% 47.2%',
   '--success-foreground': '0 0% 100%',
-
-  '--info': '199 89% 48%',
+  '--info': '183.46 100% 35.09%',
   '--info-foreground': '0 0% 100%',
-
-  '--border': '214 32% 91%',
-  '--input': '214 32% 91%',
-  '--ring': '221 83% 53%',
-
-  // ── Chart colors ──────────────────────────────────────────────────────
-  '--chart-1': '221 83% 53%',   // blue (primary)
-  '--chart-2': '210 68% 60%',   // lighter blue
-  '--chart-3': '162 47% 55%',   // teal-green
-  '--chart-4': '43 90% 60%',    // amber
-  '--chart-5': '22 78% 57%',    // orange
-
-  // ── Sidebar ───────────────────────────────────────────────────────────
-  '--sidebar': '210 40% 98%',
-  '--sidebar-foreground': '222 47% 11%',
-  '--sidebar-primary': '222 47% 11%',
+  '--border': '210 75.13% 93.73%',
+  '--input': '210 75.13% 93.73%',
+  '--ring': '212.56 78.04% 50%',
+  '--chart-1': '212.56 78.04% 50%',
+  '--chart-2': '214.69 83.02% 65.29%',
+  '--chart-3': '158.12 64.37% 51.56%',
+  '--chart-4': '43.25 96.42% 56.29%',
+  '--chart-5': '0 84.21% 60.19%',
+  '--sidebar': '210.06 78.57% 98.25%',
+  '--sidebar-foreground': '214.09 68.81% 12.55%',
+  '--sidebar-primary': '214.09 68.81% 12.55%',
   '--sidebar-primary-foreground': '0 0% 100%',
-  '--sidebar-accent': '214 60% 92%',
-  '--sidebar-accent-foreground': '222 47% 11%',
-  '--sidebar-border': '214 32% 91%',
-  '--sidebar-ring': '221 83% 53%',
+  '--sidebar-accent': '209.87 98.75% 91.5%',
+  '--sidebar-accent-foreground': '214.09 68.81% 12.55%',
+  '--sidebar-border': '210 75.13% 93.73%',
+  '--sidebar-ring': '212.56 78.04% 50%',
 } as const;
 
 export const darkColors = {
   // ── Core palette ──────────────────────────────────────────────────────
-  '--background': '224 71% 4%',
-  '--foreground': '213 31% 91%',
+  '--background': '222.43 26.93% 3.12%',
+  '--foreground': '210 39.97% 98.05%',
 
-  '--card': '224 71% 8%',
-  '--card-foreground': '213 31% 91%',
+  '--card': '220.97 11.22% 9.71%',
+  '--card-foreground': '210 39.97% 98.05%',
 
-  '--popover': '224 71% 4%',
-  '--popover-foreground': '213 31% 91%',
+  '--popover': '222.43 26.93% 3.12%',
+  '--popover-foreground': '210 39.97% 98.05%',
 
-  '--primary': '217 91% 60%',
+  '--primary': '215.85 88.56% 41.62%',
   '--primary-foreground': '0 0% 100%',
 
-  '--secondary': '222 47% 11%',
-  '--secondary-foreground': '213 31% 91%',
+  '--secondary': '217.06 9.46% 16.41%',
+  '--secondary-foreground': '210 39.97% 98.05%',
 
-  '--muted': '223 47% 11%',
-  '--muted-foreground': '215 20% 65%',
+  '--muted': '220.97 11.22% 9.71%',
+  '--muted-foreground': '215.04 8.43% 64.13%',
 
-  '--accent': '222 47% 11%',
-  '--accent-foreground': '213 31% 91%',
+  '--accent': '217.06 9.46% 16.41%',
+  '--accent-foreground': '210 39.97% 98.05%',
 
-  '--destructive': '0 63% 31%',
-  '--destructive-foreground': '0 85% 97%',
+  '--destructive': '0 84.21% 60.19%',
+  '--destructive-foreground': '0 0% 100%',
 
-  '--warning': '48 96% 53%',
-  '--warning-foreground': '224 71% 4%',
+  '--warning': '46.74 82.86% 49.24%',
+  '--warning-foreground': '222.43 26.93% 3.12%',
 
-  '--success': '142 76% 36%',
-  '--success-foreground': '224 71% 4%',
+  '--success': '138.03 47.16% 49.36%',
+  '--success-foreground': '222.43 26.93% 3.12%',
 
-  '--info': '199 89% 48%',
-  '--info-foreground': '224 71% 4%',
+  '--info': '183.03 100% 39.48%',
+  '--info-foreground': '222.43 26.93% 3.12%',
 
-  '--border': '216 34% 17%',
-  '--input': '216 34% 17%',
-  '--ring': '217 91% 60%',
+  '--border': '217.06 9.46% 16.41%',
+  '--input': '217.06 9.46% 16.41%',
+  '--ring': '215.85 88.56% 41.62%',
 
   // ── Chart colors ──────────────────────────────────────────────────────
-  '--chart-1': '217 91% 60%',   // blue (primary)
-  '--chart-2': '210 65% 65%',   // lighter blue
-  '--chart-3': '144 55% 54%',   // teal-green
-  '--chart-4': '43 80% 65%',    // amber
-  '--chart-5': '22 75% 57%',    // orange
+  '--chart-1': '215.85 88.56% 41.62%',
+  '--chart-2': '213.12 93.9% 67.84%',
+  '--chart-3': '122.42 39.42% 49.22%',
+  '--chart-4': '45.02 100% 51.32%',
+  '--chart-5': '1.36 77.2% 55.3%',
 
   // ── Sidebar ───────────────────────────────────────────────────────────
-  '--sidebar': '224 71% 4%',
-  '--sidebar-foreground': '213 31% 91%',
-  '--sidebar-primary': '217 91% 60%',
+  '--sidebar': '222.43 26.93% 3.12%',
+  '--sidebar-foreground': '210 39.97% 98.05%',
+  '--sidebar-primary': '215.85 88.56% 41.62%',
   '--sidebar-primary-foreground': '0 0% 100%',
-  '--sidebar-accent': '222 47% 11%',
-  '--sidebar-accent-foreground': '213 31% 91%',
-  '--sidebar-border': '216 34% 17%',
-  '--sidebar-ring': '217 91% 60%',
+  '--sidebar-accent': '217.06 9.46% 16.41%',
+  '--sidebar-accent-foreground': '210 39.97% 98.05%',
+  '--sidebar-border': '217.06 9.46% 16.41%',
+  '--sidebar-ring': '215.85 88.56% 41.62%',
 } as const;
 
-// Navigation-safe theme colors (resolved HSL strings for StatusBar, NavigationBar, etc.)
-export const NAV_THEME = {
-  light: {
-    background: 'hsl(0, 0%, 100%)',
-    foreground: 'hsl(222, 47%, 11%)',
-    primary: 'hsl(221, 83%, 53%)',
-    card: 'hsl(0, 0%, 100%)',
-    border: 'hsl(214, 32%, 91%)',
-    notification: 'hsl(221, 83%, 53%)',
-    muted: 'hsl(214, 32%, 96%)',
-    sidebar: 'hsl(210, 40%, 98%)',
-  },
-  dark: {
-    background: 'hsl(224, 71%, 4%)',
-    foreground: 'hsl(213, 31%, 91%)',
-    primary: 'hsl(217, 91%, 60%)',
-    card: 'hsl(224, 71%, 8%)',
-    border: 'hsl(216, 34%, 17%)',
-    notification: 'hsl(217, 91%, 60%)',
-    muted: 'hsl(223, 47%, 11%)',
-    sidebar: 'hsl(224, 71%, 4%)',
-  },
+type ThemeTokens = Record<keyof typeof lightColors, string>;
+
+type ThemePalette = {
+  background: string;
+  foreground: string;
+  primary: string;
+  primaryForeground: string;
+  card: string;
+  border: string;
+  notification: string;
+  muted: string;
+  sidebar: string;
+};
+
+function toHsl(value: string) {
+  return `hsl(${value})`;
+}
+
+function createThemePalette(tokens: ThemeTokens): ThemePalette {
+  return {
+    background: toHsl(tokens['--background']),
+    foreground: toHsl(tokens['--foreground']),
+    primary: toHsl(tokens['--primary']),
+    primaryForeground: toHsl(tokens['--primary-foreground']),
+    card: toHsl(tokens['--card']),
+    border: toHsl(tokens['--border']),
+    notification: toHsl(tokens['--ring']),
+    muted: toHsl(tokens['--muted']),
+    sidebar: toHsl(tokens['--sidebar']),
+  };
+}
+
+// Resolved theme colors derived from the same token source as NativeWind.
+export const THEME = {
+  light: createThemePalette(lightColors),
+  dark: createThemePalette(darkColors),
 } as const;
+
+export function getTheme(colorScheme: 'light' | 'dark') {
+  return THEME[colorScheme];
+}

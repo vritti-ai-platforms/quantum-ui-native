@@ -1,4 +1,4 @@
-import { NAV_THEME } from '../../theme';
+import { getTheme } from '../../theme';
 import { useTheme } from '../../hooks';
 import { Spinner } from '../Spinner';
 import { Text } from '../Typography';
@@ -22,12 +22,13 @@ export function SplashScreen({
   showSpinner = true,
 }: SplashScreenProps) {
   const { isDark } = useTheme();
+  const colors = getTheme(isDark ? 'dark' : 'light');
 
   return (
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: NAV_THEME[isDark ? 'dark' : 'light'].background,
+        backgroundColor: colors.background,
       }}
     >
       <View className="flex-1 items-center justify-center bg-background px-8">

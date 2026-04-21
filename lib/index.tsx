@@ -23,8 +23,11 @@ export * from './components';
 export {
   darkColors,
   lightColors,
-  NAV_THEME,
+  THEME,
+  getTheme,
   type ThemeContextValue,
+  type ThemePreference,
+  type ThemeStorageAdapter,
   ThemeContext,
   ThemeProvider,
   type ThemeProviderProps,

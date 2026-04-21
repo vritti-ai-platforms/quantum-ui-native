@@ -27,7 +27,7 @@ const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
 };
 
 export default function ComponentsScreen() {
-  const { isDark, toggleColorScheme } = useTheme();
+  const { isDark } = useTheme();
 
   return (
     <ScrollView
@@ -39,7 +39,7 @@ export default function ComponentsScreen() {
         <Text variant="h2" className="text-foreground">
           Elements
         </Text>
-        <Button variant="outline" size="icon" onPress={toggleColorScheme}>
+        <Button variant="outline" size="icon" disabled>
           <DynamicIcon
             icon={isDark ? SCREEN_ICONS.sun : SCREEN_ICONS.moon}
             className="text-foreground"

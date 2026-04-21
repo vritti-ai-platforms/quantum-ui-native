@@ -36,7 +36,7 @@ const routes: RouteConfig[] = [
 
 export default function App() {
   return (
-    <ThemeProvider defaultScheme="dark">
+    <ThemeProvider>
       <BottomNavigation routes={routes} />
     </ThemeProvider>
   );
