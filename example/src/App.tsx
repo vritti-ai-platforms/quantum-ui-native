@@ -1,15 +1,10 @@
 import '../global.css';
-import React from 'react';
+import { BottomNavigation, type RouteConfig } from '@vritti/quantum-ui-native/BottomNavigation';
 import { ThemeProvider } from '@vritti/quantum-ui-native/theme';
-import {
-  BottomNavigation,
-  type RouteConfig,
-} from '@vritti/quantum-ui-native/BottomNavigation';
-
-import ComponentsScreen from './screens/ComponentsScreen';
 import CardsScreen from './screens/CardsScreen';
-import FormsScreen from './screens/FormsScreen';
+import ComponentsScreen from './screens/ComponentsScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
+import FormsScreen from './screens/FormsScreen';
 
 const routes: RouteConfig[] = [
   {
@@ -20,7 +15,7 @@ const routes: RouteConfig[] = [
   {
     name: 'Cards',
     component: CardsScreen,
-    icon: { sfSymbol: 'rectangle.grid.2x2', materialSymbol: 'grid-view' },
+    icon: { sfSymbol: 'rectangle.grid.2x2', materialSymbol: 'grid_view' },
   },
   {
     name: 'Forms',
@@ -30,7 +25,7 @@ const routes: RouteConfig[] = [
   {
     name: 'Feedback',
     component: FeedbackScreen,
-    icon: { sfSymbol: 'waveform.path.ecg', materialSymbol: 'monitor-heart' },
+    icon: { sfSymbol: 'waveform.path.ecg', materialSymbol: 'monitor_heart' },
   },
 ];
 
