@@ -1,6 +1,9 @@
 import '../global.css';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { BottomNavigation, type RouteConfig } from '@vritti/quantum-ui-native/BottomNavigation';
-import { ThemeProvider } from '@vritti/quantum-ui-native/theme';
+import { useTheme } from '@vritti/quantum-ui-native/hooks';
+import { getTheme, ThemeProvider } from '@vritti/quantum-ui-native/theme';
+import { useMemo } from 'react';
 import CardsScreen from './screens/CardsScreen';
 import ComponentsScreen from './screens/ComponentsScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
@@ -29,10 +32,31 @@ const routes: RouteConfig[] = [
   },
 ];
 
+function ExampleNavigation() {
+  const { isDark } = useTheme();
+
+  const navTheme = useMemo(
+    () => ({
+      ...(isDark ? DarkTheme : DefaultTheme),
+      colors: {
+        ...(isDark ? DarkTheme : DefaultTheme).colors,
+        ...getTheme(isDark ? 'dark' : 'light'),
+      },
+    }),
+    [isDark],
+  );
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      <BottomNavigation routes={routes} />
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider>
-      <BottomNavigation routes={routes} />
+      <ExampleNavigation />
     </ThemeProvider>
   );
 }

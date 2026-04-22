@@ -3,11 +3,10 @@ import type { MaterialSymbolProps } from '@react-navigation/native';
 import type React from 'react';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
-/** Platform-aware icon: SF Symbol on iOS, Material Symbol on Android, React component as fallback */
+/** Platform-aware icon: SF Symbol on iOS, Material Symbol on Android */
 export interface TabIcon {
-  sfSymbol?: SFSymbol;
-  materialSymbol?: MaterialSymbolProps['name'];
-  component?: React.ComponentType<{ color: string; size: number }>;
+  sfSymbol: SFSymbol;
+  materialSymbol: MaterialSymbolProps['name'];
 }
 
 interface RouteConfigBase {
@@ -16,24 +15,17 @@ interface RouteConfigBase {
   label?: string;
   badge?: string | number;
   options?: BottomTabNavigationOptions;
+  params?: object;
 }
 
 /** Single route definition */
-export type RouteConfig =
-  | (RouteConfigBase & {
-      component: React.ComponentType<object>;
-      render?: never;
-    })
-  | (RouteConfigBase & {
-      component?: never;
-      render: () => React.ReactNode;
-    });
+export interface RouteConfig extends RouteConfigBase {
+  component: React.ComponentType<any>;
+}
 
 /** Props for `<BottomNavigation>` */
 export interface BottomNavigationProps {
   routes: RouteConfig[];
   initialRoute?: string;
   screenOptions?: BottomTabNavigationOptions;
-  /** When false, skips NavigationContainer wrapper (for embedding in existing navigation tree). Default: true */
-  standalone?: boolean;
 }
