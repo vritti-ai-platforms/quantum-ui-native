@@ -65,7 +65,6 @@ export function BottomNavigation({ routes, initialRoute, screenOptions, standalo
         tabBarActiveBackgroundColor: 'transparent',
         tabBarStyle: { backgroundColor: 'transparent' },
         sceneStyle: { backgroundColor: navTheme.colors.background },
-        lazy: false,
         ...screenOptions,
       }}
     >
