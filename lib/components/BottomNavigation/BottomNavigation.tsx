@@ -12,6 +12,7 @@ function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon
   if (isIOS) {
     return { type: 'sfSymbol', name: route.icon.sfSymbol };
   }
+
   return { type: 'materialSymbol', name: route.icon.materialSymbol };
 }
 

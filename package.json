@@ -80,10 +80,20 @@
       "types": "./dist/typescript/lib/components/Progress/index.d.ts",
       "default": "./dist/module/components/Progress/index.js"
     },
+    "./PushNavigator": {
+      "source": "./lib/components/PushNavigator/index.ts",
+      "types": "./dist/typescript/lib/components/PushNavigator/index.d.ts",
+      "default": "./dist/module/components/PushNavigator/index.js"
+    },
     "./RadioGroup": {
       "source": "./lib/components/RadioGroup/index.ts",
       "types": "./dist/typescript/lib/components/RadioGroup/index.d.ts",
       "default": "./dist/module/components/RadioGroup/index.js"
+    },
+    "./ScreenLayout": {
+      "source": "./lib/components/ScreenLayout/index.ts",
+      "types": "./dist/typescript/lib/components/ScreenLayout/index.d.ts",
+      "default": "./dist/module/components/ScreenLayout/index.js"
     },
     "./Separator": {
       "source": "./lib/components/Separator/index.ts",
@@ -224,18 +234,18 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.0.0",
+    "@react-native-vector-icons/material-icons": "^12.3.0",
     "@react-native/babel-preset": "0.83.0",
     "@react-native/eslint-config": "0.83.0",
     "@react-navigation/bottom-tabs": "8.0.0-alpha.22",
     "@react-navigation/native": "8.0.0-alpha.17",
-    "@react-navigation/native-stack": "^7.14.10",
+    "@react-navigation/native-stack": "8.0.0-alpha.25",
     "@release-it/conventional-changelog": "^10.0.6",
     "@shopify/flash-list": "^2.3.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@tanstack/react-query": "^5.96.2",
     "@types/lodash": "^4.17.0",
     "@types/react": "^19.2.0",
-    "@react-native-vector-icons/material-icons": "^12.3.0",
     "axios": "^1.14.0",
     "commitlint": "^20.5.0",
     "del-cli": "^7.0.0",
@@ -256,8 +266,8 @@
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": "^4.3.0",
     "react-native-safe-area-context": "^5.7.0",
-    "react-native-sfsymbols": "^1.2.2",
     "react-native-screens": "^4.24.0",
+    "react-native-sfsymbols": "^1.2.2",
     "react-native-svg": "^15.15.4",
     "release-it": "^19.2.4",
     "tailwindcss": "^4.2.0",
@@ -265,9 +275,9 @@
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
+    "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
-    "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@shopify/flash-list": ">=2.0.0",
     "nativewind": ">=5.0.0-preview.1",
     "react": "*",
@@ -276,8 +286,8 @@
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": ">=3.3.0",
     "react-native-safe-area-context": ">=4.0.0",
-    "react-native-sfsymbols": ">=1.0.0",
     "react-native-screens": ">=4.20.0",
+    "react-native-sfsymbols": ">=1.0.0",
     "react-native-svg": ">=13.0.0"
   },
   "packageManager": "pnpm@10.11.0",
