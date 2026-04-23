@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
-import { CreditCard, ShieldCheck, Sparkles } from 'lucide-react-native';
+import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { View } from 'react-native';
 import { Button } from '../Button';
 import { Text } from '../Typography';
@@ -47,12 +47,12 @@ export const Showcase: Story = {
     <StoryStack>
       <StorySection title="Highlights">
         <BannerCard
-          icon={Sparkles}
+          icon={{ sfSymbol: 'sparkles', materialIcon: 'auto-awesome' }}
           message="You have 3 onboarding tasks waiting."
           onClose={() => {}}
         />
         <ActionCard
-          icon={ShieldCheck}
+          icon={{ sfSymbol: 'checkmark.shield', materialIcon: 'verified-user' }}
           title="Upgrade workspace security"
           description="Turn on device posture checks and session controls for privileged access."
           actionLabel="Review settings"
@@ -82,7 +82,7 @@ export const Showcase: Story = {
           <StoryStack className="gap-2">
             <Text className="text-sm text-muted-foreground">Primary card ending in 4482</Text>
             <StoryRow>
-              <CreditCard size={16} />
+              <MaterialIcons name="credit-card" size={16} />
               <Text className="text-sm">Visa Business</Text>
             </StoryRow>
           </StoryStack>

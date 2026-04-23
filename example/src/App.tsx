@@ -24,7 +24,7 @@ const routes: RouteConfig[] = [
   {
     name: 'Elements',
     component: ElementsStackScreen,
-    icon: { sfSymbol: 'square.stack.3d.up', component: Layers },
+    icon: { sfSymbol: 'square.stack.3d.up', materialSymbol: 'layers' },
   },
   {
     name: 'Cards',

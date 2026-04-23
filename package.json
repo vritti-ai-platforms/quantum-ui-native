@@ -70,6 +70,11 @@
       "types": "./dist/typescript/lib/components/Input/index.d.ts",
       "default": "./dist/module/components/Input/index.js"
     },
+    "./Icon": {
+      "source": "./lib/components/Icon/index.ts",
+      "types": "./dist/typescript/lib/components/Icon/index.d.ts",
+      "default": "./dist/module/components/Icon/index.js"
+    },
     "./Label": {
       "source": "./lib/components/Label/index.ts",
       "types": "./dist/typescript/lib/components/Label/index.d.ts",
@@ -114,6 +119,11 @@
       "source": "./lib/components/Switch/index.ts",
       "types": "./dist/typescript/lib/components/Switch/index.d.ts",
       "default": "./dist/module/components/Switch/index.js"
+    },
+    "./TextArea": {
+      "source": "./lib/components/TextArea/index.ts",
+      "types": "./dist/typescript/lib/components/TextArea/index.d.ts",
+      "default": "./dist/module/components/TextArea/index.js"
     },
     "./TextField": {
       "source": "./lib/components/TextField/index.ts",

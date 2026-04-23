@@ -158,6 +158,10 @@ module.exports = (env) => {
           root,
           'lib/components/Input/index.ts'
         ),
+        [`${pak.name}/Icon`]: path.resolve(
+          root,
+          'lib/components/Icon/index.ts'
+        ),
         [`${pak.name}/Label`]: path.resolve(
           root,
           'lib/components/Label/index.ts'
@@ -189,6 +193,10 @@ module.exports = (env) => {
         [`${pak.name}/Switch`]: path.resolve(
           root,
           'lib/components/Switch/index.ts'
+        ),
+        [`${pak.name}/TextArea`]: path.resolve(
+          root,
+          'lib/components/TextArea/index.ts'
         ),
         [`${pak.name}/TextField`]: path.resolve(
           root,

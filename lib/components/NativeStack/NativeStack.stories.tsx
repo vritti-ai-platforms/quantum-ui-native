@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { Pressable, View } from 'react-native';
-import { ArrowRight, ChevronLeft, FileText, List } from 'lucide-react-native';
 import { Text } from '../Typography';
 import { Button } from '../Button';
 import { createNativeStackNavigator } from './index';
@@ -27,10 +27,10 @@ function ListScreen({ navigation }: NativeStackScreenProps<RootStackParamList, '
           className="flex-row items-center justify-between rounded-xl border border-border bg-card p-4"
         >
           <View className="flex-row items-center gap-3">
-            <FileText size={18} color="#888" />
+            <MaterialIcons name="description" size={18} color="#888" />
             <Text className="text-base text-foreground">{item}</Text>
           </View>
-          <ArrowRight size={16} color="#888" />
+          <MaterialIcons name="arrow-forward" size={16} color="#888" />
         </Pressable>
       ))}
     </View>
@@ -40,13 +40,13 @@ function ListScreen({ navigation }: NativeStackScreenProps<RootStackParamList, '
 function DetailScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'Detail'>) {
   return (
     <View className="flex-1 items-center justify-center gap-4 p-6">
-      <FileText size={40} color="#888" />
+      <MaterialIcons name="description" size={40} color="#888" />
       <Text className="text-xl font-bold text-foreground">{route.params.item}</Text>
       <Text className="text-sm text-muted-foreground text-center">
         Tap the back button or the button below to return to the list.
       </Text>
       <Button variant="outline" onPress={() => navigation.goBack()}>
-        <ChevronLeft size={16} />
+        <MaterialIcons name="arrow-back" size={16} />
         <Text>Back to List</Text>
       </Button>
     </View>
@@ -55,9 +55,9 @@ function DetailScreen({ route, navigation }: NativeStackScreenProps<RootStackPar
 
 const meta = {
   title: 'Components/NativeStack',
-  component: List,
+  component: View,
   tags: ['autodocs'],
-} satisfies Meta<typeof List>;
+} satisfies Meta<typeof View>;
 
 export default meta;
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
-import { Heart, ArrowRight } from 'lucide-react-native';
+import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { Button } from './Button';
 import { Text } from '../Typography';
 import { StoryRow, StorySection, StoryStack } from '../../storybook/StoryLayout';
@@ -88,7 +88,7 @@ export const Variants: Story = {
             <Text>Large</Text>
           </Button>
           <Button size="icon" variant="outline">
-            <Heart size={16} />
+            <MaterialIcons name="favorite" size={16} />
           </Button>
         </StoryRow>
         <StoryRow>
@@ -98,7 +98,7 @@ export const Variants: Story = {
           <Button disabled>
             <Text>Disabled</Text>
           </Button>
-          <Button endAdornment={<ArrowRight size={16} />}>
+          <Button endAdornment={<MaterialIcons name="arrow-forward" size={16} />}>
             <Text>Continue</Text>
           </Button>
         </StoryRow>

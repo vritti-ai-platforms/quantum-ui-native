@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
-import { ArrowRight, Bell, Heart, Home, Search, Settings, Star, User } from 'lucide-react-native';
 import { Icon } from './Icon';
+import { COMMON_ICONS } from '../DynamicIcon';
 import { StoryRow, StorySection, StoryStack } from '../../storybook/StoryLayout';
 
 const meta = {
@@ -8,7 +8,7 @@ const meta = {
   component: Icon,
   tags: ['autodocs'],
   args: {
-    as: Star,
+    icon: COMMON_ICONS.info,
     size: 20,
     className: 'text-foreground',
   },
@@ -33,36 +33,36 @@ export const Showcase: Story = {
     <StoryStack>
       <StorySection title="Common Icons">
         <StoryRow>
-          <Icon as={Home} size={20} />
-          <Icon as={Search} size={20} />
-          <Icon as={Bell} size={20} />
-          <Icon as={Heart} size={20} />
-          <Icon as={User} size={20} />
-          <Icon as={Settings} size={20} />
-          <Icon as={Star} size={20} />
-          <Icon as={ArrowRight} size={20} />
+          <Icon icon={COMMON_ICONS.info} size={20} />
+          <Icon icon={COMMON_ICONS.alertSuccess} size={20} />
+          <Icon icon={COMMON_ICONS.alertWarning} size={20} />
+          <Icon icon={COMMON_ICONS.alertError} size={20} />
+          <Icon icon={COMMON_ICONS.chevronLeft} size={20} />
+          <Icon icon={COMMON_ICONS.chevronRight} size={20} />
+          <Icon icon={COMMON_ICONS.chevronDown} size={20} />
+          <Icon icon={COMMON_ICONS.arrowForward} size={20} />
         </StoryRow>
       </StorySection>
 
       <StorySection title="Sizes">
         <StoryRow>
-          <Icon as={Star} size={12} />
-          <Icon as={Star} size={16} />
-          <Icon as={Star} size={20} />
-          <Icon as={Star} size={24} />
-          <Icon as={Star} size={32} />
-          <Icon as={Star} size={40} />
+          <Icon icon={COMMON_ICONS.info} size={12} />
+          <Icon icon={COMMON_ICONS.info} size={16} />
+          <Icon icon={COMMON_ICONS.info} size={20} />
+          <Icon icon={COMMON_ICONS.info} size={24} />
+          <Icon icon={COMMON_ICONS.info} size={32} />
+          <Icon icon={COMMON_ICONS.info} size={40} />
         </StoryRow>
       </StorySection>
 
       <StorySection title="Colors via className">
         <StoryRow>
-          <Icon as={Heart} size={22} className="text-foreground" />
-          <Icon as={Heart} size={22} className="text-primary" />
-          <Icon as={Heart} size={22} className="text-destructive" />
-          <Icon as={Heart} size={22} className="text-muted-foreground" />
-          <Icon as={Bell} size={22} className="text-warning" />
-          <Icon as={Bell} size={22} className="text-success" />
+          <Icon icon={COMMON_ICONS.info} size={22} className="text-foreground" />
+          <Icon icon={COMMON_ICONS.info} size={22} className="text-primary" />
+          <Icon icon={COMMON_ICONS.info} size={22} className="text-destructive" />
+          <Icon icon={COMMON_ICONS.info} size={22} className="text-muted-foreground" />
+          <Icon icon={COMMON_ICONS.alertWarning} size={22} className="text-warning" />
+          <Icon icon={COMMON_ICONS.alertSuccess} size={22} className="text-success" />
         </StoryRow>
       </StorySection>
     </StoryStack>
