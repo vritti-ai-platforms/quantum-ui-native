@@ -1,6 +1,6 @@
 import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import { useTheme } from '../../hooks';
+import { usePlatformInfo, useTheme } from '../../hooks';
 import { getTheme } from '../../theme';
 import type { PushNavigatorProps } from './types';
 
@@ -14,23 +14,29 @@ export const PushNavigator = <RouteName extends string = string>({
   screens,
 }: PushNavigatorProps<RouteName>) => {
   const { isDark } = useTheme();
-  const colors = getTheme(isDark ? 'dark' : 'light');
+  const { version } = usePlatformInfo();
 
-  const screenOptions = useMemo<NativeStackNavigationOptions>(
-    () => ({
+  const screenOptions = useMemo<NativeStackNavigationOptions>(() => {
+    const colors = getTheme(isDark ? 'dark' : 'light');
+    const isLiquidGlass = version >= 26;
+
+    return {
       animation: 'slide_from_right',
-      contentStyle: { backgroundColor: colors.background },
       gestureEnabled: true,
       headerBackButtonDisplayMode: 'minimal',
       headerBackIcon: { type: 'sfSymbol', name: 'chevron.left' },
-      headerLargeTitle: false,
       headerShadowVisible: false,
-      headerStyle: { backgroundColor: colors.background },
       headerTintColor: colors.foreground,
       headerTitleStyle: { color: colors.foreground },
-    }),
-    [colors.background, colors.foreground],
-  );
+      headerLargeTitle: true,
+      headerLargeTitleStyle: { color: colors.foreground },
+      headerStyle: { backgroundColor: isLiquidGlass ? 'transparent' : colors.background },
+      headerLargeStyle: { backgroundColor: isLiquidGlass ? 'transparent' : colors.background },
+      scrollEdgeEffects: { top: isLiquidGlass ? 'soft' : 'hard' },
+      headerTransparent: isLiquidGlass,
+      contentStyle: { backgroundColor: colors.background },
+    };
+  }, [isDark, version]);
 
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={screenOptions}>

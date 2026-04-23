@@ -3,8 +3,8 @@ import {
   type ParamListBase,
   useNavigation,
   useNavigationState,
-  useRoute,
 } from '@react-navigation/native';
+import { useCallback } from 'react';
 import type { PushNavigatorContextValue } from '../components/PushNavigator/types';
 
 type PushNavigatorNavigation = NavigationProp<ParamListBase> & {
@@ -14,23 +14,23 @@ type PushNavigatorNavigation = NavigationProp<ParamListBase> & {
 
 export const usePushNavigator = <RouteName extends string = string>(): PushNavigatorContextValue<RouteName> => {
   const navigation = useNavigation<NavigationProp<ParamListBase>>() as unknown as PushNavigatorNavigation;
-  const route = useRoute();
   const canPop = navigation.canGoBack();
-  const currentRoute = useNavigationState((state) => state.routes[state.index]?.name ?? route.name);
+  const currentRoute = useNavigationState((state) => state.routes[state.index]?.name ?? '') as RouteName;
 
-  return {
-    canPop,
-    currentRoute: currentRoute as RouteName,
-    pop: () => {
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      }
-    },
-    popToRoot: () => {
-      navigation.popToTop();
-    },
-    push: (nextRoute: RouteName) => {
+  const pop = useCallback(() => {
+    if (navigation.canGoBack()) navigation.goBack();
+  }, [navigation]);
+
+  const popToRoot = useCallback(() => {
+    navigation.popToTop();
+  }, [navigation]);
+
+  const push = useCallback(
+    (nextRoute: RouteName) => {
       navigation.push(nextRoute);
     },
-  };
+    [navigation],
+  );
+
+  return { canPop, currentRoute, pop, popToRoot, push };
 };

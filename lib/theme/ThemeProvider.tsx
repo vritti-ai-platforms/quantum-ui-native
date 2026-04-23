@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { useColorScheme as useSystemColorScheme, View } from 'react-native';
 import { VariableContextProvider } from 'nativewind';
+import type React from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { Appearance, useColorScheme as useSystemColorScheme, View } from 'react-native';
 import { darkColors, lightColors } from './colors';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -34,38 +35,81 @@ function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'system' || value === 'light' || value === 'dark';
 }
 
-// Resolves the active color scheme from the OS and injects theme tokens via NativeWind.
+function resolveScheme(
+  preference: ThemePreference,
+  systemScheme: string | null | undefined,
+  fallback: 'light' | 'dark',
+): 'light' | 'dark' {
+  if (preference !== 'system') return preference;
+  const raw = systemScheme ?? Appearance.getColorScheme();
+  if (raw === 'dark') return 'dark';
+  if (raw === 'light') return 'light';
+  return fallback;
+}
+
+// Applies the correct native appearance override.
+// - 'light' / 'dark' → forces iOS to that scheme regardless of system
+// - 'system'         → passes null to release the override so iOS follows
+//                      the real system theme again
+function applyAppearanceScheme(preference: ThemePreference): void {
+  if (preference === 'system') {
+    // RN's type excludes null in some versions but null is the correct
+    // native value to clear any override — cast to bypass the type gap.
+    (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
+  } else {
+    Appearance.setColorScheme(preference);
+  }
+}
+
 export const ThemeProvider = ({
   children,
   storage,
   storageKey = DEFAULT_THEME_STORAGE_KEY,
   defaultPreference = 'system',
 }: ThemeProviderProps) => {
-  const systemScheme = useSystemColorScheme();
+  const liveSystemScheme = useSystemColorScheme();
+
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(defaultPreference);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(!storage);
+
+  const [lastKnownSystemScheme, setLastKnownSystemScheme] = useState<'light' | 'dark'>(() => {
+    const initial = Appearance.getColorScheme();
+    return initial === 'dark' ? 'dark' : 'light';
+  });
 
   useEffect(() => {
+    if (liveSystemScheme === 'dark' || liveSystemScheme === 'light') {
+      setLastKnownSystemScheme(liveSystemScheme);
+    }
+  }, [liveSystemScheme]);
+
+  const resolvedScheme = resolveScheme(themePreference, liveSystemScheme, lastKnownSystemScheme);
+  const isDark = resolvedScheme === 'dark';
+
+  useEffect(() => {
+    if (!storage) return;
+
     let isMounted = true;
 
     async function hydrateThemePreference() {
-      if (!storage) {
-        if (isMounted) {
-          setThemePreferenceState(defaultPreference);
-          setIsHydrated(true);
-        }
-        return;
-      }
-
       try {
-        const storedPreference = await storage.getItem(storageKey);
-        if (isMounted) {
-          setThemePreferenceState(isThemePreference(storedPreference) ? storedPreference : defaultPreference);
+        const storedPreference = await storage!.getItem(storageKey);
+        if (!isMounted) return;
+
+        const resolved = isThemePreference(storedPreference) ? storedPreference : defaultPreference;
+
+        setThemePreferenceState(resolved);
+
+        // On iOS 26, calling setColorScheme(null) at cold boot transiently
+        // poisons Appearance.getColorScheme(), causing the first render to
+        // fall back to 'light'. Skip the call when preference is 'system' —
+        // iOS is already in follow-system mode and needs no intervention.
+        // The runtime setter below still calls this to release active overrides.
+        if (resolved !== 'system') {
+          applyAppearanceScheme(resolved);
         }
       } finally {
-        if (isMounted) {
-          setIsHydrated(true);
-        }
+        if (isMounted) setIsHydrated(true);
       }
     }
 
@@ -78,6 +122,9 @@ export const ThemeProvider = ({
 
   const setThemePreference = useCallback(
     async (preference: ThemePreference) => {
+      // Native layer first — before setState — so the tab bar never sees
+      // a stale scheme during the transition. 'system' releases the override.
+      applyAppearanceScheme(preference);
       setThemePreferenceState(preference);
       if (storage) {
         await storage.setItem(storageKey, preference);
@@ -85,10 +132,6 @@ export const ThemeProvider = ({
     },
     [storage, storageKey],
   );
-
-  const resolvedScheme: 'light' | 'dark' =
-    themePreference === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : themePreference;
-  const isDark = resolvedScheme === 'dark';
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -102,6 +145,8 @@ export const ThemeProvider = ({
   );
 
   const colorValues = useMemo(() => (isDark ? darkColors : lightColors), [isDark]);
+
+  if (!isHydrated) return null;
 
   return (
     <ThemeContext.Provider value={value}>

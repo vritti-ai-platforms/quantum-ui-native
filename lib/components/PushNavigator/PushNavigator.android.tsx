@@ -14,10 +14,11 @@ export const PushNavigator = <RouteName extends string = string>({
   screens,
 }: PushNavigatorProps<RouteName>) => {
   const { isDark } = useTheme();
-  const colors = getTheme(isDark ? 'dark' : 'light');
 
-  const screenOptions = useMemo<NativeStackNavigationOptions>(
-    () => ({
+  const screenOptions = useMemo<NativeStackNavigationOptions>(() => {
+    const colors = getTheme(isDark ? 'dark' : 'light');
+
+    return {
       animation: 'fade_from_bottom',
       contentStyle: { backgroundColor: colors.background },
       headerBackIcon: { type: 'materialSymbol', name: 'arrow_back' },
@@ -26,9 +27,8 @@ export const PushNavigator = <RouteName extends string = string>({
       headerStyle: { backgroundColor: colors.background },
       headerTintColor: colors.foreground,
       headerTitleStyle: { color: colors.foreground },
-    }),
-    [colors.background, colors.foreground],
-  );
+    };
+  }, [isDark]);
 
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={screenOptions}>
