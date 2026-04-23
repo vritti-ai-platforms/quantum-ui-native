@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig",
   "include": ["lib", "nativewind-env.d.ts"],
-  "exclude": ["example", "storybook", "dist", "lib/**/*.stories.tsx", "lib/storybook"]
+  "exclude": ["example", "dist"]
 }

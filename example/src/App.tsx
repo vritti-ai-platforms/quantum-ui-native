@@ -1,29 +1,18 @@
 import '../global.css';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { BottomNavigation, type RouteConfig } from '@vritti/quantum-ui-native/BottomNavigation';
-import { BottomSheetHost } from '@vritti/quantum-ui-native/BottomSheet';
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { getTheme, ThemeProvider } from '@vritti/quantum-ui-native/theme';
 import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-import ElementsStackScreen from './navigation/ElementsStack';
 import CardsScreen from './screens/CardsScreen';
+import ComponentsScreen from './screens/ComponentsScreen';
 import FeedbackScreen from './screens/FeedbackScreen';
 import FormsScreen from './screens/FormsScreen';
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-});
 
 const routes: RouteConfig[] = [
   {
     name: 'Elements',
-    component: ElementsStackScreen,
+    component: ComponentsScreen,
     icon: { sfSymbol: 'square.stack.3d.up', materialSymbol: 'layers' },
   },
   {
@@ -66,13 +55,8 @@ function ExampleNavigation() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <ThemeProvider defaultScheme="dark">
-          <ExampleNavigation />
-          <BottomSheetHost />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <ExampleNavigation />
+    </ThemeProvider>
   );
 }

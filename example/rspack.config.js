@@ -11,7 +11,6 @@ const pak = require('../package.json');
 const rnCssRoot = path.dirname(
   require.resolve('react-native-css/package.json')
 );
-const storybookRoot = path.dirname(require.resolve('storybook/package.json'));
 const rnCssAliases = {
   'react-native-css/native-internal': path.join(
     rnCssRoot,
@@ -28,59 +27,6 @@ const rnCssAliases = {
   'react-native-css/native': path.join(
     rnCssRoot,
     'dist/commonjs/native/index.js'
-  ),
-};
-const storybookAliases = {
-  '@react-native-community/slider': path.resolve(
-    __dirname,
-    'src/storybook/StorybookSliderFallback.tsx'
-  ),
-  'storybook/actions': path.join(storybookRoot, 'dist/actions/index.js'),
-  'storybook/global': require.resolve('@storybook/global'),
-  'storybook/internal/channels': path.join(
-    storybookRoot,
-    'dist/channels/index.js'
-  ),
-  'storybook/internal/client-logger': path.join(
-    storybookRoot,
-    'dist/client-logger/index.js'
-  ),
-  'storybook/internal/common': path.join(storybookRoot, 'dist/common/index.js'),
-  'storybook/internal/core-events': path.join(
-    storybookRoot,
-    'dist/core-events/index.js'
-  ),
-  'storybook/internal/csf': path.join(storybookRoot, 'dist/csf/index.js'),
-  'storybook/internal/docs-tools': path.join(
-    storybookRoot,
-    'dist/docs-tools/index.js'
-  ),
-  'storybook/internal/instrumenter': path.join(
-    storybookRoot,
-    'dist/instrumenter/index.js'
-  ),
-  'storybook/internal/manager-api': path.join(
-    storybookRoot,
-    'dist/manager-api/index.js'
-  ),
-  'storybook/internal/preview-errors': path.join(
-    storybookRoot,
-    'dist/preview-errors.js'
-  ),
-  'storybook/internal/preview-api': path.join(
-    storybookRoot,
-    'dist/preview-api/index.js'
-  ),
-  'storybook/internal/router': path.join(storybookRoot, 'dist/router/index.js'),
-  'storybook/internal/types': path.join(storybookRoot, 'dist/types/index.js'),
-  'storybook/preview-api': path.join(
-    storybookRoot,
-    'dist/preview-api/index.js'
-  ),
-  'storybook/test': path.join(storybookRoot, 'dist/test/index.js'),
-  'storybook/theming/create': path.join(
-    storybookRoot,
-    'dist/theming/create.js'
   ),
 };
 
@@ -122,10 +68,6 @@ module.exports = (env) => {
           root,
           'lib/components/Badge/index.ts'
         ),
-        [`${pak.name}/BottomSheet`]: path.resolve(
-          root,
-          'lib/components/BottomSheet/index.ts'
-        ),
         [`${pak.name}/BottomNavigation`]: path.resolve(
           root,
           'lib/components/BottomNavigation/index.ts'
@@ -157,10 +99,6 @@ module.exports = (env) => {
         [`${pak.name}/Input`]: path.resolve(
           root,
           'lib/components/Input/index.ts'
-        ),
-        [`${pak.name}/Icon`]: path.resolve(
-          root,
-          'lib/components/Icon/index.ts'
         ),
         [`${pak.name}/Label`]: path.resolve(
           root,
@@ -194,10 +132,6 @@ module.exports = (env) => {
           root,
           'lib/components/Switch/index.ts'
         ),
-        [`${pak.name}/TextArea`]: path.resolve(
-          root,
-          'lib/components/TextArea/index.ts'
-        ),
         [`${pak.name}/TextField`]: path.resolve(
           root,
           'lib/components/TextField/index.ts'
@@ -214,7 +148,6 @@ module.exports = (env) => {
         [`${pak.name}/utils/axios`]: path.resolve(root, 'lib/utils/axios.ts'),
         [`${pak.name}/utils/cn`]: path.resolve(root, 'lib/utils/cn.ts'),
         ...rnCssAliases,
-        ...storybookAliases,
         'react-native-css/components': path.join(
           rnCssRoot,
           'dist/commonjs/components'
@@ -301,18 +234,6 @@ module.exports = (env) => {
             // The babel preset handles the setup; this module is a Metro-only fallback
             new rspack.NormalModuleReplacementPlugin(
               /react-native-css-metro-override/,
-              require.resolve('./noop.js')
-            ),
-            new rspack.NormalModuleReplacementPlugin(
-              /^os$/,
-              require.resolve('./noop.js')
-            ),
-            new rspack.NormalModuleReplacementPlugin(
-              /^tty$/,
-              require.resolve('./noop.js')
-            ),
-            new rspack.NormalModuleReplacementPlugin(
-              /@storybook\/react\/template\/cli/,
               require.resolve('./noop.js')
             ),
           ]

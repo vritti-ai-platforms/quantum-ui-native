@@ -7,4 +7,3 @@
 /* Scan library + app source for className usage */
 @source "../lib/**/*.{ts,tsx}";
 @source "./src/**/*.{ts,tsx}";
-@source "./.rnstorybook/**/*.{ts,tsx}";

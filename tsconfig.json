@@ -6,7 +6,6 @@
       "@vritti/quantum-ui-native/Alert": ["./lib/components/Alert/index"],
       "@vritti/quantum-ui-native/Avatar": ["./lib/components/Avatar/index"],
       "@vritti/quantum-ui-native/Badge": ["./lib/components/Badge/index"],
-      "@vritti/quantum-ui-native/BottomSheet": ["./lib/components/BottomSheet/index"],
       "@vritti/quantum-ui-native/BottomNavigation": ["./lib/components/BottomNavigation/index"],
       "@vritti/quantum-ui-native/Button": ["./lib/components/Button/index"],
       "@vritti/quantum-ui-native/Card": ["./lib/components/Card/index"],

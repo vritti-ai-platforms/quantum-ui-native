@@ -30,11 +30,6 @@
       "types": "./dist/typescript/lib/components/BottomNavigation/index.d.ts",
       "default": "./dist/module/components/BottomNavigation/index.js"
     },
-    "./BottomSheet": {
-      "source": "./lib/components/BottomSheet/index.ts",
-      "types": "./dist/typescript/lib/components/BottomSheet/index.d.ts",
-      "default": "./dist/module/components/BottomSheet/index.js"
-    },
     "./Button": {
       "source": "./lib/components/Button/index.ts",
       "types": "./dist/typescript/lib/components/Button/index.d.ts",
@@ -69,11 +64,6 @@
       "source": "./lib/components/Input/index.ts",
       "types": "./dist/typescript/lib/components/Input/index.d.ts",
       "default": "./dist/module/components/Input/index.js"
-    },
-    "./Icon": {
-      "source": "./lib/components/Icon/index.ts",
-      "types": "./dist/typescript/lib/components/Icon/index.d.ts",
-      "default": "./dist/module/components/Icon/index.js"
     },
     "./Label": {
       "source": "./lib/components/Label/index.ts",
@@ -130,11 +120,6 @@
       "types": "./dist/typescript/lib/components/Switch/index.d.ts",
       "default": "./dist/module/components/Switch/index.js"
     },
-    "./TextArea": {
-      "source": "./lib/components/TextArea/index.ts",
-      "types": "./dist/typescript/lib/components/TextArea/index.d.ts",
-      "default": "./dist/module/components/TextArea/index.js"
-    },
     "./TextField": {
       "source": "./lib/components/TextField/index.ts",
       "types": "./dist/typescript/lib/components/TextField/index.d.ts",
@@ -190,13 +175,7 @@
   },
   "files": [
     "lib",
-    "!lib/**/*.stories.*",
-    "!lib/storybook",
     "dist",
-    "!dist/module/**/*.stories.*",
-    "!dist/module/storybook",
-    "!dist/typescript/**/*.stories.*",
-    "!dist/typescript/storybook",
     "android",
     "ios",
     "cpp",
@@ -222,7 +201,6 @@
     "android": "pnpm --filter quantum-ui-native-example android",
     "pods": "cd example/ios && pod install",
     "example": "pnpm --filter quantum-ui-native-example",
-    "storybook:generate": "pnpm --dir example storybook:generate",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build dist",
     "prepare": "pnpm run build",
     "nitrogen": "nitrogen",
@@ -255,7 +233,6 @@
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
-    "@gorhom/bottom-sheet": "^5.2.6",
     "@jest/globals": "^30.0.0",
     "@react-native-vector-icons/material-icons": "^12.3.0",
     "@react-native/babel-preset": "0.83.0",
@@ -263,10 +240,6 @@
     "@react-navigation/bottom-tabs": "8.0.0-alpha.22",
     "@react-navigation/native": "8.0.0-alpha.17",
     "@react-navigation/native-stack": "8.0.0-alpha.25",
-    "@storybook/addon-ondevice-actions": "9.1.1",
-    "@storybook/addon-ondevice-backgrounds": "9.1.1",
-    "@storybook/addon-ondevice-controls": "9.1.1",
-    "@storybook/react-native": "9.1.1",
     "@release-it/conventional-changelog": "^10.0.6",
     "@shopify/flash-list": "^2.3.1",
     "@tailwindcss/postcss": "^4.2.0",
@@ -287,11 +260,9 @@
     "postcss": "^8.5.0",
     "prettier": "^3.8.1",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
     "react-hook-form": "^7.72.1",
     "react-native": "0.83.0",
     "react-native-builder-bob": "^0.41.0",
-    "react-native-gesture-handler": "^2.29.1",
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": "^4.3.0",
     "react-native-safe-area-context": "^5.7.0",
@@ -299,23 +270,19 @@
     "react-native-sfsymbols": "^1.2.2",
     "react-native-svg": "^15.15.4",
     "release-it": "^19.2.4",
-    "storybook": "9.1.20",
     "tailwindcss": "^4.2.0",
     "turbo": "^2.8.21",
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
-    "@gorhom/bottom-sheet": ">=5.0.0",
     "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
-    "@react-navigation/native-stack": ">=7.0.0-rc.0",
     "@shopify/flash-list": ">=2.0.0",
     "nativewind": ">=5.0.0-preview.1",
     "react": "*",
     "react-native": "*",
     "react-native-css": "*",
-    "react-native-gesture-handler": ">=2.20.0",
     "react-native-nitro-modules": "^0.35.3",
     "react-native-reanimated": ">=3.3.0",
     "react-native-safe-area-context": ">=4.0.0",
