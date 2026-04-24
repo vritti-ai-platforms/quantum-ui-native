@@ -1,7 +1,7 @@
 import { VariableContextProvider } from 'nativewind';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { Appearance, useColorScheme as useSystemColorScheme, View } from 'react-native';
+import { Appearance, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
 import { darkColors, lightColors } from './colors';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -48,14 +48,16 @@ function resolveScheme(
 }
 
 // Applies the correct native appearance override.
-// - 'light' / 'dark' → forces iOS to that scheme regardless of system
-// - 'system'         → passes null to release the override so iOS follows
-//                      the real system theme again
+// - 'light' / 'dark' → forces the scheme regardless of system on both platforms
+// - 'system'         → on iOS passes null to release the override; on Android
+//                      no-op because AppearanceModule.setColorScheme is @NonNull
+//                      and throws on null — useColorScheme() tracks the live
+//                      system scheme on Android so no explicit call is needed.
 function applyAppearanceScheme(preference: ThemePreference): void {
   if (preference === 'system') {
-    // RN's type excludes null in some versions but null is the correct
-    // native value to clear any override — cast to bypass the type gap.
-    (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
+    if (Platform.OS === 'ios') {
+      (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
+    }
   } else {
     Appearance.setColorScheme(preference);
   }

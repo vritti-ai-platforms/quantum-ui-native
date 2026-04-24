@@ -15,6 +15,7 @@ export interface ButtonProps extends Omit<RnrButtonProps, 'children'> {
   loadingText?: string;
   startAdornment?: React.ReactNode;
   endAdornment?: React.ReactNode;
+  liquid?: boolean;
 }
 
 // Button with built-in loading state and adornment support — wraps the RNR reusable
@@ -28,6 +29,7 @@ function Button({
   variant,
   size,
   className,
+  liquid,
   ...props
 }: ButtonProps) {
   return (
@@ -36,6 +38,7 @@ function Button({
       size={size}
       disabled={disabled || isLoading}
       className={className}
+      liquid={liquid}
       {...props}
     >
       {isLoading ? (

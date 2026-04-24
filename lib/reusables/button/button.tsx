@@ -92,9 +92,10 @@ type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   React.RefAttributes<typeof Pressable> &
   VariantProps<typeof buttonVariants> & {
     children?: React.ReactNode;
+    liquid?: boolean;
   };
 
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({ className, variant, size, liquid: _liquid, ...props }: ButtonProps) {
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Pressable

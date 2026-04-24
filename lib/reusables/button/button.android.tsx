@@ -1,18 +1,19 @@
 import { TextClassContext } from '../text';
 import { cn } from '../../utils/index';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Pressable } from 'react-native';
+import * as React from 'react';
+import { Pressable, type GestureResponderEvent } from 'react-native';
 
 const buttonVariants = cva(
   'group shrink-0 flex-row items-center justify-center gap-2 rounded-[14px] shadow-sm shadow-black/5',
   {
     variants: {
       variant: {
-        default: 'bg-primary active:bg-primary/90',
-        destructive: 'bg-destructive active:bg-destructive/90',
-        outline: 'border-border bg-background border active:bg-accent',
-        secondary: 'bg-secondary active:bg-secondary/80',
-        ghost: 'bg-transparent active:bg-accent/80',
+        default: 'bg-primary',
+        destructive: 'bg-destructive',
+        outline: 'border-border bg-background border',
+        secondary: 'bg-secondary',
+        ghost: 'bg-transparent',
         link: 'bg-transparent shadow-none',
       },
       size: {
@@ -56,13 +57,39 @@ type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   React.RefAttributes<typeof Pressable> &
   VariantProps<typeof buttonVariants> & {
     children?: React.ReactNode;
+    liquid?: boolean;
   };
 
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({ className, variant, size, liquid: _liquid, onPressIn, onPressOut, ...props }: ButtonProps) {
+  const [pressed, setPressed] = React.useState(false);
+
+  const handlePressIn = React.useCallback(
+    (e: GestureResponderEvent) => {
+      setPressed(true);
+      onPressIn?.(e);
+    },
+    [onPressIn]
+  );
+  const handlePressOut = React.useCallback(
+    (e: GestureResponderEvent) => {
+      setPressed(false);
+      onPressOut?.(e);
+    },
+    [onPressOut]
+  );
+
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Pressable
-        className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
+        android_ripple={{ color: 'rgba(0,0,0,0.14)', borderless: false }}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        className={cn(
+          props.disabled && 'opacity-50',
+          pressed && 'opacity-75',
+          buttonVariants({ variant, size }),
+          className
+        )}
         role="button"
         {...props}
       />
