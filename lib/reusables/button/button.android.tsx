@@ -1,8 +1,8 @@
-import { TextClassContext } from '../text';
-import { cn } from '../../utils/index';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
-import { Pressable, type GestureResponderEvent } from 'react-native';
+import { type GestureResponderEvent, Pressable } from 'react-native';
+import { cn } from '../../utils/index';
+import { TextClassContext } from '../text';
 
 const buttonVariants = cva(
   'group shrink-0 flex-row items-center justify-center gap-2 rounded-[14px] shadow-sm shadow-black/5',
@@ -11,9 +11,12 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-primary',
         destructive: 'bg-destructive',
-        outline: 'border-border bg-background border',
         secondary: 'bg-secondary',
+        warning: 'bg-warning',
+        success: 'bg-success',
+        outline: 'border-border bg-background border',
         ghost: 'bg-transparent',
+        glass: 'bg-primary',
         link: 'bg-transparent shadow-none',
       },
       size: {
@@ -27,7 +30,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
+  },
 );
 
 const buttonTextVariants = cva('text-foreground text-sm font-medium', {
@@ -35,9 +38,12 @@ const buttonTextVariants = cva('text-foreground text-sm font-medium', {
     variant: {
       default: 'text-primary-foreground',
       destructive: 'text-destructive-foreground',
-      outline: 'text-foreground',
       secondary: 'text-secondary-foreground',
+      warning: 'text-warning-foreground',
+      success: 'text-success-foreground',
+      outline: 'text-foreground',
       ghost: 'text-foreground',
+      glass: 'text-primary-foreground',
       link: 'text-primary underline',
     },
     size: {
@@ -57,10 +63,9 @@ type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   React.RefAttributes<typeof Pressable> &
   VariantProps<typeof buttonVariants> & {
     children?: React.ReactNode;
-    liquid?: boolean;
   };
 
-function Button({ className, variant, size, liquid: _liquid, onPressIn, onPressOut, ...props }: ButtonProps) {
+function Button({ className, variant, size, onPressIn, onPressOut, ...props }: ButtonProps) {
   const [pressed, setPressed] = React.useState(false);
 
   const handlePressIn = React.useCallback(
@@ -68,14 +73,14 @@ function Button({ className, variant, size, liquid: _liquid, onPressIn, onPressO
       setPressed(true);
       onPressIn?.(e);
     },
-    [onPressIn]
+    [onPressIn],
   );
   const handlePressOut = React.useCallback(
     (e: GestureResponderEvent) => {
       setPressed(false);
       onPressOut?.(e);
     },
-    [onPressOut]
+    [onPressOut],
   );
 
   return (
@@ -88,7 +93,7 @@ function Button({ className, variant, size, liquid: _liquid, onPressIn, onPressO
           props.disabled && 'opacity-50',
           pressed && 'opacity-75',
           buttonVariants({ variant, size }),
-          className
+          className,
         )}
         role="button"
         {...props}

@@ -1,41 +1,45 @@
-import { TextClassContext } from '../text';
-import { cn } from '../../utils/index';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
+import { cn } from '../../utils/index';
+import { TextClassContext } from '../text';
 
 const buttonVariants = cva(
   cn(
     'group shrink-0 flex-row items-center justify-center gap-2 rounded-[10px] shadow-none',
     Platform.select({
       web: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-    })
+    }),
   ),
   {
     variants: {
       variant: {
         default: cn(
           'bg-primary active:bg-primary/90 shadow-sm shadow-black/5',
-          Platform.select({ web: 'hover:bg-primary/90' })
+          Platform.select({ web: 'hover:bg-primary/90' }),
         ),
         destructive: cn(
           'bg-destructive/10 active:bg-destructive/20 dark:bg-destructive/20 dark:active:bg-destructive/30',
           Platform.select({
             web: 'hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:hover:bg-destructive/30',
-          })
+          }),
         ),
         outline: cn(
           'border-border bg-background active:bg-accent dark:bg-input/30 dark:border-input dark:active:bg-input/50 border shadow-sm shadow-black/5',
           Platform.select({
             web: 'hover:bg-accent dark:hover:bg-input/50',
-          })
+          }),
         ),
         secondary: cn(
           'bg-secondary active:bg-secondary/80 shadow-sm shadow-black/5',
-          Platform.select({ web: 'hover:bg-secondary/80' })
+          Platform.select({ web: 'hover:bg-secondary/80' }),
         ),
         ghost: cn(
           'active:bg-accent dark:active:bg-accent/50',
-          Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' })
+          Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' }),
+        ),
+        glass: cn(
+          'active:bg-accent dark:active:bg-accent/50',
+          Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' }),
         ),
         link: '',
       },
@@ -50,14 +54,11 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
+  },
 );
 
 const buttonTextVariants = cva(
-  cn(
-    'text-foreground text-sm font-medium',
-    Platform.select({ web: 'pointer-events-none transition-colors' })
-  ),
+  cn('text-foreground text-sm font-medium', Platform.select({ web: 'pointer-events-none transition-colors' })),
   {
     variants: {
       variant: {
@@ -65,13 +66,14 @@ const buttonTextVariants = cva(
         destructive: 'text-destructive',
         outline: cn(
           'group-active:text-accent-foreground',
-          Platform.select({ web: 'group-hover:text-accent-foreground' })
+          Platform.select({ web: 'group-hover:text-accent-foreground' }),
         ),
         secondary: 'text-secondary-foreground',
         ghost: 'group-active:text-accent-foreground',
+        glass: 'text-primary',
         link: cn(
           'text-primary group-active:underline',
-          Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' })
+          Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' }),
         ),
       },
       size: {
@@ -85,17 +87,16 @@ const buttonTextVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
+  },
 );
 
 type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   React.RefAttributes<typeof Pressable> &
   VariantProps<typeof buttonVariants> & {
     children?: React.ReactNode;
-    liquid?: boolean;
   };
 
-function Button({ className, variant, size, liquid: _liquid, ...props }: ButtonProps) {
+function Button({ className, variant, size, ...props }: ButtonProps) {
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Pressable

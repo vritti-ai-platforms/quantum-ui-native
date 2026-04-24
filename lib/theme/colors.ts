@@ -41,16 +41,6 @@ export const lightColors = {
   '--sidebar-accent-foreground': '214.09 68.81% 12.55%',
   '--sidebar-border': '210 75.13% 93.73%',
   '--sidebar-ring': '212.56 78.04% 50%',
-
-  // ── Glass (iOS 26 LiquidGlass) ────────────────────────────────────────
-  // bg-*: hue + saturation sourced from each semantic token, lightness pinned to
-  // 42% so tint has presence on a bright white backdrop.
-  // Shared by: tintColor on LiquidGlassView AND border-glass-bg-*/alpha in CVA.
-  '--glass-bg-default':     '212.56 78.04% 42%',
-  '--glass-bg-destructive': '359.99 72.24% 42%',
-  '--glass-bg-secondary':   '211.93 100% 42%',
-  '--glass-bg-muted':       '210 66.2% 42%',
-  '--glass-bg-neutral':     '214.09 68.81% 42%',
 } as const;
 
 export const darkColors = {
@@ -108,15 +98,6 @@ export const darkColors = {
   '--sidebar-accent-foreground': '210 39.97% 98.05%',
   '--sidebar-border': '217.06 9.46% 16.41%',
   '--sidebar-ring': '215.85 88.56% 41.62%',
-
-  // ── Glass (iOS 26 LiquidGlass) ────────────────────────────────────────
-  // bg-*: hue + saturation from each dark semantic token, lightness pinned to
-  // 72% so tint lifts off dark surfaces.
-  '--glass-bg-default':     '215.85 88.56% 72%',
-  '--glass-bg-destructive': '0 84.21% 72%',
-  '--glass-bg-secondary':   '217.06 9.46% 72%',
-  '--glass-bg-muted':       '220.97 11.22% 72%',
-  '--glass-bg-neutral':     '210 39.97% 72%',
 } as const;
 
 type ThemeTokens = Record<keyof typeof lightColors, string>;
