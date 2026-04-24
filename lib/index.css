@@ -65,6 +65,13 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
+  /* ── Glass (iOS 26 LiquidGlass) ─────────────────────────────────────── */
+  --color-glass-bg-default:     hsl(var(--glass-bg-default));
+  --color-glass-bg-destructive: hsl(var(--glass-bg-destructive));
+  --color-glass-bg-secondary:   hsl(var(--glass-bg-secondary));
+  --color-glass-bg-muted:       hsl(var(--glass-bg-muted));
+  --color-glass-bg-neutral:     hsl(var(--glass-bg-neutral));
+
   /* ── Border radius ───────────────────────────────────────────────────── */
   --radius-sm: 8px;
   --radius-md: 10px;

@@ -9,22 +9,26 @@ export interface TextFieldProps extends React.ComponentProps<typeof Input> {
   /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
   name?: string;
   label?: string;
-  /** Helper content rendered below the input when there is no error. */
   description?: React.ReactNode;
-  /** Back-compat alias for description. */
   hint?: React.ReactNode;
   error?: string;
   startAdornment?: React.ReactNode;
   endAdornment?: React.ReactNode;
 }
 
+// iOS-flavored TextField — tight spacing, compact label, error adds a 1px destructive
+// border (base iOS style has no border since Input uses a Settings-style fill).
 function TextField({ label, description, hint, error, startAdornment, endAdornment, className, ...props }: TextFieldProps) {
   const id = React.useId();
   const resolvedDescription = description ?? hint;
 
   return (
     <View className="gap-1.5">
-      {label && <Label nativeID={id}>{label}</Label>}
+      {label && (
+        <Label nativeID={id} className="text-[13px] font-medium text-muted-foreground ml-1">
+          {label}
+        </Label>
+      )}
       <View className="relative">
         {startAdornment && (
           <View className="absolute left-3 top-0 bottom-0 z-10 justify-center" pointerEvents="none">
@@ -48,10 +52,10 @@ function TextField({ label, description, hint, error, startAdornment, endAdornme
           </View>
         )}
       </View>
-      {error && <Text className="text-sm text-destructive">{error}</Text>}
+      {error && <Text className="text-[13px] text-destructive ml-1">{error}</Text>}
       {!error && resolvedDescription && (
         typeof resolvedDescription === 'string'
-          ? <Text className="text-sm text-muted-foreground">{resolvedDescription}</Text>
+          ? <Text className="text-[13px] text-muted-foreground ml-1">{resolvedDescription}</Text>
           : <>{resolvedDescription}</>
       )}
     </View>
