@@ -4,6 +4,7 @@ export interface PushScreenConfig<RouteName extends string = string> {
   name: RouteName;
   component: ComponentType;
   title?: string;
+  headerShown?: boolean;
 }
 
 export interface PushNavigatorHeaderProps<RouteName extends string = string> {

@@ -12,6 +12,7 @@ export * from './FlashList';
 export * from './Progress';
 export * from './PushNavigator';
 export * from './RadioGroup';
+export * from './ScreenContainer';
 export * from './ScreenLayout';
 export * from './Separator';
 export * from './Skeleton';

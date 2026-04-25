@@ -90,6 +90,11 @@
       "types": "./dist/typescript/lib/components/RadioGroup/index.d.ts",
       "default": "./dist/module/components/RadioGroup/index.js"
     },
+    "./ScreenContainer": {
+      "source": "./lib/components/ScreenContainer/index.ts",
+      "types": "./dist/typescript/lib/components/ScreenContainer/index.d.ts",
+      "default": "./dist/module/components/ScreenContainer/index.js"
+    },
     "./ScreenLayout": {
       "source": "./lib/components/ScreenLayout/index.ts",
       "types": "./dist/typescript/lib/components/ScreenLayout/index.d.ts",

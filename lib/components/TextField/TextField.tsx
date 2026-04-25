@@ -18,7 +18,7 @@ export interface TextFieldProps extends React.ComponentProps<typeof Input> {
   endAdornment?: React.ReactNode;
 }
 
-function TextField({ label, description, hint, error, startAdornment, endAdornment, className, ...props }: TextFieldProps) {
+function TextField({ label, description, hint, error, startAdornment, endAdornment, className, style, ...props }: TextFieldProps) {
   const id = React.useId();
   const resolvedDescription = description ?? hint;
 
@@ -34,12 +34,12 @@ function TextField({ label, description, hint, error, startAdornment, endAdornme
         <Input
           aria-labelledby={label ? id : undefined}
           aria-invalid={!!error}
-          className={cn(
-            error && 'border-destructive',
-            startAdornment && 'pl-11',
-            endAdornment && 'pr-11',
-            className,
-          )}
+          className={cn(error && 'border-destructive', className)}
+          style={[
+            style,
+            startAdornment ? { paddingLeft: 44 } : null,
+            endAdornment ? { paddingRight: 44 } : null,
+          ]}
           {...props}
         />
         {endAdornment && (

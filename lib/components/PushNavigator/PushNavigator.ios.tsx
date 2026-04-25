@@ -23,8 +23,9 @@ export const PushNavigator = <RouteName extends string = string>({
     return {
       animation: 'slide_from_right',
       gestureEnabled: true,
-      headerBackButtonDisplayMode: 'minimal',
+      headerBackButtonDisplayMode: isLiquidGlass ? 'minimal' : 'generic',
       headerBackIcon: { type: 'sfSymbol', name: 'chevron.left' },
+      headerBackTitle: 'back',
       headerShadowVisible: false,
       headerTintColor: colors.foreground,
       headerTitleStyle: { color: colors.foreground },
@@ -41,8 +42,8 @@ export const PushNavigator = <RouteName extends string = string>({
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={screenOptions}>
       {screens.map((screen) => {
-        const options: NativeStackNavigationOptions = screen.title ? { title: screen.title } : { headerShown: false };
-
+        const options: NativeStackNavigationOptions =
+          screen.headerShown === false ? { headerShown: false } : { title: screen.title ?? '' };
         return <Stack.Screen key={screen.name} name={screen.name} component={screen.component} options={options} />;
       })}
     </Stack.Navigator>

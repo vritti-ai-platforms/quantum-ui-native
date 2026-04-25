@@ -18,7 +18,7 @@ export interface TextFieldProps extends React.ComponentProps<typeof Input> {
 
 // iOS-flavored TextField — tight spacing, compact label, error adds a 1px destructive
 // border (base iOS style has no border since Input uses a Settings-style fill).
-function TextField({ label, description, hint, error, startAdornment, endAdornment, className, ...props }: TextFieldProps) {
+function TextField({ label, description, hint, error, startAdornment, endAdornment, className, style, ...props }: TextFieldProps) {
   const id = React.useId();
   const resolvedDescription = description ?? hint;
 
@@ -31,23 +31,30 @@ function TextField({ label, description, hint, error, startAdornment, endAdornme
       )}
       <View className="relative">
         {startAdornment && (
-          <View className="absolute left-3 top-0 bottom-0 z-10 justify-center" pointerEvents="none">
+          <View
+            className="absolute top-0 bottom-0 z-10 justify-center"
+            style={{ left: 16 }}
+            pointerEvents="none"
+          >
             {startAdornment}
           </View>
         )}
         <Input
           aria-labelledby={label ? id : undefined}
           aria-invalid={!!error}
-          className={cn(
-            error && 'border-destructive',
-            startAdornment && 'pl-11',
-            endAdornment && 'pr-11',
-            className,
-          )}
+          className={cn(error && 'border-destructive', className)}
+          style={[
+            style,
+            startAdornment ? { paddingLeft: 44 } : null,
+            endAdornment ? { paddingRight: 44 } : null,
+          ]}
           {...props}
         />
         {endAdornment && (
-          <View className="absolute right-3 top-0 bottom-0 z-10 justify-center">
+          <View
+            className="absolute top-0 bottom-0 z-10 justify-center"
+            style={{ right: 16 }}
+          >
             {endAdornment}
           </View>
         )}
