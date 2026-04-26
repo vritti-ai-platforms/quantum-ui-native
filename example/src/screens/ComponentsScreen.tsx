@@ -1,18 +1,13 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@vritti/quantum-ui-native/Avatar';
+import { Badge } from '@vritti/quantum-ui-native/Badge';
+import { Button } from '@vritti/quantum-ui-native/Button';
+import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
+import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
+import { useTheme } from '@vritti/quantum-ui-native/hooks';
+import { StaticAlert } from '@vritti/quantum-ui-native/StaticAlert';
+import { Text } from '@vritti/quantum-ui-native/Typography';
 import React from 'react';
 import { ScrollView, View } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Typography';
-import { Button } from '@vritti/quantum-ui-native/Button';
-import { Alert } from '@vritti/quantum-ui-native/Alert';
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from '@vritti/quantum-ui-native/Avatar';
-import { Badge } from '@vritti/quantum-ui-native/Badge';
-import { DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
-import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
-import { COMMON_ICONS } from '@vritti/quantum-ui-native/DynamicIcon';
-import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { Section } from '../components/Section';
 
 const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
@@ -30,21 +25,14 @@ export default function ComponentsScreen() {
   const { isDark } = useTheme();
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="p-5 pb-6 gap-6"
-    >
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-5 pb-6 gap-6">
       {/* Header */}
       <View className="flex-row items-center justify-between">
         <Text variant="h2" className="text-foreground">
           Elements
         </Text>
         <Button variant="outline" size="icon" disabled>
-          <DynamicIcon
-            icon={isDark ? SCREEN_ICONS.sun : SCREEN_ICONS.moon}
-            className="text-foreground"
-            size={18}
-          />
+          <DynamicIcon icon={isDark ? SCREEN_ICONS.sun : SCREEN_ICONS.moon} className="text-foreground" size={18} />
         </Button>
       </View>
 
@@ -121,31 +109,11 @@ export default function ComponentsScreen() {
 
       {/* Alerts */}
       <Section title="Alerts">
-        <Alert
-          variant="default"
-          title="Heads up"
-          description="This is a default alert."
-        />
-        <Alert
-          variant="success"
-          title="Saved!"
-          description="Your changes were saved successfully."
-        />
-        <Alert
-          variant="warning"
-          title="Warning"
-          description="This action is irreversible."
-        />
-        <Alert
-          variant="destructive"
-          title="Error"
-          description="Something went wrong."
-        />
-        <Alert
-          variant="info"
-          title="Info"
-          description="A new version is available."
-        />
+        <StaticAlert variant="default" title="Heads up" description="This is a default alert." />
+        <StaticAlert variant="success" title="Saved!" description="Your changes were saved successfully." />
+        <StaticAlert variant="warning" title="Warning" description="This action is irreversible." />
+        <StaticAlert variant="destructive" title="Error" description="Something went wrong." />
+        <StaticAlert variant="info" title="Info" description="A new version is available." />
       </Section>
 
       {/* Avatars */}

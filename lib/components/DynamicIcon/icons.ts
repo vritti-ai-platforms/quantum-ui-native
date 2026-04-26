@@ -11,7 +11,7 @@ export const COMMON_ICONS: Record<string, PlatformIconDescriptor> = {
   chevronRight: { sfSymbol: 'chevron.right', materialIcon: 'keyboard-arrow-right' },
   chevronUp: { sfSymbol: 'chevron.up', materialIcon: 'keyboard-arrow-up' },
   close: { sfSymbol: 'xmark', materialIcon: 'close' },
-  info: { sfSymbol: 'info.circle', materialIcon: 'info' },
+  info: { sfSymbol: 'info.circle', materialIcon: 'info-outline' },
   trendDown: { sfSymbol: 'chart.line.downtrend.xyaxis', materialIcon: 'trending-down' },
   trendUp: { sfSymbol: 'chart.line.uptrend.xyaxis', materialIcon: 'trending-up' },
 };

@@ -10,11 +10,6 @@
       "types": "./dist/typescript/lib/index.d.ts",
       "default": "./dist/module/index.js"
     },
-    "./Alert": {
-      "source": "./lib/components/Alert/index.ts",
-      "types": "./dist/typescript/lib/components/Alert/index.d.ts",
-      "default": "./dist/module/components/Alert/index.js"
-    },
     "./Avatar": {
       "source": "./lib/components/Avatar/index.ts",
       "types": "./dist/typescript/lib/components/Avatar/index.d.ts",
@@ -129,6 +124,11 @@
       "source": "./lib/components/Spinner/index.ts",
       "types": "./dist/typescript/lib/components/Spinner/index.d.ts",
       "default": "./dist/module/components/Spinner/index.js"
+    },
+    "./StaticAlert": {
+      "source": "./lib/components/StaticAlert/index.ts",
+      "types": "./dist/typescript/lib/components/StaticAlert/index.d.ts",
+      "default": "./dist/module/components/StaticAlert/index.js"
     },
     "./Switch": {
       "source": "./lib/components/Switch/index.ts",

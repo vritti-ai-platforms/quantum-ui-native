@@ -1,7 +1,6 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import type React from 'react';
 import { Children, cloneElement, Fragment, isValidElement, useCallback } from 'react';
-import { View, type ViewProps } from 'react-native';
 import {
   Controller,
   type ControllerProps,
@@ -10,12 +9,13 @@ import {
   FormProvider,
   type UseFormReturn,
 } from 'react-hook-form';
+import { View, type ViewProps } from 'react-native';
+import { getAxios, restoreErrorToasts, suppressErrorToasts } from '../../utils/axios';
 import { cn } from '../../utils/cn';
 import { type FieldMapping, mapApiErrorsToForm } from '../../utils/formHelpers';
-import { getAxios, restoreErrorToasts, suppressErrorToasts } from '../../utils/axios';
-import { Alert } from '../Alert';
 import { Button } from '../Button';
 import { Checkbox } from '../Checkbox';
+import { StaticAlert } from '../StaticAlert';
 import { Switch } from '../Switch';
 
 // Recursively process children to wrap form fields with Controller and inject loading/submit into buttons
@@ -79,8 +79,7 @@ function processChildren<
     // Handle submit buttons — inject loading state and onPress
     if (childProps.submit === true) {
       const isButtonElement =
-        child.type === Button ||
-        (typeof child.type === 'function' && (child.type as any).displayName === 'Button');
+        child.type === Button || (typeof child.type === 'function' && (child.type as any).displayName === 'Button');
 
       if (isButtonElement) {
         return cloneElement(child, {
@@ -195,7 +194,7 @@ export function Form<
     <FormProvider {...form}>
       <View className={cn('gap-4', className)} {...props}>
         {showRootError && rootErrorPosition === 'top' && form.formState.errors.root && (
-          <Alert
+          <StaticAlert
             variant="destructive"
             title={String(form.formState.errors.root.type || 'Error')}
             description={form.formState.errors.root.message}
@@ -206,7 +205,7 @@ export function Form<
         {processedChildren}
 
         {showRootError && rootErrorPosition === 'bottom' && form.formState.errors.root && (
-          <Alert
+          <StaticAlert
             variant="destructive"
             title={String(form.formState.errors.root.type || 'Error')}
             description={form.formState.errors.root.message}
