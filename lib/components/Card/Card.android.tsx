@@ -1,6 +1,8 @@
-// Default fallback for non-iOS / non-Android platforms (web etc.).
-// The platform-flavored variants live in Card.ios.tsx and Card.android.tsx;
-// Metro picks the right file at bundle time.
+// Android-flavored Card surface: Material 3 "Outlined" card with low elevation.
+// We keep a hairline border AND a subtle shadow — pure-elevation cards
+// disappear in light mode because our --card and --background tokens are both
+// pure white. The border is the affordance; the shadow adds Material's
+// tactile cue. 12px radius matches Material 3 "medium" shape.
 import { View, type ViewProps } from 'react-native';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../reusables/card';
 import { TextClassContext } from '../../reusables/text';
@@ -15,7 +17,7 @@ function Card({ loading, className, children, ...props }: CardProps) {
     <TextClassContext.Provider value="text-card-foreground">
       <View
         className={cn(
-          'bg-card border-border flex flex-col gap-6 rounded-xl border py-6 shadow-sm shadow-black/5',
+          'bg-card border border-border flex flex-col gap-6 rounded-xl py-6 shadow-md shadow-black/20',
           loading && 'opacity-60',
           className,
         )}

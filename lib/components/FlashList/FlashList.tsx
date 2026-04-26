@@ -1,12 +1,11 @@
 import { FlashList as ShopifyFlashList, type FlashListProps as ShopifyFlashListProps } from '@shopify/flash-list';
-import React from 'react';
+import type React from 'react';
 import { View } from 'react-native';
 import { Text } from '../../reusables/text';
 import { cn } from '../../utils/cn';
-import { ListItemCard } from '../Card';
+import { ListItem } from '../ListItem';
 
-export interface FlashListProps<T>
-  extends Omit<ShopifyFlashListProps<T>, 'ListEmptyComponent'> {
+export interface FlashListProps<T> extends Omit<ShopifyFlashListProps<T>, 'ListEmptyComponent'> {
   isLoading?: boolean;
   skeletonCount?: number;
   renderSkeletonItem?: () => React.ReactElement;
@@ -25,8 +24,7 @@ function FlashList<T>({
   className,
   ...props
 }: FlashListProps<T>) {
-  const skeletonRenderer =
-    renderSkeletonItem ?? (() => <ListItemCard isLoading title="" />);
+  const skeletonRenderer = renderSkeletonItem ?? (() => <ListItem loading title="" />);
 
   if (isLoading) {
     return (

@@ -3,6 +3,7 @@ import type React from 'react';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { Appearance, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
 import { darkColors, lightColors } from './colors';
+import { platformRadii } from './radii';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -146,13 +147,13 @@ export const ThemeProvider = ({
     [resolvedScheme, isDark, themePreference, setThemePreference, isHydrated],
   );
 
-  const colorValues = useMemo(() => (isDark ? darkColors : lightColors), [isDark]);
+  const themeValues = useMemo(() => ({ ...(isDark ? darkColors : lightColors), ...platformRadii }), [isDark]);
 
   if (!isHydrated) return null;
 
   return (
     <ThemeContext.Provider value={value}>
-      <VariableContextProvider value={colorValues}>
+      <VariableContextProvider value={themeValues}>
         <View style={{ flex: 1 }} className={isDark ? 'dark' : ''}>
           {children}
         </View>

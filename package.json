@@ -40,6 +40,11 @@
       "types": "./dist/typescript/lib/components/Card/index.d.ts",
       "default": "./dist/module/components/Card/index.js"
     },
+    "./CardPressable": {
+      "source": "./lib/components/CardPressable/index.ts",
+      "types": "./dist/typescript/lib/components/CardPressable/index.d.ts",
+      "default": "./dist/module/components/CardPressable/index.js"
+    },
     "./Checkbox": {
       "source": "./lib/components/Checkbox/index.ts",
       "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
@@ -69,6 +74,11 @@
       "source": "./lib/components/Label/index.ts",
       "types": "./dist/typescript/lib/components/Label/index.d.ts",
       "default": "./dist/module/components/Label/index.js"
+    },
+    "./ListItem": {
+      "source": "./lib/components/ListItem/index.ts",
+      "types": "./dist/typescript/lib/components/ListItem/index.d.ts",
+      "default": "./dist/module/components/ListItem/index.js"
     },
     "./NativeStack": {
       "source": "./lib/components/NativeStack/index.ts",

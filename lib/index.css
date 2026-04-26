@@ -1,3 +1,6 @@
+/* biome-ignore-all lint/correctness/noUnknownAtRules: tailwind v4 @theme block */
+/* biome-ignore-all format: tailwind v4 token comments rely on hand-aligned columns */
+
 /* @vritti/quantum-ui-native — Tailwind v4 design token registration
  * Mirrors the token system from @vritti/quantum-ui (web).
  *
@@ -66,14 +69,58 @@
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
 
-  /* ── Border radius ───────────────────────────────────────────────────── */
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* ── Border radius ──────────────────────────────────────────────────────
+   * Platform-aware. Values are injected at runtime by ThemeProvider via
+   * VariableContextProvider — see lib/theme/radii.ts. iOS uses the iOS-26
+   * superellipse-tuned scale (chunkier, pillowy); Android uses the Material 3
+   * shape scale (tighter, more geometric). A single Tailwind class therefore
+   * renders natively-correct on each platform without component-level
+   * branching.
+   */
+  --radius-sm: var(--rad-sm);
+  --radius-md: var(--rad-md);
+  --radius-lg: var(--rad-lg);
+  --radius-xl: var(--rad-xl);
+  --radius-2xl: var(--rad-2xl);
+  --radius-3xl: var(--rad-3xl);
 
   /* ── Fonts ───────────────────────────────────────────────────────────── */
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-serif: "Playfair Display", serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  /* ── Font sizes ──────────────────────────────────────────────────────────
+   * Mobile-tuned scale. Tailwind v4's web defaults are ~1px small for native
+   * because RN renders points 1:1 without browser zoom. Sizes round to even
+   * pixel values (RN aligns more cleanly to whole pixels for crisp text).
+   *
+   *           default     new
+   *  text-xs   12px / 16   14px / 20  (caption, timestamps)
+   *  text-sm   14px / 20   16px / 22  (labels, helper text)
+   *  text-base 16px / 24   18px / 26  (body)
+   *  text-lg   18px / 28   20px / 28
+   *  text-xl   20px / 28   22px / 30
+   *  text-2xl  24px / 32   26px / 34
+   *  text-3xl  30px / 36   32px / 38
+   *  text-4xl  36px / 40   38px / 42
+   *
+   * Line-heights are unitless ratios (target-line-height ÷ font-size) so the
+   * leading scales with the size — same approach Tailwind uses internally.
+   */
+  --text-xs: 0.875rem;                         /* 14px */
+  --text-xs--line-height: calc(1.25 / 0.875);
+  --text-sm: 1rem;                             /* 16px */
+  --text-sm--line-height: calc(1.375 / 1);
+  --text-base: 1.125rem;                       /* 18px */
+  --text-base--line-height: calc(1.625 / 1.125);
+  --text-lg: 1.25rem;                          /* 20px */
+  --text-lg--line-height: calc(1.75 / 1.25);
+  --text-xl: 1.375rem;                         /* 22px */
+  --text-xl--line-height: calc(1.875 / 1.375);
+  --text-2xl: 1.625rem;                        /* 26px */
+  --text-2xl--line-height: calc(2.125 / 1.625);
+  --text-3xl: 2rem;                            /* 32px */
+  --text-3xl--line-height: calc(2.375 / 2);
+  --text-4xl: 2.375rem;                        /* 38px */
+  --text-4xl--line-height: calc(2.625 / 2.375);
 }

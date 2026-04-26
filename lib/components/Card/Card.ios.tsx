@@ -1,6 +1,5 @@
-// Default fallback for non-iOS / non-Android platforms (web etc.).
-// The platform-flavored variants live in Card.ios.tsx and Card.android.tsx;
-// Metro picks the right file at bundle time.
+// iOS-flavored Card surface: hairline border, almost-flat (HIG eschews drop
+// shadows), and a 16px corner radius that matches the iOS 26 superellipse.
 import { View, type ViewProps } from 'react-native';
 import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../reusables/card';
 import { TextClassContext } from '../../reusables/text';
@@ -15,7 +14,7 @@ function Card({ loading, className, children, ...props }: CardProps) {
     <TextClassContext.Provider value="text-card-foreground">
       <View
         className={cn(
-          'bg-card border-border flex flex-col gap-6 rounded-xl border py-6 shadow-sm shadow-black/5',
+          'bg-card border-border flex flex-col gap-6 rounded-xl border py-6',
           loading && 'opacity-60',
           className,
         )}
