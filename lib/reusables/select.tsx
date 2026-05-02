@@ -60,14 +60,20 @@ function SelectTrigger({
         size === 'sm' && 'h-8 py-2 sm:py-1.5',
         className
       )}
-      {...props}>
+      {...props}
+    >
       <>{children}</>
-      <DynamicIcon icon={COMMON_ICONS.chevronDown} aria-hidden={true} className="text-muted-foreground size-4" />
+      <DynamicIcon
+        icon={COMMON_ICONS.chevronDown}
+        aria-hidden={true}
+        className="text-muted-foreground size-4"
+      />
     </SelectPrimitive.Trigger>
   );
 }
 
-const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
+const FullWindowOverlay =
+  Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment;
 
 function SelectContent({
   className,
@@ -83,9 +89,15 @@ function SelectContent({
   return (
     <SelectPrimitive.Portal hostName={portalHost}>
       <FullWindowOverlay>
-        <SelectPrimitive.Overlay style={Platform.select({ native: StyleSheet.absoluteFill })}>
+        <SelectPrimitive.Overlay
+          style={Platform.select({ native: StyleSheet.absoluteFill })}
+        >
           <TextClassContext.Provider value="text-popover-foreground">
-            <NativeOnlyAnimatedView className="z-50" entering={FadeIn} exiting={FadeOut}>
+            <NativeOnlyAnimatedView
+              className="z-50"
+              entering={FadeIn}
+              exiting={FadeOut}
+            >
               <SelectPrimitive.Content
                 className={cn(
                   'bg-popover border-border relative z-50 min-w-[8rem] rounded-md border shadow-md shadow-black/5',
@@ -98,28 +110,30 @@ function SelectContent({
                     native: 'p-1',
                   }),
                   position === 'popper' &&
-                  Platform.select({
-                    web: cn(
-                      props.side === 'bottom' && 'translate-y-1',
-                      props.side === 'top' && '-translate-y-1'
-                    ),
-                  }),
+                    Platform.select({
+                      web: cn(
+                        props.side === 'bottom' && 'translate-y-1',
+                        props.side === 'top' && '-translate-y-1'
+                      ),
+                    }),
                   className
                 )}
                 position={position}
-                {...props}>
+                {...props}
+              >
                 <SelectScrollUpButton />
                 <SelectPrimitive.Viewport
                   className={cn(
                     'p-1',
                     position === 'popper' &&
-                    cn(
-                      'w-full',
-                      Platform.select({
-                        web: 'h-[var(--radix-select-trigger-height)] min-w-[var(--radix-select-trigger-width)]',
-                      })
-                    )
-                  )}>
+                      cn(
+                        'w-full',
+                        Platform.select({
+                          web: 'h-[var(--radix-select-trigger-height)] min-w-[var(--radix-select-trigger-width)]',
+                        })
+                      )
+                  )}
+                >
                   {children}
                 </SelectPrimitive.Viewport>
                 <SelectScrollDownButton />
@@ -138,7 +152,10 @@ function SelectLabel({
 }: SelectPrimitive.LabelProps & React.RefAttributes<SelectPrimitive.LabelRef>) {
   return (
     <SelectPrimitive.Label
-      className={cn('text-muted-foreground px-2 py-2 text-xs sm:py-1.5', className)}
+      className={cn(
+        'text-muted-foreground px-2 py-2 text-xs sm:py-1.5',
+        className
+      )}
       {...props}
     />
   );
@@ -159,10 +176,14 @@ function SelectItem({
         props.disabled && 'opacity-50',
         className
       )}
-      {...props}>
-        <View className="absolute right-2 flex size-3.5 items-center justify-center">
-          <SelectPrimitive.ItemIndicator>
-          <DynamicIcon icon={COMMON_ICONS.check} className="text-muted-foreground size-4 shrink-0" />
+      {...props}
+    >
+      <View className="absolute right-2 flex size-3.5 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <DynamicIcon
+            icon={COMMON_ICONS.check}
+            className="text-muted-foreground size-4 shrink-0"
+          />
         </SelectPrimitive.ItemIndicator>
       </View>
       <SelectPrimitive.ItemText className="text-foreground group-active:text-accent-foreground select-none text-sm" />
@@ -173,7 +194,8 @@ function SelectItem({
 function SelectSeparator({
   className,
   ...props
-}: SelectPrimitive.SeparatorProps & React.RefAttributes<SelectPrimitive.SeparatorRef>) {
+}: SelectPrimitive.SeparatorProps &
+  React.RefAttributes<SelectPrimitive.SeparatorRef>) {
   return (
     <SelectPrimitive.Separator
       className={cn(
@@ -199,8 +221,12 @@ function SelectScrollUpButton({
   }
   return (
     <SelectPrimitive.ScrollUpButton
-      className={cn('flex cursor-default items-center justify-center py-1', className)}
-      {...props}>
+      className={cn(
+        'flex cursor-default items-center justify-center py-1',
+        className
+      )}
+      {...props}
+    >
       <DynamicIcon icon={COMMON_ICONS.chevronUp} className="size-4" />
     </SelectPrimitive.ScrollUpButton>
   );
@@ -219,14 +245,16 @@ function SelectScrollDownButton({
   }
   return (
     <SelectPrimitive.ScrollDownButton
-      className={cn('flex cursor-default items-center justify-center py-1', className)}
-      {...props}>
+      className={cn(
+        'flex cursor-default items-center justify-center py-1',
+        className
+      )}
+      {...props}
+    >
       <DynamicIcon icon={COMMON_ICONS.chevronDown} className="size-4" />
     </SelectPrimitive.ScrollDownButton>
   );
 }
-
-
 
 export {
   Select,
