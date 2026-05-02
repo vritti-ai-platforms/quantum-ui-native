@@ -57,7 +57,11 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
   const errorTitle = apiError.label || apiError.title || 'Error';
   const generalMessage = apiError.detail;
 
-  // Map field-specific errors
+  // Map field-specific errors. Track how many we successfully attached so the
+  // root error only fires when none of the API errors matched a form field —
+  // matches the web Form behaviour (same logic as
+  // apps/.../quantum-ui/lib/utils/formHelpers.ts).
+  let mappedFieldErrorsCount = 0;
   if (apiError.errors && Array.isArray(apiError.errors)) {
     for (const errorItem of apiError.errors) {
       const formField = fieldMapping[errorItem.field] || errorItem.field;
@@ -66,11 +70,14 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
         type: 'manual',
         message: errorItem.message,
       });
+      mappedFieldErrorsCount += 1;
     }
   }
 
-  // Root error from detail (independent of field errors)
-  if (generalMessage && setRootError) {
+  // Root error is shown only when no field errors were mapped — otherwise the
+  // detail/label is redundant with the inline field message that already
+  // surfaces on the matching <TextField> / <PasswordField>.
+  if (generalMessage && setRootError && mappedFieldErrorsCount === 0) {
     form.setError('root', {
       type: errorTitle,
       message: generalMessage,

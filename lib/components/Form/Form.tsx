@@ -142,7 +142,7 @@ export function Form<
   form,
   onSubmit,
   children,
-  showRootError = false,
+  showRootError = true,
   rootErrorPosition = 'bottom',
   rootErrorClassName,
   rootErrorAction,
