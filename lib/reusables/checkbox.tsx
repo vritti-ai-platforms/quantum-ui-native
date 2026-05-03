@@ -1,8 +1,7 @@
-import { DynamicIcon } from '../components/DynamicIcon';
-import { cn } from '../utils/index';
-import { COMMON_ICONS } from '../components/DynamicIcon';
 import * as CheckboxPrimitive from '@rn-primitives/checkbox';
 import { Platform } from 'react-native';
+import { COMMON_ICONS, DynamicIcon } from '../components/DynamicIcon';
+import { cn } from '../utils/index';
 
 const DEFAULT_HIT_SLOP = 24;
 
@@ -28,17 +27,15 @@ function Checkbox({
         }),
         props.checked && cn('border-primary', checkedClassName),
         props.disabled && 'opacity-50',
-        className
+        className,
       )}
       hitSlop={DEFAULT_HIT_SLOP}
-      {...props}>
+      {...props}
+    >
       <CheckboxPrimitive.Indicator
-        className={cn('bg-primary h-full w-full items-center justify-center', indicatorClassName)}>
-        <DynamicIcon
-          icon={COMMON_ICONS.check}
-          size={12}
-          className={cn('text-primary-foreground', iconClassName)}
-        />
+        className={cn('bg-primary h-full w-full items-center justify-center', indicatorClassName)}
+      >
+        <DynamicIcon icon={COMMON_ICONS.check} size={12} className={cn('text-primary-foreground', iconClassName)} />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );

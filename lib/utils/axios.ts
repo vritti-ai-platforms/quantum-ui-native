@@ -1,20 +1,18 @@
-import Axios, {
-  type AxiosError,
-  type AxiosInstance,
-  type InternalAxiosRequestConfig,
-} from 'axios';
-import { getConfig, configureQuantumUI } from '../config';
+import Axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import { Platform } from 'react-native';
+import { configureQuantumUI, getConfig } from '../config';
 import {
   deleteRefreshToken,
+  type MobileStorageAdapter,
   readRefreshToken,
   readStoredMobileBaseURL,
   requireMobileStorageAdapter,
   setMobileStorageAdapter,
-  type MobileStorageAdapter,
   writeRefreshToken,
   writeSelectedDeploymentBaseURL,
   writeStoredMobileBaseURL,
 } from './storage';
+
 export type { MobileStorageAdapter } from './storage';
 
 // ---------------------------------------------------------------------------
@@ -202,7 +200,9 @@ export async function getStoredMobileBaseURL(): Promise<string | null> {
 }
 
 /** Read the last selected deployment URL from secure storage. */
-async function refreshMobileSession(options?: { notifyOnFailure?: boolean }): Promise<{ success: boolean; expiresIn: number }> {
+async function refreshMobileSession(options?: {
+  notifyOnFailure?: boolean;
+}): Promise<{ success: boolean; expiresIn: number }> {
   const notifyOnFailure = options?.notifyOnFailure ?? true;
   const config = getConfig();
   const refreshToken = await getRefreshToken();
@@ -309,19 +309,25 @@ export function cancelTokenRefresh(): void {
 // Axios Instance & Interceptors
 // ---------------------------------------------------------------------------
 
+function buildMobileUserAgent(): string {
+  const os = Platform.OS;
+  const osVersion = Platform.Version;
+  return `VrittiCoreApp/1.0 (${os === 'ios' ? 'iOS' : 'Android'} ${osVersion})`;
+}
+
 function createAxiosInstance(): AxiosInstance {
   const config = getConfig();
   return Axios.create({
     baseURL: config.axios.baseURL,
-    headers: config.axios.headers,
+    headers: {
+      ...config.axios.headers,
+      'User-Agent': buildMobileUserAgent(),
+    },
     timeout: config.axios.timeout,
   });
 }
 
 export const axios: AxiosInstance = createAxiosInstance();
-
-
-
 
 // Request interceptor
 axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
@@ -330,8 +336,7 @@ axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   // Add Authorization header
   const token = getToken();
   if (token) {
-    config.headers[quantumConfig.auth.tokenHeaderName] =
-      `${quantumConfig.auth.tokenPrefix} ${token}`;
+    config.headers[quantumConfig.auth.tokenHeaderName] = `${quantumConfig.auth.tokenPrefix} ${token}`;
   }
 
   // Custom request interceptor

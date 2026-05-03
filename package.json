@@ -10,6 +10,11 @@
       "types": "./dist/typescript/lib/index.d.ts",
       "default": "./dist/module/index.js"
     },
+    "./Alert": {
+      "source": "./lib/components/Alert/index.tsx",
+      "types": "./dist/typescript/lib/components/Alert/index.d.ts",
+      "default": "./dist/module/components/Alert/index.js"
+    },
     "./Avatar": {
       "source": "./lib/components/Avatar/index.ts",
       "types": "./dist/typescript/lib/components/Avatar/index.d.ts",

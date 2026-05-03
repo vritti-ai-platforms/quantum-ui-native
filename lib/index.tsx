@@ -37,7 +37,8 @@ export {
 export * from './context';
 
 // Hooks
-export { useTheme, useDialog, useIsMobile, useTimer } from './hooks';
+export { useTheme, useDialog, useIsMobile, useTimer, useConfirm } from './hooks';
+export type { ConfirmOptions } from './hooks';
 
 // Types (mirrors lib/types/ from @vritti/quantum-ui web)
 export * from './types';
