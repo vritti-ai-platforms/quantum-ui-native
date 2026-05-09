@@ -3,10 +3,12 @@ import type { MaterialSymbolProps } from '@react-navigation/native';
 import type React from 'react';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
-/** Platform-aware icon: SF Symbol on iOS, Material Symbol on Android */
+/** Platform-aware icon: SF Symbol on iOS, Material Symbol on Android tab bar,
+ *  Material Icon (hyphenated) for list/DynamicIcon rendering on Android. */
 export interface TabIcon {
   sfSymbol: SFSymbol;
   materialSymbol?: MaterialSymbolProps['name'];
+  materialIcon?: string;
 }
 
 interface RouteConfigBase {

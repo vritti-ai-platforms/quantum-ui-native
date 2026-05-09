@@ -107,11 +107,16 @@ type ThemePalette = {
   foreground: string;
   primary: string;
   primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  accent: string;
+  accentForeground: string;
   card: string;
   border: string;
   notification: string;
   muted: string;
   sidebar: string;
+  destructive: string;
 };
 
 function toHsl(value: string) {
@@ -124,11 +129,16 @@ function createThemePalette(tokens: ThemeTokens): ThemePalette {
     foreground: toHsl(tokens['--foreground']),
     primary: toHsl(tokens['--primary']),
     primaryForeground: toHsl(tokens['--primary-foreground']),
+    secondary: toHsl(tokens['--secondary']),
+    secondaryForeground: toHsl(tokens['--secondary-foreground']),
+    accent: toHsl(tokens['--accent']),
+    accentForeground: toHsl(tokens['--accent-foreground']),
     card: toHsl(tokens['--card']),
     border: toHsl(tokens['--border']),
     notification: toHsl(tokens['--ring']),
     muted: toHsl(tokens['--muted']),
     sidebar: toHsl(tokens['--sidebar']),
+    destructive: toHsl(tokens['--destructive']),
   };
 }
 

@@ -1,14 +1,14 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
-import { createContext, useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { ScreenContainer } from '../ScreenContainer';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
 import { getTheme } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
-import type { BottomNavigationProps, RouteConfig } from './types';
+import { ScreenContainer } from '../ScreenContainer';
+import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,34 +21,34 @@ function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon
   return { type: 'materialSymbol', name: route.icon.materialSymbol ?? 'apps' };
 }
 
-// Passes overflow routes down to MoreListScreen without route.params.
-const MoreRoutesContext = createContext<RouteConfig[]>([]);
+type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 
 // List screen rendered as the initial route inside the More PushNavigator.
-// Uses usePushNavigator to push onto the NativeStack — native back button handles return.
-function MoreListScreen() {
-  const overflowRoutes = useContext(MoreRoutesContext);
+// Reads its items from route.params (set via initialParams on Stack.Screen) so
+// that React Context propagation issues with NativeStack on Android are avoided.
+function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
+  const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
   const { isDark } = useTheme();
   const theme = useMemo(() => getTheme(isDark ? 'dark' : 'light'), [isDark]);
 
   return (
     <ScreenContainer scrollable>
-      {overflowRoutes.map((route) => (
+      {items.map((item) => (
         <Pressable
-          key={route.name}
+          key={item.name}
           style={[styles.row, { borderBottomColor: theme.border }]}
-          onPress={() => push(route.name)}
+          onPress={() => push(item.name)}
           android_ripple={{ color: theme.border }}
         >
           <View style={[styles.iconWrap, { backgroundColor: theme.muted }]}>
             <MaterialIcons
-              name={(route.icon.materialSymbol ?? 'apps') as MaterialIconsIconName}
+              name={(item.icon.materialIcon ?? 'apps') as MaterialIconsIconName}
               size={22}
               color={theme.foreground}
             />
           </View>
-          <Text style={[styles.rowLabel, { color: theme.foreground }]}>{route.label ?? route.name}</Text>
+          <Text style={[styles.rowLabel, { color: theme.foreground }]}>{item.label ?? item.name}</Text>
           <MaterialIcons name={'chevron-right' as MaterialIconsIconName} size={20} color={theme.border} />
         </Pressable>
       ))}
@@ -64,7 +64,14 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
 
   const screens = useMemo(
     () => [
-      { name: '__more_list__', component: MoreListScreen, headerShown: false },
+      {
+        name: '__more_list__',
+        component: MoreListScreen,
+        headerShown: false,
+        initialParams: {
+          items: overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon })),
+        },
+      },
       ...overflowRoutes.map((r) => ({
         name: r.name,
         component: r.component,
@@ -75,11 +82,7 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
     [overflowRoutes],
   );
 
-  return (
-    <MoreRoutesContext.Provider value={overflowRoutes}>
-      <PushNavigator initialRoute="__more_list__" screens={screens} />
-    </MoreRoutesContext.Provider>
-  );
+  return <PushNavigator initialRoute="__more_list__" screens={screens} />;
 }
 
 const styles = StyleSheet.create({

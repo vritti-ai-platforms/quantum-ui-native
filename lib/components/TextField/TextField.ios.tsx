@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { Input } from '../../reusables/input';
 import { Label } from '../../reusables/label';
 import { Text } from '../../reusables/text';
-import { cn } from '../../utils/cn';
 
 export interface TextFieldProps extends React.ComponentProps<typeof Input> {
   /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
@@ -42,7 +41,7 @@ function TextField({ label, description, hint, error, startAdornment, endAdornme
         <Input
           aria-labelledby={label ? id : undefined}
           aria-invalid={!!error}
-          className={cn(error && 'border-destructive', className)}
+          className={className}
           style={[
             style,
             startAdornment ? { paddingLeft: 44 } : null,

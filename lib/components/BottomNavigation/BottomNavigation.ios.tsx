@@ -1,14 +1,15 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { createContext, useContext, useMemo } from 'react';
-import { DynamicColorIOS, Pressable, StyleSheet, Text, useColorScheme } from 'react-native';
+import { useMemo } from 'react';
+import { DynamicColorIOS, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { SFSymbol } from 'react-native-sfsymbols';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
 import { getTheme } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
-import type { BottomNavigationProps, RouteConfig } from './types';
+import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,26 +20,29 @@ function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon
   return { type: 'sfSymbol', name: route.icon.sfSymbol };
 }
 
-// Passes overflow routes down to MoreListScreen without route.params.
-const MoreRoutesContext = createContext<RouteConfig[]>([]);
+type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 
 // List screen rendered as the initial route inside the More PushNavigator.
-// Uses usePushNavigator to push onto the NativeStack — native back gesture handles return.
-function MoreListScreen() {
-  const overflowRoutes = useContext(MoreRoutesContext);
+// Reads its items from route.params (set via initialParams on Stack.Screen) so
+// that React Context propagation issues with NativeStack are avoided.
+function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
+  const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
   const { isDark } = useTheme();
   const theme = useMemo(() => getTheme(isDark ? 'dark' : 'light'), [isDark]);
 
   return (
     <ScreenContainer scrollable>
-      {overflowRoutes.map((route) => (
+      {items.map((item) => (
         <Pressable
-          key={route.name}
+          key={item.name}
           style={[styles.row, { borderBottomColor: theme.border }]}
-          onPress={() => push(route.name)}
+          onPress={() => push(item.name)}
         >
-          <Text style={[styles.rowLabel, { color: theme.foreground }]}>{route.label ?? route.name}</Text>
+          <View style={[styles.iconWrap, { backgroundColor: theme.muted }]}>
+            <SFSymbol name={item.icon.sfSymbol} size={20} color={theme.foreground} />
+          </View>
+          <Text style={[styles.rowLabel, { color: theme.foreground }]}>{item.label ?? item.name}</Text>
           <Text style={[styles.chevron, { color: theme.border }]}>›</Text>
         </Pressable>
       ))}
@@ -54,7 +58,14 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
 
   const screens = useMemo(
     () => [
-      { name: '__more_list__', component: MoreListScreen, headerShown: false },
+      {
+        name: '__more_list__',
+        component: MoreListScreen,
+        headerShown: false,
+        initialParams: {
+          items: overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon })),
+        },
+      },
       ...overflowRoutes.map((r) => ({
         name: r.name,
         component: r.component,
@@ -65,20 +76,24 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
     [overflowRoutes],
   );
 
-  return (
-    <MoreRoutesContext.Provider value={overflowRoutes}>
-      <PushNavigator initialRoute="__more_list__" screens={screens} />
-    </MoreRoutesContext.Provider>
-  );
+  return <PushNavigator initialRoute="__more_list__" screens={screens} />;
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rowLabel: { flex: 1, fontSize: 17 },
   chevron: { fontSize: 20, fontWeight: '300' },

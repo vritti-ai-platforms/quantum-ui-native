@@ -2,7 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 
 export interface PushScreenConfig<RouteName extends string = string> {
   name: RouteName;
-  component: ComponentType;
+  component: ComponentType<any>;
   title?: string;
   headerShown?: boolean;
   initialParams?: object;
