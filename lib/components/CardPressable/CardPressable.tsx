@@ -48,6 +48,7 @@ function CardPressable({
           selected && 'bg-primary/5 border-primary border-[1.5px]',
           disabled && 'opacity-50',
           pressed && 'opacity-70',
+          'shadow-sm',
           className,
         )}
         {...props}

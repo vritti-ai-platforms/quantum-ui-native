@@ -36,7 +36,15 @@ export const PushNavigator = <RouteName extends string = string>({
         const options: NativeStackNavigationOptions =
           screen.headerShown === false ? { headerShown: false } : { title: screen.title ?? '' };
 
-        return <Stack.Screen key={screen.name} name={screen.name} component={screen.component} options={options} />;
+        return (
+          <Stack.Screen
+            key={screen.name}
+            name={screen.name}
+            component={screen.component}
+            initialParams={screen.initialParams}
+            options={options}
+          />
+        );
       })}
     </Stack.Navigator>
   );

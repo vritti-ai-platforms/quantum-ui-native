@@ -6,7 +6,7 @@ import type { SFSymbol } from 'sf-symbols-typescript';
 /** Platform-aware icon: SF Symbol on iOS, Material Symbol on Android */
 export interface TabIcon {
   sfSymbol: SFSymbol;
-  materialSymbol: MaterialSymbolProps['name'];
+  materialSymbol?: MaterialSymbolProps['name'];
 }
 
 interface RouteConfigBase {
@@ -25,6 +25,10 @@ export interface RouteConfig extends RouteConfigBase {
 
 /** Props for `<BottomNavigation>` */
 export interface BottomNavigationProps {
+  /**
+   * Tab routes to render. iOS: first 4 visible, overflow in a custom More tab.
+   * Android: first 3 visible, overflow in a custom More tab.
+   */
   routes: RouteConfig[];
   initialRoute?: string;
   screenOptions?: BottomTabNavigationOptions;

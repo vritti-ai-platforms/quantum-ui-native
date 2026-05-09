@@ -47,7 +47,10 @@ export const StaticAlert = ({
   return (
     <View
       role="alert"
-      className={cn('flex-row items-start gap-3 rounded-xl border border-border bg-card px-4 py-3', className)}
+      className={cn(
+        'flex-row items-start gap-3 rounded-xl shadow-sm border border-border bg-card px-4 py-3',
+        className,
+      )}
       {...props}
     >
       {/* h-[22px] matches the text-sm line-height (16px font × 1.375 leading)

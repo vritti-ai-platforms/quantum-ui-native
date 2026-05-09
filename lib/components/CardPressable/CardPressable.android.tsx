@@ -29,7 +29,12 @@ function CardPressable({ className, selected, disabled, android_ripple, children
       <Pressable
         disabled={disabled}
         android_ripple={android_ripple ?? defaultRipple}
-        className={cn(selected && 'bg-secondary/40 border-primary border', disabled && 'opacity-50', className)}
+        className={cn(
+          'shadow-sm bg-card border border-border rounded-xl',
+          selected && 'bg-secondary/40 border-primary border',
+          disabled && 'opacity-50',
+          className,
+        )}
         {...props}
       >
         {children}

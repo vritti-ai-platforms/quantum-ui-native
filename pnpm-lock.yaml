@@ -117,6 +117,9 @@ importers:
       '@jest/globals':
         specifier: ^30.0.0
         version: 30.3.0
+      '@lodev09/react-native-true-sheet':
+        specifier: ^3.10.1
+        version: 3.10.1(edf54f73d76ce1e48995e1681cad69fd)
       '@react-native-vector-icons/material-icons':
         specifier: ^12.3.0
         version: 12.5.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -1860,6 +1863,25 @@ packages:
     engines: {node: '>=10.0'}
     peerDependencies:
       tslib: '2'
+
+  '@lodev09/react-native-true-sheet@3.10.1':
+    resolution: {integrity: sha512-cF5AlYElBIaPyKWuu8WfDFZUm40Wbo5VC1fI6uF5N9mTxQ4w10PYc+msKUxuS6Kqhhl5pZrXRu186wfCPPdDLg==}
+    peerDependencies:
+      '@gorhom/bottom-sheet': '>=5'
+      '@react-navigation/native': '>=7'
+      react: '*'
+      react-native: '*'
+      react-native-reanimated: '>=4'
+      react-native-worklets: '*'
+    peerDependenciesMeta:
+      '@gorhom/bottom-sheet':
+        optional: true
+      '@react-navigation/native':
+        optional: true
+      react-native-reanimated:
+        optional: true
+      react-native-worklets:
+        optional: true
 
   '@lukeed/ms@2.0.2':
     resolution: {integrity: sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==}
@@ -7868,6 +7890,7 @@ packages:
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-to-istanbul@9.3.0:
@@ -10260,6 +10283,15 @@ snapshots:
       '@jsonjoy.com/codegen': 17.67.0(tslib@2.8.1)
       tslib: 2.8.1
 
+  '@lodev09/react-native-true-sheet@3.10.1(edf54f73d76ce1e48995e1681cad69fd)':
+    dependencies:
+      react: 19.2.0
+      react-native: 0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
+    optionalDependencies:
+      '@react-navigation/native': 8.0.0-alpha.17(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      react-native-reanimated: 4.3.0(react-native-worklets@0.8.1(@babel/core@7.29.0)(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      react-native-worklets: 0.8.1(@babel/core@7.29.0)(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+
   '@lukeed/ms@2.0.2': {}
 
   '@module-federation/error-codes@0.22.0': {}
@@ -11351,9 +11383,7 @@ snapshots:
       metro-runtime: 0.83.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.83.0': {}
 

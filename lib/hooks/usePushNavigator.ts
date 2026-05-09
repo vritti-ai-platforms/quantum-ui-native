@@ -9,7 +9,6 @@ import type { PushNavigatorContextValue } from '../components/PushNavigator/type
 
 type PushNavigatorNavigation = NavigationProp<ParamListBase> & {
   popToTop: () => void;
-  push: (name: string) => void;
 };
 
 export const usePushNavigator = <RouteName extends string = string>(): PushNavigatorContextValue<RouteName> => {
@@ -25,9 +24,12 @@ export const usePushNavigator = <RouteName extends string = string>(): PushNavig
     navigation.popToTop();
   }, [navigation]);
 
+  // navigate() propagates up the navigator tree, so this works correctly when the
+  // component is rendered inside a Tab screen or nested navigator (e.g. More tab)
+  // where push() doesn't exist or can't reach the root PushNavigator's screens.
   const push = useCallback(
     (nextRoute: RouteName) => {
-      navigation.push(nextRoute);
+      navigation.navigate(nextRoute as string);
     },
     [navigation],
   );

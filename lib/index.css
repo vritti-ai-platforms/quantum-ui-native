@@ -85,9 +85,13 @@
   --radius-3xl: var(--rad-3xl);
 
   /* ── Fonts ───────────────────────────────────────────────────────────── */
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
-  --font-serif: "Playfair Display", serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* React Native resolves fonts by PostScript name (TTF metadata), not CSS
+   * display name. "IBM Plex Sans" → IBMPlexSans-Regular/Bold/etc., matched
+   * by weight at runtime. Fonts must be linked as native assets — see
+   * lib/assets/fonts/ and react-native.config.js in the consuming app. */
+  --font-sans: "IBM Plex Sans";
+  --font-serif: "Playfair Display";
+  --font-mono: "JetBrains Mono";
 
   /* ── Font sizes ──────────────────────────────────────────────────────────
    * Mobile-tuned scale. Tailwind v4's web defaults are ~1px small for native

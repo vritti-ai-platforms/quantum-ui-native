@@ -18,11 +18,21 @@ export interface ListItemProps extends Omit<ViewProps, 'children'> {
   selected?: boolean;
   disabled?: boolean;
   loading?: boolean;
+  index?: number;
+  total?: number;
 }
 
-function ListItemSkeleton({ className }: { className?: string }) {
+function groupItemStyle(index?: number, total?: number): string {
+  if (index === undefined || total === undefined) return '';
+  if (total === 1) return 'border border-border rounded-2xl';
+  if (index === 0) return 'border-t border-l border-r border-b-0 border-border rounded-t-2xl rounded-b-none';
+  if (index === total - 1) return 'border border-border rounded-b-2xl rounded-t-none';
+  return 'border-t border-l border-r border-b-0 border-border rounded-none';
+}
+
+function ListItemSkeleton({ className, index, total }: { className?: string; index?: number; total?: number }) {
   return (
-    <View className={cn('flex-row items-center gap-3 bg-card px-4 py-3', className)}>
+    <View className={cn('flex-row items-center gap-3 bg-card px-4 py-3', groupItemStyle(index, total), className)}>
       <Skeleton className="h-8 w-8 rounded-lg" />
       <View className="flex-1 gap-1">
         <Skeleton className="h-4 w-32 rounded" />
@@ -43,9 +53,11 @@ function ListItem({
   disabled,
   loading,
   className,
+  index,
+  total,
   ...props
 }: ListItemProps) {
-  if (loading) return <ListItemSkeleton className={className} />;
+  if (loading) return <ListItemSkeleton className={className} index={index} total={total} />;
 
   const body = (
     <>
@@ -66,6 +78,7 @@ function ListItem({
   );
 
   const layout = 'flex-row items-center gap-3 bg-card px-4 py-3';
+  const groupStyle = groupItemStyle(index, total);
 
   if (onPress) {
     return (
@@ -73,7 +86,7 @@ function ListItem({
         onPress={onPress}
         selected={selected}
         disabled={disabled}
-        className={cn(layout, className)}
+        className={cn(layout, groupStyle, className)}
         {...props}
       >
         {body}
@@ -82,7 +95,7 @@ function ListItem({
   }
 
   return (
-    <View className={cn(layout, className)} {...props}>
+    <View className={cn(layout, groupStyle, className)} {...props}>
       {body}
     </View>
   );

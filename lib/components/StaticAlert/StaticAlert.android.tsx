@@ -53,7 +53,7 @@ export const StaticAlert = ({
       // on rounded surfaces when borders are declared via shorthands. Spelling
       // out all four sides forces every edge to render.
       className={cn(
-        'flex-row items-start gap-3 rounded-md border-b border-l border-r border-t border-border bg-card px-4 py-3',
+        'flex-row items-start gap-3 rounded-xl shadow-sm border border-border bg-card px-4 py-3',
         className,
       )}
       {...props}

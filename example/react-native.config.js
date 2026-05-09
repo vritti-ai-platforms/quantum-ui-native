@@ -11,6 +11,7 @@ module.exports = {
   dependencies: {
     [pkg.name]: {
       root: path.join(__dirname, '..'),
+      assets: [path.join(__dirname, '../lib/assets/fonts')],
       platforms: {
         ios: {},
         android: {},

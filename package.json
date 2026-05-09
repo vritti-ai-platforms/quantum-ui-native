@@ -25,6 +25,11 @@
       "types": "./dist/typescript/lib/components/Badge/index.d.ts",
       "default": "./dist/module/components/Badge/index.js"
     },
+    "./BottomSheet": {
+      "source": "./lib/components/BottomSheet/index.ts",
+      "types": "./dist/typescript/lib/components/BottomSheet/index.d.ts",
+      "default": "./dist/module/components/BottomSheet/index.js"
+    },
     "./BottomNavigation": {
       "source": "./lib/components/BottomNavigation/index.ts",
       "types": "./dist/typescript/lib/components/BottomNavigation/index.d.ts",
@@ -254,6 +259,7 @@
   },
   "devDependencies": {
     "@callstack/liquid-glass": "^0.7.1",
+    "@lodev09/react-native-true-sheet": "^3.10.1",
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
@@ -300,6 +306,7 @@
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
+    "@lodev09/react-native-true-sheet": ">=3.10.0",
     "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",

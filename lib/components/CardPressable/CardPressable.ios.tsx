@@ -44,6 +44,7 @@ function CardPressable({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         className={cn(
+          'shadow-sm bg-card border border-border rounded-xl',
           selected && 'bg-primary/5 border-primary border-[1.5px]',
           disabled && 'opacity-50',
           pressed && 'opacity-70',
