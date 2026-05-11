@@ -1,6 +1,6 @@
 import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import { usePlatformInfo, useTheme } from '../../hooks';
+import { usePlatformInfo } from '../../hooks';
 import { getTheme } from '../../theme';
 import type { PushNavigatorProps } from './types';
 
@@ -13,11 +13,10 @@ export const PushNavigator = <RouteName extends string = string>({
   renderHeader: _renderHeader,
   screens,
 }: PushNavigatorProps<RouteName>) => {
-  const { isDark } = useTheme();
   const { version } = usePlatformInfo();
 
   const screenOptions = useMemo<NativeStackNavigationOptions>(() => {
-    const colors = getTheme(isDark ? 'dark' : 'light');
+    const colors = getTheme();
     const isLiquidGlass = version >= 26;
 
     return {
@@ -37,7 +36,7 @@ export const PushNavigator = <RouteName extends string = string>({
       headerTransparent: isLiquidGlass,
       contentStyle: { backgroundColor: colors.background },
     };
-  }, [isDark, version]);
+  }, [version]);
 
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={screenOptions}>

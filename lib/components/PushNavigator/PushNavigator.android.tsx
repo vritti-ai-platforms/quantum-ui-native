@@ -1,6 +1,4 @@
 import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { useMemo } from 'react';
-import { useTheme } from '../../hooks';
 import { getTheme } from '../../theme';
 import type { PushNavigatorProps } from './types';
 
@@ -13,22 +11,16 @@ export const PushNavigator = <RouteName extends string = string>({
   renderHeader: _renderHeader,
   screens,
 }: PushNavigatorProps<RouteName>) => {
-  const { isDark } = useTheme();
-
-  const screenOptions = useMemo<NativeStackNavigationOptions>(() => {
-    const colors = getTheme(isDark ? 'dark' : 'light');
-
-    return {
-      animation: 'fade_from_bottom',
-      contentStyle: { backgroundColor: colors.background },
-      headerBackIcon: { type: 'materialSymbol', name: 'arrow_back' },
-      headerLargeTitle: false,
-      headerShadowVisible: false,
-      headerStyle: { backgroundColor: colors.background },
-      headerTintColor: colors.foreground,
-      headerTitleStyle: { color: colors.foreground },
-    };
-  }, [isDark]);
+  const colors = getTheme();
+  const screenOptions: NativeStackNavigationOptions = {
+    animation: 'fade_from_bottom',
+    contentStyle: { backgroundColor: colors.background },
+    headerBackIcon: { type: 'materialSymbol', name: 'arrow_back' },
+    headerShadowVisible: false,
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.foreground,
+    headerTitleStyle: { color: colors.foreground },
+  };
 
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={screenOptions}>

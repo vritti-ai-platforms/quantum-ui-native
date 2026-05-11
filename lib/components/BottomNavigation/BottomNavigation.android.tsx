@@ -1,10 +1,9 @@
+import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
-import { useTheme } from '../../hooks/useTheme';
 import { getTheme } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
@@ -29,8 +28,7 @@ type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
   const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
-  const { isDark } = useTheme();
-  const theme = useMemo(() => getTheme(isDark ? 'dark' : 'light'), [isDark]);
+  const theme = getTheme();
 
   return (
     <ScreenContainer scrollable>
@@ -108,12 +106,10 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const visibleRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(0, MAX_VISIBLE) : allRoutes;
   const overflowRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(MAX_VISIBLE) : [];
   const hasMore = overflowRoutes.length > 0;
-
-  const { isDark } = useTheme();
   const systemScheme = useColorScheme();
   const isNavDark = systemScheme === 'dark';
 
-  const background = useMemo(() => getTheme(isDark ? 'dark' : 'light').background, [isDark]);
+  const background = getTheme().background;
 
   const navigationTheme = useMemo(() => {
     const base = isNavDark ? DarkTheme : DefaultTheme;

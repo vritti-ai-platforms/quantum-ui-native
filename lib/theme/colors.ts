@@ -1,3 +1,5 @@
+import { Appearance } from 'react-native';
+
 // Design tokens — HSL values matching the @vritti/quantum-ui (web) theme.
 // Converted from OKLCH source values in quantum-ui/lib/index.css.
 // Used by ThemeProvider via NativeWind's VariableContextProvider to inject CSS variables at runtime.
@@ -148,6 +150,7 @@ export const THEME = {
   dark: createThemePalette(darkColors),
 } as const;
 
-export function getTheme(colorScheme: 'light' | 'dark') {
-  return THEME[colorScheme];
+export function getTheme() {
+  const scheme = Appearance.getColorScheme();
+  return THEME[scheme === 'dark' ? 'dark' : 'light'];
 }

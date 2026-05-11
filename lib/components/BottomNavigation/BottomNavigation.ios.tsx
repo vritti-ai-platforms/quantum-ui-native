@@ -1,12 +1,12 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useMemo } from 'react';
-import { DynamicColorIOS, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { DynamicColorIOS, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SFSymbol } from 'react-native-sfsymbols';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
-import { getTheme } from '../../theme/colors';
+import { getTheme, THEME } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
@@ -28,8 +28,7 @@ type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
   const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
-  const { isDark } = useTheme();
-  const theme = useMemo(() => getTheme(isDark ? 'dark' : 'light'), [isDark]);
+  const theme = getTheme();
 
   return (
     <ScreenContainer scrollable>
@@ -111,8 +110,8 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const isIOS26Plus = version >= 26;
   const isNavDark = systemScheme === 'dark';
 
-  const lightThemeColors = useMemo(() => getTheme('light'), []);
-  const darkThemeColors = useMemo(() => getTheme('dark'), []);
+  const lightThemeColors = THEME.light;
+  const darkThemeColors = THEME.dark;
   const currentBackground = isDark ? darkThemeColors.background : lightThemeColors.background;
 
   const sceneBackground = useMemo(
@@ -139,15 +138,14 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
     };
   }, [isNavDark, sceneBackground]);
 
-  const tabBarStyle = useMemo(
-    () => (isIOS26Plus ? { backgroundColor: 'transparent' as const } : { backgroundColor: currentBackground }),
-    [isIOS26Plus, currentBackground],
-  );
+  const tabBarStyle = useMemo(() => ({ backgroundColor: currentBackground }), [currentBackground]);
 
-  // Remount when route list or theme changes so React Navigation doesn't restore
-  // stale persisted state (e.g. Account as active tab before features load).
+  // iOS 26+: key is CONSTANT — DynamicColorIOS handles appearance changes natively;
+  // remounting the UITabBarController resets the glass material state.
+  // iOS 18-: key includes isDark + routeKey so the controller remounts on theme flip
+  // (native UITabBarController ignores mid-life tabBarStyle updates) and on route changes.
   const routeKey = allRoutes.map((r) => r.name).join(',');
-  const navigatorKey = isIOS26Plus ? `tab-nav-${routeKey}` : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
+  const navigatorKey = isIOS26Plus ? 'tab-nav' : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
 
   return (
     <ThemeProvider value={navigationTheme}>
@@ -156,8 +154,22 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
         initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
         screenOptions={{
           headerShown: false,
-          tabBarActiveBackgroundColor: 'transparent',
-          tabBarStyle,
+          // iOS 26+: tabBarBlurEffect:'systemDefault' makes RNSTabBarAppearanceCoordinator
+          // skip setting UITabBarAppearance.backgroundEffect entirely, so UIKit applies
+          // liquid glass automatically. backgroundColor:'transparent' prevents the
+          // appearance from setting an opaque color on top of the glass.
+          // The React Navigation default (systemMaterial/systemMaterialDark) always
+          // sets a blur effect that overrides the glass — 'systemDefault' is the escape hatch.
+          // iOS 18-: explicit background color; old-style blur via systemMaterial default.
+          ...(isIOS26Plus
+            ? {
+                tabBarBlurEffect: 'systemDefault',
+                tabBarStyle: { backgroundColor: 'transparent' as const },
+              }
+            : {
+                tabBarActiveBackgroundColor: 'transparent',
+                tabBarStyle,
+              }),
           sceneStyle: { backgroundColor: sceneBackground },
           ...screenOptions,
         }}
