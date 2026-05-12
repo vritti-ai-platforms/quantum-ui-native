@@ -8,7 +8,7 @@ import {
 import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { VariableContextProvider } from 'nativewind';
 import { forwardRef, useCallback, useContext, useImperativeHandle, useMemo, useRef } from 'react';
-import { Platform, type StyleProp, type ViewStyle, View } from 'react-native';
+import { Platform, type StyleProp, View, type ViewStyle } from 'react-native';
 import { darkColors, lightColors, THEME } from '../../theme/colors';
 import { platformRadii } from '../../theme/radii';
 import { darkShadows, lightShadows } from '../../theme/shadows';
@@ -35,7 +35,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       dismissible = true,
       draggable = true,
       dimmed = true,
-      glass,
       onDismiss,
       onPresent,
       onChange,
@@ -46,7 +45,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     const { version } = usePlatformInfo();
     const isIOS26 = Platform.OS === 'ios' && version >= 26;
-    const useGlass = glass ?? (isIOS26 && LiquidGlass != null);
+    const useGlass = isIOS26 && LiquidGlass != null;
 
     const themeCtx = useContext(ThemeContext);
     const isDark = themeCtx?.isDark ?? false;
@@ -97,9 +96,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     const wrappedChildren = themeCtx ? (
       <ThemeContext.Provider value={themeCtx}>
-        <VariableContextProvider value={themeValues}>
-          {children}
-        </VariableContextProvider>
+        <VariableContextProvider value={themeValues}>{children}</VariableContextProvider>
       </ThemeContext.Provider>
     ) : (
       children

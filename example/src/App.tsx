@@ -2,7 +2,7 @@ import '../global.css';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { BottomNavigation, type RouteConfig } from '@vritti/quantum-ui-native/BottomNavigation';
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
-import { getTheme, ThemeProvider } from '@vritti/quantum-ui-native/theme';
+import { THEME_TOKENS, ThemeProvider } from '@vritti/quantum-ui-native/theme';
 import { useMemo } from 'react';
 import CardsScreen from './screens/CardsScreen';
 import ComponentsScreen from './screens/ComponentsScreen';
@@ -40,7 +40,7 @@ function ExampleNavigation() {
       ...(isDark ? DarkTheme : DefaultTheme),
       colors: {
         ...(isDark ? DarkTheme : DefaultTheme).colors,
-        ...getTheme(isDark ? 'dark' : 'light'),
+        ...THEME_TOKENS[isDark ? 'dark' : 'light'].palette,
       },
     }),
     [isDark],

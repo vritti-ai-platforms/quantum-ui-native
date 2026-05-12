@@ -19,10 +19,10 @@ export interface BottomSheetProps {
   /** Show dim backdrop. Default: true */
   dimmed?: boolean;
   /**
-   * iOS 26+ only. Use @callstack/liquid-glass background.
-   * Defaults to true on iOS 26+ when the package is installed.
+   * Background style. 'glass' uses Liquid Glass on iOS 26+ (default).
+   * 'solid' forces the opaque background even on iOS 26+.
    */
-  glass?: boolean;
+  variant?: 'glass' | 'solid';
   onDismiss?: () => void;
   onPresent?: () => void;
   onChange?: (index: number) => void;

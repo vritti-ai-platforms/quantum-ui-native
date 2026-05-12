@@ -1,4 +1,6 @@
 import { Appearance } from 'react-native';
+import { platformRadii } from './radii';
+import { darkShadows, lightShadows } from './shadows';
 
 // Design tokens — HSL values matching the @vritti/quantum-ui (web) theme.
 // Converted from OKLCH source values in quantum-ui/lib/index.css.
@@ -150,7 +152,29 @@ export const THEME = {
   dark: createThemePalette(darkColors),
 } as const;
 
+// Single source of truth for per-scheme token bundles.
+// Variables are spread once at module load — getVariableValues() becomes a pure lookup.
+export const THEME_TOKENS = {
+  light: {
+    palette: THEME.light,
+    variables: { ...lightColors, ...platformRadii, ...lightShadows },
+  },
+  dark: {
+    palette: THEME.dark,
+    variables: { ...darkColors, ...platformRadii, ...darkShadows },
+  },
+} as const;
+
+export type ThemeScheme = keyof typeof THEME_TOKENS;
+
+function resolveScheme(): ThemeScheme {
+  return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+}
+
 export function getTheme() {
-  const scheme = Appearance.getColorScheme();
-  return THEME[scheme === 'dark' ? 'dark' : 'light'];
+  return THEME_TOKENS[resolveScheme()].palette;
+}
+
+export function getVariableValues() {
+  return THEME_TOKENS[resolveScheme()].variables;
 }

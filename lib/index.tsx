@@ -24,6 +24,8 @@ export {
   darkColors,
   lightColors,
   THEME,
+  THEME_TOKENS,
+  type ThemeScheme,
   getTheme,
   type ThemeContextValue,
   type ThemePreference,

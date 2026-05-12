@@ -2,9 +2,7 @@ import { VariableContextProvider } from 'nativewind';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { Appearance, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
-import { darkColors, lightColors } from './colors';
-import { platformRadii } from './radii';
-import { darkShadows, lightShadows } from './shadows';
+import { THEME_TOKENS } from './colors';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -148,10 +146,7 @@ export const ThemeProvider = ({
     [resolvedScheme, isDark, themePreference, setThemePreference, isHydrated],
   );
 
-  const themeValues = useMemo(
-    () => ({ ...(isDark ? darkColors : lightColors), ...platformRadii, ...(isDark ? darkShadows : lightShadows) }),
-    [isDark],
-  );
+  const themeValues = THEME_TOKENS[resolvedScheme].variables;
 
   if (!isHydrated) return null;
 

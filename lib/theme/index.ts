@@ -1,9 +1,9 @@
-export { darkColors, lightColors, THEME, getTheme } from './colors';
+export { darkColors, getTheme, lightColors, THEME, THEME_TOKENS, type ThemeScheme } from './colors';
 export {
+  ThemeContext,
   type ThemeContextValue,
   type ThemePreference,
-  type ThemeStorageAdapter,
-  ThemeContext,
   ThemeProvider,
   type ThemeProviderProps,
+  type ThemeStorageAdapter,
 } from './ThemeProvider';
