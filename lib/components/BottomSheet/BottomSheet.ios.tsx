@@ -4,6 +4,7 @@ import {
   type BottomSheetBackgroundProps,
   BottomSheetModal,
   BottomSheetView,
+  useBottomSheet,
 } from '@gorhom/bottom-sheet';
 import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { VariableContextProvider } from 'nativewind';
@@ -18,8 +19,10 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-reanimated';
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
+import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
 import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDetent } from './BottomSheetTypes';
 
 export type { BottomSheetProps, BottomSheetRef };
@@ -57,7 +60,6 @@ const IOS_SHEET_BG =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.secondary }) : null;
 const IOS_BACKDROP = Platform.OS === 'ios' ? DynamicColorIOS({ light: BACKDROP_LIGHT, dark: BACKDROP_DARK }) : null;
 const IOS_GRABBER = Platform.OS === 'ios' ? DynamicColorIOS({ light: GRABBER_LIGHT, dark: GRABBER_DARK }) : null;
-
 // Stable default so callers that don't pass `detents` don't bust mapDetents memo.
 const DEFAULT_DETENTS: SheetDetent[] = ['auto'];
 
@@ -69,6 +71,28 @@ const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   </View>
 ));
 Grabber.displayName = 'BottomSheet.Grabber';
+
+// ---------- Progress bridge ----------
+// Bridges the modal's internal `animatedIndex` (output from useBottomSheet)
+// into the context-provided progress SharedValue read by the scaled screen.
+
+const SheetProgressBridge = () => {
+  const { animatedIndex, animatedPosition } = useBottomSheet();
+  const scaler = useBottomSheetBackgroundScaler();
+  useAnimatedReaction(
+    () => ({ idx: animatedIndex.value, pos: animatedPosition.value }),
+    (current, prev) => {
+      if (!scaler) return;
+      scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
+      // Capture sheet top only while opening (idx increasing). Freeze during
+      // drag-down and close so the floating button stays put.
+      if (!prev || current.idx >= prev.idx) {
+        scaler.sheetTop.value = current.pos;
+      }
+    },
+  );
+  return null;
+};
 
 // ---------- Main ----------
 
@@ -110,6 +134,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // effects, where identity matters.
     const { snapPoints, dynamic } = useMemo(() => mapDetents(detents), [detents]);
 
+    // When a background scaler is mounted above, suppress the internal backdrop —
+    // the scaler renders its own dim overlay synchronized with the drag.
+    const scaler = useBottomSheetBackgroundScaler();
+    const effectiveDimmed = dimmed && !scaler;
+
     useImperativeHandle(
       ref,
       () => ({
@@ -126,7 +155,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // props and remounts internal pieces on identity change.
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) =>
-        dimmed ? (
+        effectiveDimmed ? (
           <BottomSheetBackdrop
             {...props}
             disappearsOnIndex={-1}
@@ -134,7 +163,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             style={[props.style, { backgroundColor: backdropColor }]}
           />
         ) : null,
-      [dimmed, backdropColor],
+      [effectiveDimmed, backdropColor],
     );
 
     const renderBackground = useCallback(
@@ -178,6 +207,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         onChange={onChange}
       >
         <BottomSheetView>
+          <SheetProgressBridge />
           {themeCtx ? (
             <ThemeContext.Provider value={themeCtx}>
               <VariableContextProvider value={themeValues}>

@@ -5,6 +5,10 @@
 # XDE
 .expo/
 
+
+#claude
+.claude/
+
 # VSCode
 .vscode/
 jsconfig.json
