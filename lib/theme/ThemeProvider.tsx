@@ -57,14 +57,18 @@ function resolveScheme(
 
 // Applies the correct native appearance override.
 // - 'light' / 'dark' → forces the scheme regardless of system on both platforms
-// - 'system'         → on iOS passes null to release the override; on Android
-//                      no-op because AppearanceModule.setColorScheme is @NonNull
-//                      and throws on null — useColorScheme() tracks the live
-//                      system scheme on Android so no explicit call is needed.
+// - 'system'         → passes null to release the override. Both iOS and modern
+//                      Android (RN 0.74+) accept null and revert to the actual
+//                      device scheme. The try/catch is a safety net for older
+//                      Android builds where AppearanceModule.setColorScheme was
+//                      @NonNull — there we degrade gracefully (the previous
+//                      override stays for the session).
 function applyAppearanceScheme(preference: ThemePreference): void {
   if (preference === 'system') {
-    if (Platform.OS === 'ios') {
+    try {
       (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
+    } catch {
+      // older Android: cannot release the override
     }
   } else {
     Appearance.setColorScheme(preference);
@@ -134,9 +138,28 @@ export const ThemeProvider = ({
   const setThemePreference = useCallback(
     async (preference: ThemePreference, options?: SetThemePreferenceOptions) => {
       const animated = options?.animated !== false;
+
+      // Apply the native appearance change FIRST. For 'system' this releases
+      // any active override; for 'light' / 'dark' it sets the override. After
+      // this synchronous call returns, `Appearance.getColorScheme()` reflects
+      // the trait that's now in effect — not the stale override from before.
+      applyAppearanceScheme(preference);
+
+      // Compute the scheme that will actually be visible.
+      // - For 'light' / 'dark', it's the preference itself.
+      // - For 'system', it's whatever the device's real scheme is now that
+      //   the override has been released. Reading via getColorScheme() here
+      //   instead of the `liveSystemScheme` hook avoids a stale-value bug:
+      //   the hook only updates on the next React tick after the Appearance
+      //   change listener fires, but we need the new value *right now* to
+      //   correctly decide whether to play the ripple. Without this, picking
+      //   'system' from a forced theme silently skips the animation.
+      const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
+      const nextScheme: 'light' | 'dark' = rawScheme === 'dark' ? 'dark' : 'light';
+
       // Only animate when the resolved scheme actually changes — picking
-      // 'system' on a device already in the matching scheme is a no-op.
-      const nextScheme = resolveScheme(preference, liveSystemScheme, lastKnownSystemScheme);
+      // 'system' on a device that already matches the current scheme has
+      // no visible effect, so skipping the ripple is correct.
       if (animated && nextScheme !== resolvedScheme) {
         const { width, height } = Dimensions.get('window');
         setTransition({
@@ -144,15 +167,13 @@ export const ThemeProvider = ({
           origin: options?.origin ?? { x: width / 2, y: height },
         });
       }
-      // Native layer first — before setState — so the tab bar never sees
-      // a stale scheme during the transition. 'system' releases the override.
-      applyAppearanceScheme(preference);
+
       setThemePreferenceState(preference);
       if (storage) {
         await storage.setItem(storageKey, preference);
       }
     },
-    [storage, storageKey, resolvedScheme, liveSystemScheme, lastKnownSystemScheme],
+    [storage, storageKey, resolvedScheme],
   );
 
   const value = useMemo<ThemeContextValue>(
