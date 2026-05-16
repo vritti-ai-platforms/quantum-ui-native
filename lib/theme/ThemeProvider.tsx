@@ -56,19 +56,22 @@ function resolveScheme(
 }
 
 // Applies the correct native appearance override.
-// - 'light' / 'dark' → forces the scheme regardless of system on both platforms
-// - 'system'         → passes null to release the override. Both iOS and modern
-//                      Android (RN 0.74+) accept null and revert to the actual
-//                      device scheme. The try/catch is a safety net for older
-//                      Android builds where AppearanceModule.setColorScheme was
-//                      @NonNull — there we degrade gracefully (the previous
-//                      override stays for the session).
+// - 'light' / 'dark' → forces the scheme regardless of system on both platforms.
+// - 'system'         → iOS: pass null to release the override and revert to
+//                      the live system scheme. Android: no-op — the native
+//                      AppearanceModule.setColorScheme signature is @NonNull
+//                      at the Kotlin bridge layer, and passing null throws a
+//                      hard exception on the native thread that JS cannot
+//                      catch. The user's preference is still persisted to
+//                      storage, so picking 'system' takes effect on the next
+//                      cold launch (hydration skips applyAppearanceScheme
+//                      when the stored preference is 'system', so no override
+//                      is reapplied and useColorScheme reports the live
+//                      device scheme).
 function applyAppearanceScheme(preference: ThemePreference): void {
   if (preference === 'system') {
-    try {
+    if (Platform.OS === 'ios') {
       (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
-    } catch {
-      // older Android: cannot release the override
     }
   } else {
     Appearance.setColorScheme(preference);
@@ -140,27 +143,42 @@ export const ThemeProvider = ({
       const animated = options?.animated !== false;
 
       // Apply the native appearance change FIRST. For 'system' this releases
-      // any active override; for 'light' / 'dark' it sets the override. After
-      // this synchronous call returns, `Appearance.getColorScheme()` reflects
-      // the trait that's now in effect — not the stale override from before.
+      // any active override (iOS only); for 'light' / 'dark' it sets the
+      // override on both platforms.
       applyAppearanceScheme(preference);
 
-      // Compute the scheme that will actually be visible.
-      // - For 'light' / 'dark', it's the preference itself.
-      // - For 'system', it's whatever the device's real scheme is now that
-      //   the override has been released. Reading via getColorScheme() here
-      //   instead of the `liveSystemScheme` hook avoids a stale-value bug:
-      //   the hook only updates on the next React tick after the Appearance
-      //   change listener fires, but we need the new value *right now* to
-      //   correctly decide whether to play the ripple. Without this, picking
-      //   'system' from a forced theme silently skips the animation.
-      const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
-      const nextScheme: 'light' | 'dark' = rawScheme === 'dark' ? 'dark' : 'light';
+      // Decide whether to queue the ripple overlay.
+      //
+      // iOS + 'system' is a special case: Appearance.setColorScheme(null)
+      // synchronously poisons RN's JS-side appearance cache with
+      // { colorScheme: null }, so Appearance.getColorScheme() returns null
+      // for one tick until the appearanceChanged event arrives with the
+      // real device scheme. That makes a sync "did the scheme change?"
+      // check unreliable — we'd incorrectly skip the ripple in the case
+      // forced-Light → System on a Dark device (and vice-versa).
+      // So on iOS + 'system' we optimistically animate whenever we're
+      // actually switching *into* 'system'. If the device happens to
+      // match the previously-forced scheme, the overlay paints the same
+      // color over itself — visually a near-no-op, no harm.
+      //
+      // Everywhere else the sync check is correct:
+      // - 'light' / 'dark' → nextScheme is the preference itself.
+      // - Android 'system' → applyAppearanceScheme is a no-op (the bridge
+      //   rejects null), so the cache is unchanged and getColorScheme
+      //   returns the still-active override; if nothing visibly changes
+      //   we correctly skip the ripple.
+      let shouldAnimate = false;
+      if (animated) {
+        if (preference === 'system' && Platform.OS === 'ios') {
+          shouldAnimate = themePreference !== 'system';
+        } else {
+          const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
+          const nextScheme: 'light' | 'dark' = rawScheme === 'dark' ? 'dark' : 'light';
+          shouldAnimate = nextScheme !== resolvedScheme;
+        }
+      }
 
-      // Only animate when the resolved scheme actually changes — picking
-      // 'system' on a device that already matches the current scheme has
-      // no visible effect, so skipping the ripple is correct.
-      if (animated && nextScheme !== resolvedScheme) {
+      if (shouldAnimate) {
         const { width, height } = Dimensions.get('window');
         setTransition({
           fromBg: THEME[resolvedScheme].background,
@@ -173,7 +191,7 @@ export const ThemeProvider = ({
         await storage.setItem(storageKey, preference);
       }
     },
-    [storage, storageKey, resolvedScheme],
+    [storage, storageKey, resolvedScheme, themePreference],
   );
 
   const value = useMemo<ThemeContextValue>(
