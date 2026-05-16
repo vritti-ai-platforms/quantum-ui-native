@@ -68,7 +68,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     {
       children,
       detents = DEFAULT_DETENTS,
-      cornerRadius = 16,
+      cornerRadius = 28,
       grabber = true,
       dismissible = true,
       draggable = true,

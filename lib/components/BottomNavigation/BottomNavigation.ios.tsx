@@ -28,6 +28,12 @@ type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
   const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
+  // Subscribe to ThemeContext — iOS 26+ keeps the Tab.Navigator mounted across
+  // theme flips (constant navigatorKey to preserve liquid-glass state), so this
+  // screen never re-renders unless it explicitly consumes the context. Without
+  // this line, getTheme() returns the palette captured at first mount and the
+  // More-tab rows show stale colors after a theme toggle.
+  useTheme();
   const theme = getTheme();
 
   return (
@@ -103,26 +109,30 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const overflowRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(MAX_VISIBLE) : [];
   const hasMore = overflowRoutes.length > 0;
 
-  const { isDark } = useTheme();
   const { version } = usePlatformInfo();
   const systemScheme = useColorScheme();
+  // Subscribe to user-driven preference flips so the navigator re-renders
+  // when the user picks light/dark/system from the AccountScreen picker —
+  // useColorScheme() alone doesn't fire on explicit overrides reliably.
+  const { isDark } = useTheme();
 
   const isIOS26Plus = version >= 26;
   const isNavDark = systemScheme === 'dark';
 
   const lightThemeColors = THEME.light;
   const darkThemeColors = THEME.dark;
-  const currentBackground = isDark ? darkThemeColors.background : lightThemeColors.background;
 
+  // DynamicColorIOS resolves at the UIKit layer via trait collection — when
+  // Appearance.setColorScheme() flips the window's overrideUserInterfaceStyle,
+  // UIKit redraws sceneBackground and the tab bar background without any
+  // React re-render or navigator remount.
   const sceneBackground = useMemo(
     () =>
-      isIOS26Plus
-        ? DynamicColorIOS({
-            light: lightThemeColors.background,
-            dark: darkThemeColors.background,
-          })
-        : currentBackground,
-    [isIOS26Plus, currentBackground, lightThemeColors.background, darkThemeColors.background],
+      DynamicColorIOS({
+        light: lightThemeColors.background,
+        dark: darkThemeColors.background,
+      }),
+    [lightThemeColors.background, darkThemeColors.background],
   );
 
   const navigationTheme = useMemo(() => {
@@ -138,14 +148,26 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
     };
   }, [isNavDark, sceneBackground]);
 
-  const tabBarStyle = useMemo(() => ({ backgroundColor: currentBackground }), [currentBackground]);
+  const tabBarStyle = useMemo(
+    () => ({
+      backgroundColor: DynamicColorIOS({
+        light: lightThemeColors.background,
+        dark: darkThemeColors.background,
+      }),
+    }),
+    [lightThemeColors.background, darkThemeColors.background],
+  );
 
-  // iOS 26+: key is CONSTANT — DynamicColorIOS handles appearance changes natively;
-  // remounting the UITabBarController resets the glass material state.
-  // iOS 18-: key includes isDark + routeKey so the controller remounts on theme flip
-  // (native UITabBarController ignores mid-life tabBarStyle updates) and on route changes.
+  // iOS 26+: constant key — liquid glass paints through a re-resolving blur
+  // layer, so DynamicColorIOS handles theme flips without remount and the
+  // tab navigator preserves its state across appearance changes.
+  // iOS pre-26: include isDark in the key. Native UITabBarAppearance is a
+  // value-type snapshot that bakes the resolved color at navigator-creation
+  // time and does NOT reliably re-resolve DynamicColorIOS mid-life — without
+  // a remount the bar background stays on the previous theme until something
+  // else (a tab change, navigation event) re-applies screen options.
   const routeKey = allRoutes.map((r) => r.name).join(',');
-  const navigatorKey = isIOS26Plus ? 'tab-nav' : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
+  const navigatorKey = isIOS26Plus ? `tab-nav-${routeKey}` : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
 
   return (
     <ThemeProvider value={navigationTheme}>

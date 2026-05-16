@@ -1,7 +1,8 @@
 import { useBottomSheetModal } from '@gorhom/bottom-sheet';
+import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { DynamicColorIOS, Platform, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
   interpolate,
@@ -13,6 +14,7 @@ import {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeOnlyAnimatedView } from '../../reusables/native-only-animated-view';
+import { getTheme, THEME } from '../../theme';
 import { Button } from '../Button';
 import { DynamicIcon } from '../DynamicIcon';
 
@@ -47,6 +49,17 @@ export const BottomSheetBackgroundScalerProvider = ({ children }: { children: Re
 const CLOSE_ICON = { sfSymbol: 'xmark', materialIcon: 'close' } as const;
 // Gap between the sheet's top edge and the bottom of the close button.
 const CLOSE_BUTTON_OFFSET = 56;
+
+// NativeWind's className→variable lookup (useUnstableNativeVariable inside
+// DynamicIcon) is unreliable inside LiquidGlassView's render layer on iOS 26+
+// — it resolves to the light-mode foreground even in dark mode, leaving the
+// glyph almost invisible against the dark glass. Bypass it by passing an
+// explicit DynamicColorIOS so UIKit re-resolves at draw time against the
+// current trait collection.
+const IOS_CLOSE_ICON_COLOR =
+  Platform.OS === 'ios'
+    ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground })
+    : null;
 
 export interface BottomSheetScaledScreenProps {
   children: ReactNode;
@@ -91,6 +104,10 @@ const ScaledContent = ({
   const platform = usePlatformInfo();
   const useGlass = platform.os === 'ios' && platform.version >= 26;
   const insets = useSafeAreaInsets();
+  // Subscribe so Android re-renders on theme preference flips (iOS uses
+  // DynamicColorIOS below and doesn't need a JS re-render to update).
+  useTheme();
+  const closeIconColor = (IOS_CLOSE_ICON_COLOR ?? getTheme().foreground) as unknown as string;
 
   // Track whether any sheet is open in React land so we can toggle the
   // touch-capture layer on/off. When closed we set pointerEvents="none" so
@@ -177,7 +194,7 @@ const ScaledContent = ({
           accessibilityLabel="Close"
           hitSlop={8}
         >
-          <DynamicIcon icon={CLOSE_ICON} size={18} className="text-foreground" />
+          <DynamicIcon icon={CLOSE_ICON} size={18} color={closeIconColor} />
         </Button>
       </NativeOnlyAnimatedView>
     </View>

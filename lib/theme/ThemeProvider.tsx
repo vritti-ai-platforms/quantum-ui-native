@@ -1,8 +1,9 @@
 import { VariableContextProvider } from 'nativewind';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { Appearance, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
-import { THEME_TOKENS } from './colors';
+import { Appearance, Dimensions, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
+import { THEME, THEME_TOKENS } from './colors';
+import { ThemeTransitionOverlay } from './ThemeTransitionOverlay';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -12,11 +13,18 @@ export interface ThemeStorageAdapter {
   deleteItem?: (key: string) => Promise<void>;
 }
 
+export interface SetThemePreferenceOptions {
+  /** Tap origin (screen-space px) for the reveal circle. Defaults to bottom-center. */
+  origin?: { x: number; y: number };
+  /** Skip the reveal animation (e.g. during hydration). Defaults to true. */
+  animated?: boolean;
+}
+
 export interface ThemeContextValue {
   colorScheme: 'light' | 'dark';
   isDark: boolean;
   themePreference: ThemePreference;
-  setThemePreference: (preference: ThemePreference) => Promise<void>;
+  setThemePreference: (preference: ThemePreference, options?: SetThemePreferenceOptions) => Promise<void>;
   isHydrated: boolean;
 }
 
@@ -73,6 +81,7 @@ export const ThemeProvider = ({
 
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(defaultPreference);
   const [isHydrated, setIsHydrated] = useState(!storage);
+  const [transition, setTransition] = useState<{ fromBg: string; origin: { x: number; y: number } } | null>(null);
 
   const [lastKnownSystemScheme, setLastKnownSystemScheme] = useState<'light' | 'dark'>(() => {
     const initial = Appearance.getColorScheme();
@@ -123,7 +132,18 @@ export const ThemeProvider = ({
   }, [defaultPreference, storage, storageKey]);
 
   const setThemePreference = useCallback(
-    async (preference: ThemePreference) => {
+    async (preference: ThemePreference, options?: SetThemePreferenceOptions) => {
+      const animated = options?.animated !== false;
+      // Only animate when the resolved scheme actually changes — picking
+      // 'system' on a device already in the matching scheme is a no-op.
+      const nextScheme = resolveScheme(preference, liveSystemScheme, lastKnownSystemScheme);
+      if (animated && nextScheme !== resolvedScheme) {
+        const { width, height } = Dimensions.get('window');
+        setTransition({
+          fromBg: THEME[resolvedScheme].background,
+          origin: options?.origin ?? { x: width / 2, y: height },
+        });
+      }
       // Native layer first — before setState — so the tab bar never sees
       // a stale scheme during the transition. 'system' releases the override.
       applyAppearanceScheme(preference);
@@ -132,7 +152,7 @@ export const ThemeProvider = ({
         await storage.setItem(storageKey, preference);
       }
     },
-    [storage, storageKey],
+    [storage, storageKey, resolvedScheme, liveSystemScheme, lastKnownSystemScheme],
   );
 
   const value = useMemo<ThemeContextValue>(
@@ -155,6 +175,13 @@ export const ThemeProvider = ({
       <VariableContextProvider value={themeValues}>
         <View style={{ flex: 1 }} className={isDark ? 'dark' : ''}>
           {children}
+          {transition && (
+            <ThemeTransitionOverlay
+              fromBg={transition.fromBg}
+              origin={transition.origin}
+              onComplete={() => setTransition(null)}
+            />
+          )}
         </View>
       </VariableContextProvider>
     </ThemeContext.Provider>
