@@ -13,6 +13,9 @@ import { darkColors, lightColors, THEME } from '../../theme/colors';
 import { platformRadii } from '../../theme/radii';
 import { darkShadows, lightShadows } from '../../theme/shadows';
 import { ThemeContext } from '../../theme/ThemeProvider';
+import { BottomSheetFullProvider } from './BottomSheetFullContext';
+import { BottomSheetHeader } from './BottomSheetHeader';
+import { BottomSheetScrollView } from './BottomSheetScrollView';
 import { type BottomSheetProps, type BottomSheetRef, mapDetents } from './BottomSheetTypes';
 
 export type { BottomSheetProps, BottomSheetRef };
@@ -38,9 +41,18 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       onDismiss,
       onPresent,
       onChange,
+      title,
+      subtitle,
+      onClose,
+      headerLeft,
+      headerRight,
+      scrollable,
     },
     ref,
   ) => {
+    const hasHeader =
+      title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
+    const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
 
     const { version } = usePlatformInfo();
@@ -50,6 +62,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const themeCtx = useContext(ThemeContext);
     const isDark = themeCtx?.isDark ?? false;
     const bg = isDark ? THEME.dark.secondary : THEME.light.secondary;
+    // Full-sheet body color: light → secondary, dark → background. Matches the
+    // header backdrop so they read as one surface.
+    const fullSheetBg = isDark ? THEME.dark.background : THEME.light.secondary;
     const themeValues = useMemo(
       () => ({
         ...(isDark ? darkColors : lightColors),
@@ -75,23 +90,28 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [dimmed],
     );
 
+    // Full-sheet + header gets a solid body bg — the header overlay above
+    // owns the glass material, body must be opaque to match iOS 26 native.
+    const useSolidBodyForFullHeader = hasHeader && detents.includes('full');
+
     const renderBackground = useCallback(
       ({ style }: BottomSheetBackgroundProps) => {
-        if (useGlass && LiquidGlass) {
+        if (useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
           return (
             <LiquidGlass style={[style, { borderTopLeftRadius: cornerRadius, borderTopRightRadius: cornerRadius }]} />
           );
         }
+        const sheetSurface = useSolidBodyForFullHeader ? fullSheetBg : bg;
         return (
           <View
             style={[
               style,
-              { backgroundColor: bg, borderTopLeftRadius: cornerRadius, borderTopRightRadius: cornerRadius },
+              { backgroundColor: sheetSurface, borderTopLeftRadius: cornerRadius, borderTopRightRadius: cornerRadius },
             ]}
           />
         );
       },
-      [useGlass, bg, cornerRadius],
+      [useGlass, bg, fullSheetBg, cornerRadius, useSolidBodyForFullHeader],
     );
 
     const wrappedChildren = themeCtx ? (
@@ -109,7 +129,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         enableDynamicSizing={dynamic}
         enablePanDownToClose={dismissible}
         enableHandlePanningGesture={draggable}
-        handleComponent={grabber ? undefined : () => null}
+        handleComponent={grabber && !(hasHeader && detents.includes('full')) ? undefined : () => null}
         backdropComponent={renderBackdrop}
         backgroundComponent={renderBackground}
         onDismiss={onDismiss}
@@ -118,7 +138,22 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         }}
         onChange={onChange}
       >
-        <BottomSheetView>{wrappedChildren}</BottomSheetView>
+        <BottomSheetFullProvider>
+          {isScrollable ? (
+            <BottomSheetScrollView>{wrappedChildren}</BottomSheetScrollView>
+          ) : (
+            <BottomSheetView>{wrappedChildren}</BottomSheetView>
+          )}
+          {hasHeader ? (
+            <BottomSheetHeader
+              title={title}
+              subtitle={subtitle}
+              onClose={onClose}
+              leftAction={headerLeft}
+              rightAction={headerRight}
+            />
+          ) : null}
+        </BottomSheetFullProvider>
       </BottomSheetModal>
     );
   },

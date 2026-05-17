@@ -23,6 +23,9 @@ import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-re
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
+import { BottomSheetFullProvider } from './BottomSheetFullContext';
+import { BottomSheetHeader } from './BottomSheetHeader';
+import { BottomSheetScrollView } from './BottomSheetScrollView';
 import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDetent } from './BottomSheetTypes';
 
 export type { BottomSheetProps, BottomSheetRef };
@@ -58,6 +61,11 @@ const GRABBER_DARK = withOpacity(THEME.dark.foreground, 0.35);
 // DynamicColorIOS is iOS-only; on Android we pick per scheme at render time.
 const IOS_SHEET_BG =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.secondary }) : null;
+// Full-sheet body color — light wants the soft `secondary`, dark wants the
+// deepest `background`. Matches BottomSheetHeader's per-scheme backdrop so
+// the header and body are flush (no visible color step).
+const IOS_FULL_SHEET_BG =
+  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.background }) : null;
 const IOS_BACKDROP = Platform.OS === 'ios' ? DynamicColorIOS({ light: BACKDROP_LIGHT, dark: BACKDROP_DARK }) : null;
 const IOS_GRABBER = Platform.OS === 'ios' ? DynamicColorIOS({ light: GRABBER_LIGHT, dark: GRABBER_DARK }) : null;
 // Stable default so callers that don't pass `detents` don't bust mapDetents memo.
@@ -110,9 +118,20 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       onDismiss,
       onPresent,
       onChange,
+      // Built-in header props
+      title,
+      subtitle,
+      onClose,
+      headerLeft,
+      headerRight,
+      // Body container
+      scrollable,
     },
     ref,
   ) => {
+    const hasHeader =
+      title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
+    const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
     const { version } = usePlatformInfo();
     const systemColorScheme = useColorScheme();
@@ -166,23 +185,36 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [effectiveDimmed, backdropColor],
     );
 
+    // Full-sheet with a built-in header gets a SOLID body background — the
+    // header overlay above it owns the glass material, so the body needs to
+    // be opaque (matches iOS 26 native full-sheet visual). For non-full sheets
+    // and the no-header path, keep the existing glass-or-solid behavior.
+    const useSolidBodyForFullHeader = hasHeader && detents.includes('full');
+
     const renderBackground = useCallback(
       ({ style }: BottomSheetBackgroundProps) => {
         const radius: ViewStyle = {
           borderTopLeftRadius: cornerRadius,
           borderTopRightRadius: cornerRadius,
         };
-        if (useGlass && LiquidGlass) {
+        if (useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
           return <LiquidGlass style={[style, radius]} effect="regular" />;
         }
-        return <View style={[style, radius, { backgroundColor: sheetBg }]} />;
+        // Full+header: per-scheme (light = secondary, dark = background) so it
+        // matches BottomSheetHeader's backdrop and they read as a single surface.
+        // Non-full / no-header: keep the existing `sheetBg` (always secondary).
+        const bg = useSolidBodyForFullHeader ? ((IOS_FULL_SHEET_BG as unknown as string) ?? sheetBg) : sheetBg;
+        return <View style={[style, radius, { backgroundColor: bg }]} />;
       },
-      [useGlass, cornerRadius, sheetBg],
+      [useGlass, cornerRadius, sheetBg, useSolidBodyForFullHeader],
     );
 
+    // When the header is shown on a full-detent sheet, the header itself owns
+    // the close/grabber affordance; suppress the modal's standard top grabber
+    // so we don't double up.
     const renderHandle = useCallback(
-      () => (grabber ? <Grabber color={grabberColor} /> : null),
-      [grabber, grabberColor],
+      () => (grabber && !useSolidBodyForFullHeader ? <Grabber color={grabberColor} /> : null),
+      [grabber, grabberColor, useSolidBodyForFullHeader],
     );
 
     const handleAnimate = useCallback(
@@ -206,20 +238,56 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         onAnimate={handleAnimate}
         onChange={onChange}
       >
-        <BottomSheetView>
-          <SheetProgressBridge />
-          {themeCtx ? (
-            <ThemeContext.Provider value={themeCtx}>
-              <VariableContextProvider value={themeValues}>
-                <View key={scheme} className={isDark ? 'dark' : ''}>
-                  {children}
-                </View>
-              </VariableContextProvider>
-            </ThemeContext.Provider>
+        <BottomSheetFullProvider>
+          {isScrollable ? (
+            <BottomSheetScrollView>
+              {/* Skip the bridge for full+header sheets: they own their own
+                  close affordance, so the BackgroundScaler's floating close
+                  button (driven by progress) is redundant. Leaving progress
+                  at 0 also disables the unnecessary background-scale animation. */}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge />}
+              {themeCtx ? (
+                <ThemeContext.Provider value={themeCtx}>
+                  <VariableContextProvider value={themeValues}>
+                    <View key={scheme} className={isDark ? 'dark' : ''}>
+                      {children}
+                    </View>
+                  </VariableContextProvider>
+                </ThemeContext.Provider>
+              ) : (
+                children
+              )}
+            </BottomSheetScrollView>
           ) : (
-            children
+            <BottomSheetView>
+              {/* Skip the bridge for full+header sheets: they own their own
+                  close affordance, so the BackgroundScaler's floating close
+                  button (driven by progress) is redundant. Leaving progress
+                  at 0 also disables the unnecessary background-scale animation. */}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge />}
+              {themeCtx ? (
+                <ThemeContext.Provider value={themeCtx}>
+                  <VariableContextProvider value={themeValues}>
+                    <View key={scheme} className={isDark ? 'dark' : ''}>
+                      {children}
+                    </View>
+                  </VariableContextProvider>
+                </ThemeContext.Provider>
+              ) : (
+                children
+              )}
+            </BottomSheetView>
           )}
-        </BottomSheetView>
+          {hasHeader ? (
+            <BottomSheetHeader
+              title={title}
+              subtitle={subtitle}
+              onClose={onClose}
+              leftAction={headerLeft}
+              rightAction={headerRight}
+            />
+          ) : null}
+        </BottomSheetFullProvider>
       </BottomSheetModal>
     );
   },

@@ -13,6 +13,9 @@ import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-re
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
+import { BottomSheetFullProvider } from './BottomSheetFullContext';
+import { BottomSheetHeader } from './BottomSheetHeader';
+import { BottomSheetScrollView } from './BottomSheetScrollView';
 import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDetent } from './BottomSheetTypes';
 
 export type { BottomSheetProps, BottomSheetRef };
@@ -77,9 +80,22 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       onDismiss,
       onPresent,
       onChange,
+      // Built-in header props
+      title,
+      subtitle,
+      onClose,
+      headerLeft,
+      headerRight,
+      // Body container
+      scrollable,
     },
     ref,
   ) => {
+    // Render the sticky header if any header-bearing prop is set.
+    const hasHeader =
+      title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
+    // Use the scrollable body when explicitly requested OR when 'full' is in detents.
+    const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
@@ -88,6 +104,10 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const scheme = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
     const sheetBg = THEME_TOKENS[scheme].palette.secondary;
+    // Full-sheet body color: light → secondary (soft surface), dark → background
+    // (deepest surface). Matches BottomSheetHeader's per-scheme backdrop so the
+    // header and body are flush (no visible color step).
+    const fullSheetBg = isDark ? THEME_TOKENS.dark.palette.background : THEME_TOKENS.light.palette.secondary;
     const themeValues = THEME_TOKENS[scheme].variables; // already a stable ref
     const backdropBg = isDark ? BACKDROP_DARK : BACKDROP_LIGHT;
     const grabberColor = isDark ? GRABBER_DARK : GRABBER_LIGHT;
@@ -126,25 +146,30 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [effectiveDimmed, backdropBg],
     );
 
+    // When the header is shown on a full-detent sheet, the header itself owns
+    // the close/grabber affordance; suppress the modal's standard top grabber
+    // so we don't double up. Also use the per-scheme `fullSheetBg` here so
+    // the body matches the header backdrop (light→secondary, dark→background).
+    const fullWithHeader = hasHeader && detents.includes('full');
+
     const renderBackground = useCallback(
       ({ style }: BottomSheetBackgroundProps) => (
         <View
           style={[
             style,
             {
-              backgroundColor: sheetBg,
+              backgroundColor: fullWithHeader ? fullSheetBg : sheetBg,
               borderTopLeftRadius: cornerRadius,
               borderTopRightRadius: cornerRadius,
             },
           ]}
         />
       ),
-      [sheetBg, cornerRadius],
+      [sheetBg, fullSheetBg, fullWithHeader, cornerRadius],
     );
-
     const renderHandle = useCallback(
-      () => (grabber ? <Grabber color={grabberColor} /> : null),
-      [grabber, grabberColor],
+      () => (grabber && !fullWithHeader ? <Grabber color={grabberColor} /> : null),
+      [grabber, grabberColor, fullWithHeader],
     );
 
     const handleAnimate = useCallback(
@@ -168,20 +193,56 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         onAnimate={handleAnimate}
         onChange={onChange}
       >
-        <BottomSheetView>
-          <SheetProgressBridge />
-          {themeCtx ? (
-            <ThemeContext.Provider value={themeCtx}>
-              <VariableContextProvider value={themeValues}>
-                <View key={scheme} style={styles.fill} className={isDark ? 'dark' : ''}>
-                  {children}
-                </View>
-              </VariableContextProvider>
-            </ThemeContext.Provider>
+        <BottomSheetFullProvider>
+          {isScrollable ? (
+            <BottomSheetScrollView>
+              {/* Skip the bridge for full+header sheets: they own their own
+                  close affordance, so the BackgroundScaler's floating close
+                  button (driven by progress) is redundant. Leaving progress
+                  at 0 also disables the unnecessary background-scale animation. */}
+              {!fullWithHeader && <SheetProgressBridge />}
+              {themeCtx ? (
+                <ThemeContext.Provider value={themeCtx}>
+                  <VariableContextProvider value={themeValues}>
+                    <View key={scheme} className={isDark ? 'dark' : ''}>
+                      {children}
+                    </View>
+                  </VariableContextProvider>
+                </ThemeContext.Provider>
+              ) : (
+                children
+              )}
+            </BottomSheetScrollView>
           ) : (
-            children
+            <BottomSheetView>
+              {/* Skip the bridge for full+header sheets: they own their own
+                  close affordance, so the BackgroundScaler's floating close
+                  button (driven by progress) is redundant. Leaving progress
+                  at 0 also disables the unnecessary background-scale animation. */}
+              {!fullWithHeader && <SheetProgressBridge />}
+              {themeCtx ? (
+                <ThemeContext.Provider value={themeCtx}>
+                  <VariableContextProvider value={themeValues}>
+                    <View key={scheme} style={styles.fill} className={isDark ? 'dark' : ''}>
+                      {children}
+                    </View>
+                  </VariableContextProvider>
+                </ThemeContext.Provider>
+              ) : (
+                children
+              )}
+            </BottomSheetView>
           )}
-        </BottomSheetView>
+          {hasHeader ? (
+            <BottomSheetHeader
+              title={title}
+              subtitle={subtitle}
+              onClose={onClose}
+              leftAction={headerLeft}
+              rightAction={headerRight}
+            />
+          ) : null}
+        </BottomSheetFullProvider>
       </BottomSheetModal>
     );
   },
