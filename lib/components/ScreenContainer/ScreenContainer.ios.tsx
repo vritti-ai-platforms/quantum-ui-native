@@ -4,12 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { cn } from '../../utils/cn';
 
-// Reach the SAME HeaderHeightContext that @react-navigation/elements creates,
-// without importing from the package. The package stores its named contexts on
-// globalThis under the key below (see lib/module/getNamedContext.js); whichever
-// of us touches the map first creates the context, and all subsequent callers
-// reuse the same instance — so a NativeStack header's Provider in the host is
-// observed correctly here.
+// Reach @react-navigation/elements' HeaderHeightContext via its global map (lib/module/getNamedContext.js) instead of importing the package.
 const NAMED_CONTEXTS_KEY = '__react_navigation__elements_contexts';
 type NamedContextsMap = Map<string, Context<unknown>>;
 const namedContexts: NamedContextsMap =
@@ -56,14 +51,8 @@ export const ScreenContainer = (props: ScreenContainerProps) => {
 
   const { scrollable: _scrollable, className, style, ...rest } = props;
 
-  // iOS 26+ (Liquid Glass): the header is transparent, so content must be manually
-  // offset by the measured header height. When there is no header, fall back to the
-  // top safe area inset.
-  //
-  // iOS <26: React Navigation's SafeAreaInsetsContext already adjusts insets.top to 0
-  // when an opaque header is consuming the safe area, and to the full notch/status-bar
-  // height when there is no header — so we can use it directly without checking
-  // HeaderShownContext (which leaks from parent navigators and gives false positives).
+  // iOS 26+ has a transparent header — offset by measured header height, fall back to safe-area when no header.
+  // iOS <26 lets SafeAreaInsetsContext handle this since opaque headers zero out insets.top automatically.
   const topPad = isIosLiquidGlass ? (headerHeight > 0 ? headerHeight : insets.top) : insets.top;
 
   return (

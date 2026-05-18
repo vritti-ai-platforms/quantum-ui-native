@@ -15,32 +15,17 @@ import {
 
 export type { MobileStorageAdapter } from './storage';
 
-// ---------------------------------------------------------------------------
-// Module augmentation — custom options on every request
-// ---------------------------------------------------------------------------
-
 declare module 'axios' {
   export interface AxiosRequestConfig {
-    /** Skip auth for public endpoints (login, signup, etc.) */
     public?: boolean;
-    /** Skip redirect/event on 401 */
     skipAuthRedirect?: boolean;
-    /** Show success feedback for mutations (default: true for POST/PUT/PATCH/DELETE) */
     showSuccessToast?: boolean;
-    /** Show error feedback for errors (default: true) */
     showErrorToast?: boolean;
-    /** Custom success message (overrides API response message) */
     successMessage?: string;
-    /** Show loading feedback during request */
     loadingMessage?: string;
-    /** Internal: toast/feedback ID for updates */
     _toastId?: string;
   }
 }
-
-// ---------------------------------------------------------------------------
-// API error shape (RFC 9457)
-// ---------------------------------------------------------------------------
 
 interface ApiErrorResponse {
   title?: string;
@@ -51,10 +36,6 @@ interface ApiErrorResponse {
   errors?: Array<{ field: string; message: string }>;
 }
 
-// ---------------------------------------------------------------------------
-// Optional toast/feedback adapter
-// ---------------------------------------------------------------------------
-
 export interface ToastAdapter {
   success(message: string, options?: { id?: string; description?: string; duration?: number }): void;
   error(message: string, options?: { id?: string; description?: string }): void;
@@ -63,7 +44,6 @@ export interface ToastAdapter {
 
 let _toast: ToastAdapter | null = null;
 
-/** Register a toast/feedback adapter (e.g. react-native-toast-message wrapper). */
 export function setToastAdapter(adapter: ToastAdapter): void {
   _toast = adapter;
 }
@@ -71,10 +51,6 @@ export function setToastAdapter(adapter: ToastAdapter): void {
 function generateToastId(): string {
   return `t_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
-
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
 
 let accessToken: string | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -113,10 +89,6 @@ function syncAxiosDefaults(): void {
   }
 }
 
-/**
- * Configure axios for mobile usage with secure token storage.
- * Call once at app startup before any API calls.
- */
 export function configureMobileAxios(config: MobileAxiosConfig): void {
   setMobileStorageAdapter(config.storage);
   _onSessionExpired = config.onSessionExpired ?? _onSessionExpired;
@@ -132,10 +104,6 @@ export function configureMobileAxios(config: MobileAxiosConfig): void {
   syncAxiosDefaults();
 }
 
-// ---------------------------------------------------------------------------
-// Token Management
-// ---------------------------------------------------------------------------
-
 export const setToken = (token: string): void => {
   if (token && typeof token === 'string') {
     accessToken = token;
@@ -149,28 +117,23 @@ export const clearToken = (): void => {
   cancelTokenRefresh();
 };
 
-/** Store refresh token in secure storage (mobile) */
 export async function storeRefreshToken(token: string): Promise<void> {
   await writeRefreshToken(token);
 }
 
-/** Retrieve stored refresh token (mobile) */
 export async function getRefreshToken(): Promise<string | null> {
   return readRefreshToken();
 }
 
-/** Clear all tokens (access + stored refresh) */
 export async function clearTokens(): Promise<void> {
   clearToken();
   await deleteRefreshToken();
 }
 
-/** Get the session expired callback */
 export function getOnSessionExpired(): (() => void) | null {
   return _onSessionExpired;
 }
 
-/** Persist and apply the active mobile API base URL. */
 export async function setMobileBaseURL(baseURL: string): Promise<void> {
   const storage = requireMobileStorageAdapter();
 
@@ -182,7 +145,6 @@ export async function setMobileBaseURL(baseURL: string): Promise<void> {
   await writeStoredMobileBaseURL(baseURL);
 }
 
-/** Persist the selected deployment URL and use it for the pre-login flow. */
 export async function setSelectedDeploymentBaseURL(baseURL: string): Promise<void> {
   const storage = requireMobileStorageAdapter();
 
@@ -194,12 +156,10 @@ export async function setSelectedDeploymentBaseURL(baseURL: string): Promise<voi
   await writeSelectedDeploymentBaseURL(baseURL);
 }
 
-/** Read the last selected mobile API base URL from secure storage. */
 export async function getStoredMobileBaseURL(): Promise<string | null> {
   return readStoredMobileBaseURL();
 }
 
-/** Read the last selected deployment URL from secure storage. */
 async function refreshMobileSession(options?: {
   notifyOnFailure?: boolean;
 }): Promise<{ success: boolean; expiresIn: number }> {
@@ -250,11 +210,6 @@ async function refreshMobileSession(options?: {
   }
 }
 
-/**
- * Initialize the mobile HTTP/session runtime at app startup.
- * Restores the last selected base URL, then exchanges the stored refresh token
- * for a fresh in-memory access token.
- */
 export async function initializeMobileSession(config: MobileAxiosConfig): Promise<boolean> {
   setMobileStorageAdapter(config.storage);
 
@@ -279,7 +234,6 @@ export async function initializeMobileSession(config: MobileAxiosConfig): Promis
   return result.success;
 }
 
-/** Store a successful mobile login and start proactive refresh scheduling. */
 export async function completeMobileLoginSession(session: MobileLoginSession): Promise<void> {
   setToken(session.accessToken);
   await storeRefreshToken(session.refreshToken);
@@ -305,10 +259,6 @@ export function cancelTokenRefresh(): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Axios Instance & Interceptors
-// ---------------------------------------------------------------------------
-
 function buildMobileUserAgent(): string {
   const os = Platform.OS;
   const osVersion = Platform.Version;
@@ -329,22 +279,18 @@ function createAxiosInstance(): AxiosInstance {
 
 export const axios: AxiosInstance = createAxiosInstance();
 
-// Request interceptor
 axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const quantumConfig = getConfig();
 
-  // Add Authorization header
   const token = getToken();
   if (token) {
     config.headers[quantumConfig.auth.tokenHeaderName] = `${quantumConfig.auth.tokenPrefix} ${token}`;
   }
 
-  // Custom request interceptor
   if (quantumConfig.axios.onRequest) {
     await quantumConfig.axios.onRequest(config);
   }
 
-  // Loading feedback
   const loadingMessage = (config as { loadingMessage?: string }).loadingMessage;
   if (loadingMessage && _toast) {
     const toastId = generateToastId();
@@ -355,7 +301,6 @@ axios.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-// Response interceptor
 axios.interceptors.response.use(
   (response) => {
     const config = response.config;
@@ -388,7 +333,6 @@ axios.interceptors.response.use(
     const isPublicRequest = (config as { public?: boolean })?.public === true;
     const toastId = (config as { _toastId?: string })?._toastId;
 
-    // 401 — clear session
     if (status === 401 && !isPublicRequest) {
       if (showError && _toast) {
         const title = errorData?.label || errorData?.title || 'Session expired';
@@ -400,18 +344,15 @@ axios.interceptors.response.use(
     }
 
     if (_toast && showError) {
-      // 5xx
       if (status && status >= 500) {
         const msg = errorData?.message || errorData?.detail || 'Something went wrong. Please try again.';
         _toast.error('Server Error', { id: toastId, description: msg });
       }
 
-      // Network error
       if (!error.response && Axios.isAxiosError(error)) {
         _toast.error('Network Error', { id: toastId, description: 'Please check your internet connection.' });
       }
 
-      // 4xx (non-401)
       if (status && status >= 400 && status < 500 && status !== 401) {
         const title = errorData?.label || errorData?.title || 'Request failed';
         _toast.error(title, { id: toastId, description: errorData?.detail });
@@ -422,12 +363,10 @@ axios.interceptors.response.use(
   },
 );
 
-// Returns the configured axios instance
 export function getAxios(): AxiosInstance {
   return axios;
 }
 
-// Adds a response interceptor that suppresses error toasts — returns the interceptor ID
 export function suppressErrorToasts(axiosInstance: AxiosInstance): number {
   return axiosInstance.interceptors.response.use(
     (response) => response,
@@ -440,7 +379,6 @@ export function suppressErrorToasts(axiosInstance: AxiosInstance): number {
   );
 }
 
-// Removes a previously added suppress interceptor
 export function restoreErrorToasts(axiosInstance: AxiosInstance, interceptorId: number): void {
   axiosInstance.interceptors.response.eject(interceptorId);
 }

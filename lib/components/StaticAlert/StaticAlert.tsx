@@ -1,14 +1,3 @@
-// Default fallback for non-iOS / non-Android platforms.
-// The platform-flavored variants live in StaticAlert.ios.tsx and
-// StaticAlert.android.tsx; Metro picks the right file at bundle time.
-//
-// "StaticAlert" disambiguates from React Native's `Alert.alert(...)` modal API
-// — this component is the in-screen, non-modal notification banner.
-//
-// Surface matches the Card primitive (bg-card, hairline border) so alerts
-// feel like a small card with a leading icon. The variant only affects the
-// icon colour — title and description stay in the neutral foreground /
-// muted-foreground tokens used everywhere else in the UI.
 import type { ViewProps } from 'react-native';
 import { View } from 'react-native';
 import { Text } from '../../reusables/text';

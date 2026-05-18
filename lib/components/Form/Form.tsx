@@ -18,7 +18,6 @@ import { Checkbox } from '../Checkbox';
 import { StaticAlert } from '../StaticAlert';
 import { Switch } from '../Switch';
 
-// Recursively process children to wrap form fields with Controller and inject loading/submit into buttons
 function processChildren<
   TFieldValues extends FieldValues = FieldValues,
   _TContext = any,
@@ -38,7 +37,6 @@ function processChildren<
     const childProps = child.props as any;
     const isFragment = child.type === Fragment;
 
-    // Handle form fields with name prop (but not Fragments)
     if (!isFragment && childProps.name && typeof childProps.name === 'string') {
       const name = childProps.name as FieldPath<TFieldValues>;
 
@@ -76,7 +74,6 @@ function processChildren<
       );
     }
 
-    // Handle submit buttons — inject loading state and onPress
     if (childProps.submit === true) {
       const isButtonElement =
         child.type === Button || (typeof child.type === 'function' && (child.type as any).displayName === 'Button');
@@ -91,12 +88,10 @@ function processChildren<
       }
     }
 
-    // Handle React Fragments — process their children directly
     if (isFragment) {
       return processChildren(childProps.children, control, isSubmitting, setValue, handleSubmit);
     }
 
-    // Recurse into children for container elements (Views, etc.)
     if (childProps.children != null) {
       return cloneElement(child, {
         ...childProps,
@@ -130,7 +125,6 @@ export interface FormProps<
   ) => TMutationVariables;
 }
 
-// Smart Form component that auto-wraps children with Controller and handles submission
 export function Form<
   TFieldValues extends FieldValues = FieldValues,
   TContext = any,
@@ -154,7 +148,6 @@ export function Form<
 }: FormProps<TFieldValues, TContext, TTransformedValues, TMutationData, TMutationError, TMutationVariables>) {
   const isSubmitting = form.formState.isSubmitting || (mutation?.isPending ?? false);
 
-  // Wrap the submit handler with automatic error mapping
   const wrappedOnSubmit = useCallback(
     async (data: TTransformedValues extends undefined ? TFieldValues : TTransformedValues) => {
       const axiosInstance = getAxios();

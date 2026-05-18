@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getTheme } from '../../theme';
+import { useTheme } from '../../hooks/useTheme';
 import { Spinner } from '../Spinner';
 import { Text } from '../Typography';
 
@@ -14,7 +14,7 @@ export interface SplashScreenProps {
 }
 
 export function SplashScreen({ logo, title, subtitle, statusText, showSpinner = true }: SplashScreenProps) {
-  const colors = getTheme();
+  const { palette: colors } = useTheme();
 
   return (
     <SafeAreaView

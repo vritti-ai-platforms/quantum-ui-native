@@ -1,8 +1,4 @@
-// Vritti design system color tokens for programmatic use (charts, etc.)
-// For Tailwind v4 CSS integration, use @import "@vritti/quantum-ui-native/index.css" instead.
-
 export const themeColors = {
-  // ── Core palette ──────────────────────────────────────────────────────
   border: 'hsl(var(--border))',
   input: 'hsl(var(--input))',
   ring: 'hsl(var(--ring))',
@@ -49,7 +45,6 @@ export const themeColors = {
     foreground: 'hsl(var(--popover-foreground))',
   },
 
-  // ── Chart colors ──────────────────────────────────────────────────────
   chart: {
     '1': 'hsl(var(--chart-1))',
     '2': 'hsl(var(--chart-2))',
@@ -58,7 +53,6 @@ export const themeColors = {
     '5': 'hsl(var(--chart-5))',
   },
 
-  // ── Sidebar ───────────────────────────────────────────────────────────
   sidebar: {
     DEFAULT: 'hsl(var(--sidebar))',
     foreground: 'hsl(var(--sidebar-foreground))',

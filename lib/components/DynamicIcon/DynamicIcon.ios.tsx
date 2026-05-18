@@ -5,13 +5,7 @@ import { TextClassContext } from '../../reusables/text';
 import { cn } from '../../utils/index';
 import type { DynamicIconProps } from './types';
 
-// Same JS-side colour resolution as the Android sibling. We previously relied
-// on nativewind's `styled(...)` HOC + `nativeStyleMapping` to lift the
-// className-derived colour onto SFSymbol's `tintColor` / `color` prop, but in
-// nativewind v5-preview that lift isn't reliable across SFSymbol either —
-// every variant ended up rendering in the default primary tint. Switching to
-// explicit CSS-variable lookup (`useUnstableNativeVariable`) and forwarding
-// the resolved `hsl(...)` string as a real prop fixes it deterministically.
+// nativewind v5-preview's lift to SFSymbol's tintColor prop isn't reliable — resolve the CSS variable ourselves.
 const CLASS_TO_VAR: Record<string, string> = {
   'text-foreground': '--foreground',
   'text-muted-foreground': '--muted-foreground',
@@ -33,9 +27,7 @@ const CLASS_TO_VAR: Record<string, string> = {
   'text-info-foreground': '--info-foreground',
 };
 
-// Pick the *last* matching colour class so user overrides win (e.g. when
-// TextClassContext supplies `text-foreground` and the call site adds
-// `text-warning`, we want `text-warning`).
+// Last-class-wins so call-site overrides beat TextClassContext.
 function pickVariableFromClassName(className: string): string {
   const tokens = className.split(/\s+/);
   for (let i = tokens.length - 1; i >= 0; i--) {

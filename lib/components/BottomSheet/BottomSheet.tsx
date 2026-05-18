@@ -50,8 +50,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     },
     ref,
   ) => {
-    const hasHeader =
-      title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
+    const hasHeader = title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
     const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
 

@@ -31,8 +31,6 @@ import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDeten
 export type { BottomSheetProps, BottomSheetRef };
 export type { SheetDetent } from './BottomSheetTypes';
 
-// ---------- Module-level: computed once at load ----------
-
 type LiquidGlassComponent = React.ComponentType<{
   style?: StyleProp<ViewStyle>;
   effect?: 'clear' | 'regular' | 'none';
@@ -58,20 +56,13 @@ const BACKDROP_DARK = withOpacity(THEME.dark.background, 0.6);
 const GRABBER_LIGHT = withOpacity(THEME.light.foreground, 0.22);
 const GRABBER_DARK = withOpacity(THEME.dark.foreground, 0.35);
 
-// DynamicColorIOS is iOS-only; on Android we pick per scheme at render time.
 const IOS_SHEET_BG =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.secondary }) : null;
-// Full-sheet body color — light wants the soft `secondary`, dark wants the
-// deepest `background`. Matches BottomSheetHeader's per-scheme backdrop so
-// the header and body are flush (no visible color step).
 const IOS_FULL_SHEET_BG =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.background }) : null;
 const IOS_BACKDROP = Platform.OS === 'ios' ? DynamicColorIOS({ light: BACKDROP_LIGHT, dark: BACKDROP_DARK }) : null;
 const IOS_GRABBER = Platform.OS === 'ios' ? DynamicColorIOS({ light: GRABBER_LIGHT, dark: GRABBER_DARK }) : null;
-// Stable default so callers that don't pass `detents` don't bust mapDetents memo.
 const DEFAULT_DETENTS: SheetDetent[] = ['auto'];
-
-// ---------- Sub-component ----------
 
 const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   <View style={styles.handleContainer}>
@@ -79,10 +70,6 @@ const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   </View>
 ));
 Grabber.displayName = 'BottomSheet.Grabber';
-
-// ---------- Progress bridge ----------
-// Bridges the modal's internal `animatedIndex` (output from useBottomSheet)
-// into the context-provided progress SharedValue read by the scaled screen.
 
 const SheetProgressBridge = () => {
   const { animatedIndex, animatedPosition } = useBottomSheet();
@@ -92,8 +79,7 @@ const SheetProgressBridge = () => {
     (current, prev) => {
       if (!scaler) return;
       scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
-      // Capture sheet top only while opening (idx increasing). Freeze during
-      // drag-down and close so the floating button stays put.
+      // Freeze sheet top during drag-down so the floating close button stays put.
       if (!prev || current.idx >= prev.idx) {
         scaler.sheetTop.value = current.pos;
       }
@@ -101,8 +87,6 @@ const SheetProgressBridge = () => {
   );
   return null;
 };
-
-// ---------- Main ----------
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
   (
@@ -118,13 +102,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       onDismiss,
       onPresent,
       onChange,
-      // Built-in header props
       title,
       subtitle,
       onClose,
       headerLeft,
       headerRight,
-      // Body container
       scrollable,
     },
     ref,
@@ -137,24 +119,18 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
 
-    // Plain locals — these are cheap and stable by construction.
     const scheme: 'light' | 'dark' = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
-    const themeValues = THEME_TOKENS[scheme].variables; // already a stable ref
+    const themeValues = THEME_TOKENS[scheme].variables;
     const useGlass = variant === 'glass' && version >= 26 && LiquidGlass != null;
 
-    // Stable by construction: iOS branch returns the same module-level object,
-    // Android branch returns a string that's identical across renders for the same scheme.
     const sheetBg: ColorValue = IOS_SHEET_BG ?? THEME[scheme].secondary;
     const backdropColor: ColorValue = IOS_BACKDROP ?? (isDark ? BACKDROP_DARK : BACKDROP_LIGHT);
     const grabberColor: ColorValue = IOS_GRABBER ?? (isDark ? GRABBER_DARK : GRABBER_LIGHT);
 
-    // The one memo worth keeping: snapPoints is consumed inside BottomSheetModal's
-    // effects, where identity matters.
     const { snapPoints, dynamic } = useMemo(() => mapDetents(detents), [detents]);
 
-    // When a background scaler is mounted above, suppress the internal backdrop —
-    // the scaler renders its own dim overlay synchronized with the drag.
+    // Scaler renders its own dim overlay synchronized with the drag — suppress the internal backdrop.
     const scaler = useBottomSheetBackgroundScaler();
     const effectiveDimmed = dimmed && !scaler;
 
@@ -170,8 +146,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [],
     );
 
-    // Render callbacks must be stable — BottomSheetModal uses them as component
-    // props and remounts internal pieces on identity change.
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) =>
         effectiveDimmed ? (
@@ -185,10 +159,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [effectiveDimmed, backdropColor],
     );
 
-    // Full-sheet with a built-in header gets a SOLID body background — the
-    // header overlay above it owns the glass material, so the body needs to
-    // be opaque (matches iOS 26 native full-sheet visual). For non-full sheets
-    // and the no-header path, keep the existing glass-or-solid behavior.
     const useSolidBodyForFullHeader = hasHeader && detents.includes('full');
 
     const renderBackground = useCallback(
@@ -200,18 +170,12 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         if (useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
           return <LiquidGlass style={[style, radius]} effect="regular" />;
         }
-        // Full+header: per-scheme (light = secondary, dark = background) so it
-        // matches BottomSheetHeader's backdrop and they read as a single surface.
-        // Non-full / no-header: keep the existing `sheetBg` (always secondary).
         const bg = useSolidBodyForFullHeader ? ((IOS_FULL_SHEET_BG as unknown as string) ?? sheetBg) : sheetBg;
         return <View style={[style, radius, { backgroundColor: bg }]} />;
       },
       [useGlass, cornerRadius, sheetBg, useSolidBodyForFullHeader],
     );
 
-    // When the header is shown on a full-detent sheet, the header itself owns
-    // the close/grabber affordance; suppress the modal's standard top grabber
-    // so we don't double up.
     const renderHandle = useCallback(
       () => (grabber && !useSolidBodyForFullHeader ? <Grabber color={grabberColor} /> : null),
       [grabber, grabberColor, useSolidBodyForFullHeader],
@@ -241,10 +205,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         <BottomSheetFullProvider>
           {isScrollable ? (
             <BottomSheetScrollView>
-              {/* Skip the bridge for full+header sheets: they own their own
-                  close affordance, so the BackgroundScaler's floating close
-                  button (driven by progress) is redundant. Leaving progress
-                  at 0 also disables the unnecessary background-scale animation. */}
               {!useSolidBodyForFullHeader && <SheetProgressBridge />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
@@ -260,10 +220,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             </BottomSheetScrollView>
           ) : (
             <BottomSheetView>
-              {/* Skip the bridge for full+header sheets: they own their own
-                  close affordance, so the BackgroundScaler's floating close
-                  button (driven by progress) is redundant. Leaving progress
-                  at 0 also disables the unnecessary background-scale animation. */}
               {!useSolidBodyForFullHeader && <SheetProgressBridge />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>

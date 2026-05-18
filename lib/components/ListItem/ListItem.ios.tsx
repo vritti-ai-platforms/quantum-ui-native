@@ -1,9 +1,3 @@
-// iOS list row, Settings.app-flavored:
-//   • Tight vertical rhythm (py-3 gap-3) — iOS rows are denser than Material.
-//   • Title is `font-normal` (HIG body weight); description is muted small.
-//   • If `onPress` is set and no explicit `trailing` is supplied, we auto-add
-//     a chevron — that's the iOS convention for "tap to drill in".
-//   • Pass `index` and `total` to get grouped-list borders and radii automatically.
 import type { ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
 import { Skeleton } from '../../reusables/skeleton';

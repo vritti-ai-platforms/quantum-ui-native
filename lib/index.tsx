@@ -1,10 +1,7 @@
-// Nitro native modules
 export * from './nitro';
 
-// Utilities
 export { cn } from './utils/cn';
 
-// Axios
 export {
   axios,
   setToken,
@@ -16,17 +13,15 @@ export {
   type ToastAdapter,
 } from './utils/axios';
 
-// Components
 export * from './components';
 
-// Theme (colors, tokens, provider)
 export {
   darkColors,
   lightColors,
   THEME,
   THEME_TOKENS,
+  type ThemePalette,
   type ThemeScheme,
-  getTheme,
   type ThemeContextValue,
   type ThemePreference,
   type ThemeStorageAdapter,
@@ -35,15 +30,11 @@ export {
   type ThemeProviderProps,
 } from './theme';
 
-// Context (mirrors lib/context/ from @vritti/quantum-ui web)
 export * from './context';
 
-// Hooks
 export { useTheme, useDialog, useIsMobile, useTimer, useConfirm } from './hooks';
 export type { ConfirmOptions } from './hooks';
 
-// Types (mirrors lib/types/ from @vritti/quantum-ui web)
 export * from './types';
 
-// Config
 export * from './config';

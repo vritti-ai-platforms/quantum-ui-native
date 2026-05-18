@@ -5,7 +5,6 @@ import { Label } from '../../reusables/label';
 import { Text } from '../../reusables/text';
 
 export interface TextFieldProps extends React.ComponentProps<typeof Input> {
-  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
   name?: string;
   label?: string;
   description?: React.ReactNode;
@@ -15,8 +14,6 @@ export interface TextFieldProps extends React.ComponentProps<typeof Input> {
   endAdornment?: React.ReactNode;
 }
 
-// iOS-flavored TextField — tight spacing, compact label, error adds a 1px destructive
-// border (base iOS style has no border since Input uses a Settings-style fill).
 function TextField({ label, description, hint, error, startAdornment, endAdornment, className, style, ...props }: TextFieldProps) {
   const id = React.useId();
   const resolvedDescription = description ?? hint;

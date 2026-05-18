@@ -11,19 +11,16 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
-import { getTheme } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
 
 const Tab = createBottomTabNavigator();
 
-// Keep 3 content tabs so the floating pill stays compact.
 const MAX_VISIBLE = 4;
 
 type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 
-// Store the materialIcon name as the icon descriptor so FloatingTabBar can read it.
 function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon'] {
   return {
     type: 'materialIcon',
@@ -34,8 +31,7 @@ function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarI
 function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
   const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
-  useTheme();
-  const theme = getTheme();
+  const { palette: theme } = useTheme();
 
   return (
     <ScreenContainer scrollable>
@@ -87,22 +83,15 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
   return <PushNavigator initialRoute="__more_list__" screens={screens} />;
 }
 
-// Floating pill tab bar — pure React, no native BottomNavigationView.
-// Theme changes re-render via useTheme() without any navigator remount.
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { isDark } = useTheme();
-  const theme = getTheme();
+  const { isDark, palette: theme } = useTheme();
 
-  // Hide the pill when the focused tab's nested navigator (More tab, or any
-  // micro-frontend with its own PushNavigator inside) has pushed beyond its
-  // initial route. The pushed screen has its own header + back button.
+  // Hide the pill when the focused tab's nested navigator has pushed past its initial route.
   const nestedState = state.routes[state.index]?.state;
   const isOnPushedScreen = typeof nestedState?.index === 'number' && nestedState.index > 0;
 
   const barBottomGap = Math.max(insets.bottom, 6) + 6;
-  // Pill (62) + wrapper bottom gap + small buffer so the slide finishes
-  // fully off-screen including shadow.
   const slideDistance = 62 + barBottomGap + 8;
   const visibility = useSharedValue(isOnPushedScreen ? 0 : 1);
 
@@ -128,7 +117,6 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           styles.pill,
           {
             backgroundColor: theme.card,
-            // Border only in dark mode where bg-card blends with bg-background.
             borderWidth: isDark ? StyleSheet.hairlineWidth : 0,
             borderColor: theme.border,
           },
@@ -167,10 +155,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               accessibilityLabel={options.tabBarAccessibilityLabel}
             >
               <View style={styles.iconSlot}>
-                {/* Active background as a conditionally-mounted, absolute-positioned
-                    View — every selection mounts a fresh node with borderRadius set
-                    from the start, so Android's drawable never has to transition
-                    backgroundColor on a View it might flatten into a square. */}
+                {/* Mount a fresh node per selection — Android's drawable can't transition backgroundColor without flattening to a square. */}
                 {isFocused ? <View style={[styles.activeBg, { backgroundColor: theme.primary }]} /> : null}
                 <MaterialIcons
                   name={iconName}
@@ -192,19 +177,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    // Pill auto-sizes; centering it avoids stretching to screen width.
     alignItems: 'center',
     pointerEvents: 'box-none',
   },
   pill: {
     flexDirection: 'row',
-    // Half of pill height (62) → fully-rounded pill ends.
     borderRadius: 31,
-    // Uniform padding so the active indicator has the same gap from the
-    // pill edge on every side, including corner-selected tabs.
     padding: 5,
-    // Material elevation handles Android shadow; shadowColor lets newer
-    // Android versions (10+) tint the elevation shadow black for a deeper drop.
     elevation: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -212,9 +191,6 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
   },
   tabItem: {
-    // Fixed-width tabs let the pill auto-size to its content; combined with
-    // uniform pill padding and centered iconSlot, every tab — including the
-    // corner ones — gets an identical 10px halo when active.
     width: 52,
     height: 52,
     alignItems: 'center',
@@ -233,7 +209,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 21,
   },
-  // MoreListScreen styles
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -258,12 +233,6 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const hasMore = overflowRoutes.length > 0;
   const { isDark } = useTheme();
 
-  // Navigator colors are transparent so the area around/below the floating
-  // pill doesn't paint the tab-navigator background. Each screen's
-  // ScreenContainer provides its own bg-background which extends full height
-  // — including behind the floating pill — so there's no white strip below
-  // the pill. Screens that need their last item visible above the pill
-  // should add bottom padding to their own content (e.g. pb-28 / pb-32).
   const navigationTheme = useMemo(() => {
     const base = isDark ? DarkTheme : DefaultTheme;
     return {
@@ -273,8 +242,6 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
     };
   }, [isDark]);
 
-  // Only route names in the key — theme changes are handled reactively in
-  // FloatingTabBar via useTheme(), so isDark remounts are no longer needed.
   const navigatorKey = `tab-nav-${allRoutes.map((r) => r.name).join(',')}`;
 
   return (

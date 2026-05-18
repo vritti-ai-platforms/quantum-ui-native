@@ -15,7 +15,6 @@ export interface FieldError {
   message: string;
 }
 
-// RFC 9457 Problem Details error structure
 export interface ApiErrorResponse {
   type?: string;
   title?: string;
@@ -31,7 +30,6 @@ export interface MapApiErrorsOptions {
   setRootError?: boolean;
 }
 
-// Maps an RFC 9457 API error response to react-hook-form errors
 export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValues>(
   error: unknown,
   form: UseFormReturn<TFieldValues>,
@@ -49,7 +47,6 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
     return;
   }
 
-  // Extract error data from axios response structure
   const axiosError = error as AxiosLikeError;
   const errorData = axiosError.response?.data || error;
   const apiError = errorData as ApiErrorResponse;
@@ -57,10 +54,6 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
   const errorTitle = apiError.label || apiError.title || 'Error';
   const generalMessage = apiError.detail;
 
-  // Map field-specific errors. Track how many we successfully attached so the
-  // root error only fires when none of the API errors matched a form field —
-  // matches the web Form behaviour (same logic as
-  // apps/.../quantum-ui/lib/utils/formHelpers.ts).
   let mappedFieldErrorsCount = 0;
   if (apiError.errors && Array.isArray(apiError.errors)) {
     for (const errorItem of apiError.errors) {
@@ -74,9 +67,7 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
     }
   }
 
-  // Root error is shown only when no field errors were mapped — otherwise the
-  // detail/label is redundant with the inline field message that already
-  // surfaces on the matching <TextField> / <PasswordField>.
+  // Skip root error when field errors already surfaced inline — avoids duplicate messaging.
   if (generalMessage && setRootError && mappedFieldErrorsCount === 0) {
     form.setError('root', {
       type: errorTitle,

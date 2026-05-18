@@ -1,8 +1,8 @@
 import { VariableContextProvider } from 'nativewind';
 import type React from 'react';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { Appearance, Dimensions, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
-import { THEME, THEME_TOKENS } from './colors';
+import { Appearance, AppState, Dimensions, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
+import { THEME, THEME_TOKENS, type ThemePalette } from './colors';
 import { ThemeTransitionOverlay } from './ThemeTransitionOverlay';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -14,15 +14,14 @@ export interface ThemeStorageAdapter {
 }
 
 export interface SetThemePreferenceOptions {
-  /** Tap origin (screen-space px) for the reveal circle. Defaults to bottom-center. */
   origin?: { x: number; y: number };
-  /** Skip the reveal animation (e.g. during hydration). Defaults to true. */
   animated?: boolean;
 }
 
 export interface ThemeContextValue {
   colorScheme: 'light' | 'dark';
   isDark: boolean;
+  palette: ThemePalette;
   themePreference: ThemePreference;
   setThemePreference: (preference: ThemePreference, options?: SetThemePreferenceOptions) => Promise<void>;
   isHydrated: boolean;
@@ -55,19 +54,6 @@ function resolveScheme(
   return fallback;
 }
 
-// Applies the correct native appearance override.
-// - 'light' / 'dark' → forces the scheme regardless of system on both platforms.
-// - 'system'         → iOS: pass null to release the override and revert to
-//                      the live system scheme. Android: no-op — the native
-//                      AppearanceModule.setColorScheme signature is @NonNull
-//                      at the Kotlin bridge layer, and passing null throws a
-//                      hard exception on the native thread that JS cannot
-//                      catch. The user's preference is still persisted to
-//                      storage, so picking 'system' takes effect on the next
-//                      cold launch (hydration skips applyAppearanceScheme
-//                      when the stored preference is 'system', so no override
-//                      is reapplied and useColorScheme reports the live
-//                      device scheme).
 function applyAppearanceScheme(preference: ThemePreference): void {
   if (preference === 'system') {
     if (Platform.OS === 'ios') {
@@ -96,10 +82,25 @@ export const ThemeProvider = ({
   });
 
   useEffect(() => {
+    // Skip when an override is active — liveSystemScheme then reflects our override, not the device.
+    if (themePreference !== 'system') return;
     if (liveSystemScheme === 'dark' || liveSystemScheme === 'light') {
       setLastKnownSystemScheme(liveSystemScheme);
     }
-  }, [liveSystemScheme]);
+  }, [liveSystemScheme, themePreference]);
+
+  useEffect(() => {
+    // Android bridgeless useColorScheme misses device toggles that happen while backgrounded; resync on foreground.
+    if (Platform.OS !== 'android') return;
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      const current = Appearance.getColorScheme();
+      if (current === 'dark' || current === 'light') {
+        setLastKnownSystemScheme(current);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   const resolvedScheme = resolveScheme(themePreference, liveSystemScheme, lastKnownSystemScheme);
   const isDark = resolvedScheme === 'dark';
@@ -118,12 +119,7 @@ export const ThemeProvider = ({
 
         setThemePreferenceState(resolved);
 
-        // On iOS 26, calling setColorScheme(null) at cold boot transiently
-        // poisons Appearance.getColorScheme(), causing the first render to
-        // fall back to 'light'. Skip the call when preference is 'system' —
-        // iOS is already in follow-system mode and needs no intervention.
-        // The runtime setter below still calls this to release active overrides.
-        if (resolved !== 'system') {
+        if (resolved !== 'system' && Platform.OS === 'ios') {
           applyAppearanceScheme(resolved);
         }
       } finally {
@@ -142,34 +138,19 @@ export const ThemeProvider = ({
     async (preference: ThemePreference, options?: SetThemePreferenceOptions) => {
       const animated = options?.animated !== false;
 
-      // Apply the native appearance change FIRST. For 'system' this releases
-      // any active override (iOS only); for 'light' / 'dark' it sets the
-      // override on both platforms.
-      applyAppearanceScheme(preference);
+      // iOS only — Android setColorScheme is one-way (no setColorScheme(null) — @NonNull bridge) and masks device events.
+      if (Platform.OS === 'ios') {
+        if (preference === 'system') {
+          (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
+        } else {
+          Appearance.setColorScheme(preference);
+        }
+      }
 
-      // Decide whether to queue the ripple overlay.
-      //
-      // iOS + 'system' is a special case: Appearance.setColorScheme(null)
-      // synchronously poisons RN's JS-side appearance cache with
-      // { colorScheme: null }, so Appearance.getColorScheme() returns null
-      // for one tick until the appearanceChanged event arrives with the
-      // real device scheme. That makes a sync "did the scheme change?"
-      // check unreliable — we'd incorrectly skip the ripple in the case
-      // forced-Light → System on a Dark device (and vice-versa).
-      // So on iOS + 'system' we optimistically animate whenever we're
-      // actually switching *into* 'system'. If the device happens to
-      // match the previously-forced scheme, the overlay paints the same
-      // color over itself — visually a near-no-op, no harm.
-      //
-      // Everywhere else the sync check is correct:
-      // - 'light' / 'dark' → nextScheme is the preference itself.
-      // - Android 'system' → applyAppearanceScheme is a no-op (the bridge
-      //   rejects null), so the cache is unchanged and getColorScheme
-      //   returns the still-active override; if nothing visibly changes
-      //   we correctly skip the ripple.
       let shouldAnimate = false;
       if (animated) {
         if (preference === 'system' && Platform.OS === 'ios') {
+          // setColorScheme(null) transiently poisons getColorScheme() to null; animate optimistically.
           shouldAnimate = themePreference !== 'system';
         } else {
           const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
@@ -198,6 +179,7 @@ export const ThemeProvider = ({
     () => ({
       colorScheme: resolvedScheme,
       isDark,
+      palette: THEME[resolvedScheme],
       themePreference,
       setThemePreference,
       isHydrated,

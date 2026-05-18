@@ -5,22 +5,7 @@ import { TextClassContext } from '../../reusables/text';
 import { cn } from '../../utils/index';
 import type { DynamicIconProps } from './types';
 
-// Why this file does its own colour resolution instead of leaning on nativewind
-// like the iOS file does:
-//
-// `@react-native-vector-icons/material-icons` (v12+) is a `<Text>` under the
-// hood that picks `color` from BOTH the `color` prop and `style.color`. The
-// nativewind `styled(...)` / `useCssElement` path is supposed to resolve
-// className → style.color and then `nativeStyleMapping` should lift it to the
-// `color` prop. In practice that lift doesn't happen reliably on Android in
-// nativewind v5-preview when the wrapped component is a vector-icon, so the
-// icon ended up rendering in the default font colour regardless of variant.
-//
-// Workaround: detect which Tailwind text-* class was passed, look up the
-// matching CSS variable on the live ThemeProvider (via VariableContextProvider
-// → `useUnstableNativeVariable`), and pass the resolved `hsl(...)` string as
-// MaterialIcons' `color` prop directly. iOS file is unchanged because SFSymbol
-// reads `style.color` correctly there and doesn't need this bridge.
+// MaterialIcons reads `color` prop, not style.color — nativewind's lift to `color` is unreliable on Android v5-preview.
 const CLASS_TO_VAR: Record<string, string> = {
   'text-foreground': '--foreground',
   'text-muted-foreground': '--muted-foreground',
@@ -42,9 +27,7 @@ const CLASS_TO_VAR: Record<string, string> = {
   'text-info-foreground': '--info-foreground',
 };
 
-// Pick the *last* matching colour class so user overrides win (e.g. when
-// TextClassContext supplies `text-foreground` and the call site adds
-// `text-warning`, we want `text-warning`).
+// Last-class-wins so call-site overrides beat TextClassContext.
 function pickVariableFromClassName(className: string): string {
   const tokens = className.split(/\s+/);
   for (let i = tokens.length - 1; i >= 0; i--) {

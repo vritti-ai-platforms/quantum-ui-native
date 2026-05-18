@@ -1,10 +1,7 @@
-// iOS press feedback: tracked-state opacity dim (mirrors button.ios.tsx). HIG
-// uses opacity changes rather than ripples or background flashes.
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable, type PressableProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { TextClassContext } from '../../reusables/text';
-import { getTheme } from '../../theme/colors';
 import { cn } from '../../utils/cn';
 
 export interface CardPressableProps extends Omit<PressableProps, 'children'> {
@@ -23,8 +20,7 @@ function CardPressable({
   ...props
 }: CardPressableProps) {
   const [pressed, setPressed] = React.useState(false);
-  // Subscribe so a theme preference flip re-renders the shadow color below.
-  useTheme();
+  const { palette } = useTheme();
 
   const handlePressIn = React.useCallback(
     (e: GestureResponderEvent) => {
@@ -42,18 +38,12 @@ function CardPressable({
     [onPressOut],
   );
 
-  // When selected: 2 px primary border + primary-colored drop shadow / glow.
-  // borderWidth/borderColor are set inline (not via className) because the
-  // NativeWind v5-preview resolver is unreliable for `border-primary` on
-  // Pressable subtrees — same family of bug we work around in DynamicIcon
-  // (inside LiquidGlass) and the BottomSheet close icon. Inline color goes
-  // straight to React Native's borderColor without NativeWind's variable
-  // resolver, so the stroke renders deterministically.
+  // Inline borderColor — NativeWind v5-preview's `border-primary` resolver is unreliable on Pressable subtrees.
   const selectedShadow = selected
     ? {
         borderWidth: 1,
-        borderColor: getTheme().primary,
-        shadowColor: getTheme().primary,
+        borderColor: palette.primary,
+        shadowColor: palette.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,

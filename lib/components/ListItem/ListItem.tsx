@@ -1,6 +1,3 @@
-// Default ListItem fallback for non-iOS / non-Android platforms.
-// Platform-flavored variants in ListItem.ios.tsx (Settings.app row) and
-// ListItem.android.tsx (Material list-item).
 import type { ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
 import { Skeleton } from '../../reusables/skeleton';

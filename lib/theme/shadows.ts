@@ -1,17 +1,4 @@
-// Theme-aware shadow tokens, mirroring quantum-ui's :root and .dark shadow scale.
-//
-// Injected at runtime by ThemeProvider via VariableContextProvider, same pattern
-// as colors.ts and radii.ts. index.css declares --shadow-* as var(--shd-*) so
-// Tailwind utilities (shadow-sm, shadow-md, …) resolve to whichever scale is
-// active for the current color scheme.
-//
-// Light: subtle navy-tinted shadows (low opacity, warm dark blue).
-// Dark:  deeper black shadows (higher opacity, pure black).
-
-// Inject directly as --shadow-* to override Tailwind's built-in tokens in one
-// step. VariableContextProvider resolves var(--shadow-sm) from these at runtime.
-// Two-level indirection (--shadow-sm → var(--shd-sm) → value) fails because
-// NativeWind's box-shadow runtime resolver only unwraps one var() level.
+// Inject as --shadow-* directly — NativeWind's box-shadow resolver only unwraps one var() level, so --shadow-sm → var(--shd-sm) → value fails.
 
 const lightShadows = {
   '--shadow-2xs': '0 1px 2px 0 hsl(214 68.75% 12.55% / 0.03)',

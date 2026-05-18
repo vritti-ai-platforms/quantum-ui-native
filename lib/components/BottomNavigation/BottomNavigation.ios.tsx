@@ -6,14 +6,13 @@ import { SFSymbol } from 'react-native-sfsymbols';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
-import { getTheme, THEME } from '../../theme/colors';
+import { THEME } from '../../theme/colors';
 import { PushNavigator } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
 
 const Tab = createBottomTabNavigator();
 
-// Show 4 content tabs; overflow goes into the More tab.
 const MAX_VISIBLE = 3;
 
 function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon'] {
@@ -22,19 +21,10 @@ function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon
 
 type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 
-// List screen rendered as the initial route inside the More PushNavigator.
-// Reads its items from route.params (set via initialParams on Stack.Screen) so
-// that React Context propagation issues with NativeStack are avoided.
 function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
   const items = route.params?.items ?? [];
   const { push } = usePushNavigator();
-  // Subscribe to ThemeContext — iOS 26+ keeps the Tab.Navigator mounted across
-  // theme flips (constant navigatorKey to preserve liquid-glass state), so this
-  // screen never re-renders unless it explicitly consumes the context. Without
-  // this line, getTheme() returns the palette captured at first mount and the
-  // More-tab rows show stale colors after a theme toggle.
-  useTheme();
-  const theme = getTheme();
+  const { palette: theme } = useTheme();
 
   return (
     <ScreenContainer scrollable>
@@ -55,9 +45,6 @@ function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] 
   );
 }
 
-// Defined at module level for a stable Tab.Screen component reference.
-// Overflow routes arrive via initialParams. Renders a PushNavigator so each
-// selected screen gets the native iOS back gesture/button for free.
 function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] } } }) {
   const overflowRoutes = route.params?.routes ?? [];
 
@@ -111,9 +98,7 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
 
   const { version } = usePlatformInfo();
   const systemScheme = useColorScheme();
-  // Subscribe to user-driven preference flips so the navigator re-renders
-  // when the user picks light/dark/system from the AccountScreen picker —
-  // useColorScheme() alone doesn't fire on explicit overrides reliably.
+  // useColorScheme alone doesn't fire on explicit overrides reliably.
   const { isDark } = useTheme();
 
   const isIOS26Plus = version >= 26;
@@ -122,10 +107,6 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const lightThemeColors = THEME.light;
   const darkThemeColors = THEME.dark;
 
-  // DynamicColorIOS resolves at the UIKit layer via trait collection — when
-  // Appearance.setColorScheme() flips the window's overrideUserInterfaceStyle,
-  // UIKit redraws sceneBackground and the tab bar background without any
-  // React re-render or navigator remount.
   const sceneBackground = useMemo(
     () =>
       DynamicColorIOS({
@@ -158,14 +139,7 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
     [lightThemeColors.background, darkThemeColors.background],
   );
 
-  // iOS 26+: constant key — liquid glass paints through a re-resolving blur
-  // layer, so DynamicColorIOS handles theme flips without remount and the
-  // tab navigator preserves its state across appearance changes.
-  // iOS pre-26: include isDark in the key. Native UITabBarAppearance is a
-  // value-type snapshot that bakes the resolved color at navigator-creation
-  // time and does NOT reliably re-resolve DynamicColorIOS mid-life — without
-  // a remount the bar background stays on the previous theme until something
-  // else (a tab change, navigation event) re-applies screen options.
+  // iOS pre-26 needs isDark in the key — UITabBarAppearance bakes the color at creation and won't re-resolve DynamicColorIOS mid-life.
   const routeKey = allRoutes.map((r) => r.name).join(',');
   const navigatorKey = isIOS26Plus ? `tab-nav-${routeKey}` : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
 
@@ -176,13 +150,7 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
         initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
         screenOptions={{
           headerShown: false,
-          // iOS 26+: tabBarBlurEffect:'systemDefault' makes RNSTabBarAppearanceCoordinator
-          // skip setting UITabBarAppearance.backgroundEffect entirely, so UIKit applies
-          // liquid glass automatically. backgroundColor:'transparent' prevents the
-          // appearance from setting an opaque color on top of the glass.
-          // The React Navigation default (systemMaterial/systemMaterialDark) always
-          // sets a blur effect that overrides the glass — 'systemDefault' is the escape hatch.
-          // iOS 18-: explicit background color; old-style blur via systemMaterial default.
+          // iOS 26+: 'systemDefault' tabBarBlurEffect lets UIKit apply liquid glass instead of overriding it.
           ...(isIOS26Plus
             ? {
                 tabBarBlurEffect: 'systemDefault',

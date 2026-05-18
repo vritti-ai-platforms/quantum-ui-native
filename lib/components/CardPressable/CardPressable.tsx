@@ -1,6 +1,3 @@
-// Default fallback for non-iOS / non-Android platforms.
-// Platform-specific press feedback lives in CardPressable.ios.tsx and
-// CardPressable.android.tsx.
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable, type PressableProps } from 'react-native';
 import { TextClassContext } from '../../reusables/text';

@@ -1,7 +1,7 @@
 import type * as React from 'react';
 import { useState } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
-import { getTheme } from '../../theme/colors';
+import { useTheme } from '../../hooks/useTheme';
 import { cn } from '../../utils/index';
 
 function Input({
@@ -15,7 +15,7 @@ function Input({
   ...props
 }: TextInputProps & { 'aria-invalid'?: boolean | 'true' | 'false' } & React.RefAttributes<TextInput>) {
   const [focused, setFocused] = useState(false);
-  const theme = getTheme();
+  const { palette: theme } = useTheme();
 
   const isError = ariaInvalid === true || ariaInvalid === 'true';
 

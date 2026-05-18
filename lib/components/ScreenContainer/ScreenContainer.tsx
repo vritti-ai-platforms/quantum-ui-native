@@ -1,6 +1,3 @@
-// Default fallback for non-iOS / non-Android platforms (web etc.).
-// The platform-flavored variants live in ScreenContainer.ios.tsx and
-// ScreenContainer.android.tsx; Metro picks the right file at bundle time.
 import type { ReactNode } from 'react';
 import { ScrollView, type ScrollViewProps, View, type ViewProps } from 'react-native';
 import { cn } from '../../utils/cn';

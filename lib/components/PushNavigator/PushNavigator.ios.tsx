@@ -9,10 +9,6 @@ type PushNavigatorParamList = Record<string, object | undefined>;
 
 const Stack = createNativeStackNavigator<PushNavigatorParamList>();
 
-// UIKit resolves these against the current trait collection at draw time.
-// Appearance.setColorScheme() mutates the window's overrideUserInterfaceStyle,
-// which re-resolves every dynamic color in the view hierarchy — including the
-// UINavigationBar's tint/title/background — without any React re-render.
 const HEADER_FG = DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground });
 const HEADER_BG = DynamicColorIOS({ light: THEME.light.background, dark: THEME.dark.background });
 

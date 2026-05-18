@@ -1,9 +1,3 @@
-// Android-flavored StaticAlert.
-// Surface matches the Card primitive (bg-card, hairline border, rounded-md
-// — the tighter Material 3 shape) so alerts feel like a small card with a
-// leading icon. The variant only affects the icon colour — title and
-// description stay in the neutral foreground / muted-foreground tokens
-// used everywhere else in the UI.
 import type { ViewProps } from 'react-native';
 import { View } from 'react-native';
 import { Text } from '../../reusables/text';
@@ -48,18 +42,12 @@ export const StaticAlert = ({
   return (
     <View
       role="alert"
-      // Use individual sides (border-l/-r/-t/-b) instead of the `border` or
-      // `border-x` shorthand — react-native-css occasionally drops one edge
-      // on rounded surfaces when borders are declared via shorthands. Spelling
-      // out all four sides forces every edge to render.
       className={cn(
         'flex-row items-start gap-3 rounded-xl shadow-sm border border-border bg-card px-4 py-3',
         className,
       )}
       {...props}
     >
-      {/* h-[22px] matches the text-sm line-height (16px font × 1.375 leading)
-          so the icon centres inside the title line regardless of font scaling. */}
       <View className="h-[22px] items-center justify-center">
         <DynamicIcon icon={iconDescriptor} className={cn('size-4', variantIconColor[variant])} />
       </View>

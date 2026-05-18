@@ -21,8 +21,6 @@ import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDeten
 export type { BottomSheetProps, BottomSheetRef };
 export type { SheetDetent } from './BottomSheetTypes';
 
-// ---------- Module-level constants ----------
-
 const withOpacity = (hsl: string, alpha: number): string => hsl.replace(')', ` / ${alpha})`);
 
 const BACKDROP_LIGHT = withOpacity(THEME.light.foreground, 0.4);
@@ -30,10 +28,7 @@ const BACKDROP_DARK = withOpacity(THEME.dark.background, 0.6);
 const GRABBER_LIGHT = withOpacity(THEME.light.foreground, 0.22);
 const GRABBER_DARK = withOpacity(THEME.dark.foreground, 0.35);
 
-// Stable default — prevents busting the mapDetents memo when caller omits `detents`.
 const DEFAULT_DETENTS: SheetDetent[] = ['auto'];
-
-// ---------- Sub-component ----------
 
 const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   <View style={styles.handleContainer}>
@@ -41,10 +36,6 @@ const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   </View>
 ));
 Grabber.displayName = 'BottomSheet.Grabber';
-
-// ---------- Progress bridge ----------
-// Bridges the modal's internal `animatedIndex` (output from useBottomSheet)
-// into the context-provided progress SharedValue read by the scaled screen.
 
 const SheetProgressBridge = () => {
   const { animatedIndex, animatedPosition } = useBottomSheet();
@@ -54,8 +45,7 @@ const SheetProgressBridge = () => {
     (current, prev) => {
       if (!scaler) return;
       scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
-      // Capture sheet top only while opening (idx increasing). Freeze during
-      // drag-down and close so the floating button stays put.
+      // Freeze sheet top during drag-down so the floating close button stays put.
       if (!prev || current.idx >= prev.idx) {
         scaler.sheetTop.value = current.pos;
       }
@@ -63,8 +53,6 @@ const SheetProgressBridge = () => {
   );
   return null;
 };
-
-// ---------- Main ----------
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
   (
@@ -76,46 +64,36 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       dismissible = true,
       draggable = true,
       dimmed = true,
-      variant: _variant, // Android: flat minimal, variant ignored
+      variant: _variant,
       onDismiss,
       onPresent,
       onChange,
-      // Built-in header props
       title,
       subtitle,
       onClose,
       headerLeft,
       headerRight,
-      // Body container
       scrollable,
     },
     ref,
   ) => {
-    // Render the sticky header if any header-bearing prop is set.
     const hasHeader =
       title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
-    // Use the scrollable body when explicitly requested OR when 'full' is in detents.
     const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
 
-    // Plain locals — trivial computations, no memo needed.
     const scheme = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
     const sheetBg = THEME_TOKENS[scheme].palette.secondary;
-    // Full-sheet body color: light → secondary (soft surface), dark → background
-    // (deepest surface). Matches BottomSheetHeader's per-scheme backdrop so the
-    // header and body are flush (no visible color step).
     const fullSheetBg = isDark ? THEME_TOKENS.dark.palette.background : THEME_TOKENS.light.palette.secondary;
-    const themeValues = THEME_TOKENS[scheme].variables; // already a stable ref
+    const themeValues = THEME_TOKENS[scheme].variables;
     const backdropBg = isDark ? BACKDROP_DARK : BACKDROP_LIGHT;
     const grabberColor = isDark ? GRABBER_DARK : GRABBER_LIGHT;
 
     const { snapPoints, dynamic } = useMemo(() => mapDetents(detents), [detents]);
 
-    // When a background scaler is mounted above, suppress the internal backdrop —
-    // the scaler renders its own dim overlay synchronized with the drag.
     const scaler = useBottomSheetBackgroundScaler();
     const effectiveDimmed = dimmed && !scaler;
 
@@ -131,8 +109,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [],
     );
 
-    // Render callbacks must be stable — BottomSheetModal passes these as
-    // *Component props and reconciles internal pieces on identity change.
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) =>
         effectiveDimmed ? (
@@ -146,10 +122,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [effectiveDimmed, backdropBg],
     );
 
-    // When the header is shown on a full-detent sheet, the header itself owns
-    // the close/grabber affordance; suppress the modal's standard top grabber
-    // so we don't double up. Also use the per-scheme `fullSheetBg` here so
-    // the body matches the header backdrop (light→secondary, dark→background).
     const fullWithHeader = hasHeader && detents.includes('full');
 
     const renderBackground = useCallback(
@@ -196,10 +168,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         <BottomSheetFullProvider>
           {isScrollable ? (
             <BottomSheetScrollView>
-              {/* Skip the bridge for full+header sheets: they own their own
-                  close affordance, so the BackgroundScaler's floating close
-                  button (driven by progress) is redundant. Leaving progress
-                  at 0 also disables the unnecessary background-scale animation. */}
               {!fullWithHeader && <SheetProgressBridge />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
@@ -215,10 +183,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             </BottomSheetScrollView>
           ) : (
             <BottomSheetView>
-              {/* Skip the bridge for full+header sheets: they own their own
-                  close affordance, so the BackgroundScaler's floating close
-                  button (driven by progress) is redundant. Leaving progress
-                  at 0 also disables the unnecessary background-scale animation. */}
               {!fullWithHeader && <SheetProgressBridge />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>

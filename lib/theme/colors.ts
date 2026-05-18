@@ -1,10 +1,5 @@
-import { Appearance } from 'react-native';
 import { platformRadii } from './radii';
 import { darkShadows, lightShadows } from './shadows';
-
-// Design tokens — HSL values matching the @vritti/quantum-ui (web) theme.
-// Converted from OKLCH source values in quantum-ui/lib/index.css.
-// Used by ThemeProvider via NativeWind's VariableContextProvider to inject CSS variables at runtime.
 
 export const lightColors = {
   '--background': '0 0% 100%',
@@ -48,7 +43,6 @@ export const lightColors = {
 } as const;
 
 export const darkColors = {
-  // ── Core palette ──────────────────────────────────────────────────────
   '--background': '222.43 26.93% 3.12%',
   '--foreground': '210 39.97% 98.05%',
 
@@ -86,14 +80,12 @@ export const darkColors = {
   '--input': '217.06 9.46% 16.41%',
   '--ring': '215.85 88.56% 41.62%',
 
-  // ── Chart colors ──────────────────────────────────────────────────────
   '--chart-1': '215.85 88.56% 41.62%',
   '--chart-2': '213.12 93.9% 67.84%',
   '--chart-3': '122.42 39.42% 49.22%',
   '--chart-4': '45.02 100% 51.32%',
   '--chart-5': '1.36 77.2% 55.3%',
 
-  // ── Sidebar ───────────────────────────────────────────────────────────
   '--sidebar': '222.43 26.93% 3.12%',
   '--sidebar-foreground': '210 39.97% 98.05%',
   '--sidebar-primary': '215.85 88.56% 41.62%',
@@ -106,7 +98,7 @@ export const darkColors = {
 
 type ThemeTokens = Record<keyof typeof lightColors, string>;
 
-type ThemePalette = {
+export type ThemePalette = {
   background: string;
   foreground: string;
   primary: string;
@@ -146,14 +138,11 @@ function createThemePalette(tokens: ThemeTokens): ThemePalette {
   };
 }
 
-// Resolved theme colors derived from the same token source as NativeWind.
 export const THEME = {
   light: createThemePalette(lightColors),
   dark: createThemePalette(darkColors),
 } as const;
 
-// Single source of truth for per-scheme token bundles.
-// Variables are spread once at module load — getVariableValues() becomes a pure lookup.
 export const THEME_TOKENS = {
   light: {
     palette: THEME.light,
@@ -166,15 +155,3 @@ export const THEME_TOKENS = {
 } as const;
 
 export type ThemeScheme = keyof typeof THEME_TOKENS;
-
-function resolveScheme(): ThemeScheme {
-  return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
-}
-
-export function getTheme() {
-  return THEME_TOKENS[resolveScheme()].palette;
-}
-
-export function getVariableValues() {
-  return THEME_TOKENS[resolveScheme()].variables;
-}

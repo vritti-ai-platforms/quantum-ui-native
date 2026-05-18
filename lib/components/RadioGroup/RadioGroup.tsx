@@ -8,13 +8,11 @@ import {
 import { Text } from '../../reusables/text';
 
 export interface RadioGroupProps extends React.ComponentProps<typeof RnrRadioGroup> {
-  /** Optional marker used by <Form> to auto-wire this field to react-hook-form. */
   name?: string;
   label?: string;
   error?: string;
 }
 
-// Radio group with optional label and error support — wraps the reusable RadioGroup
 function RadioGroup({ label, error, className, ...props }: RadioGroupProps) {
   const id = React.useId();
 
@@ -37,7 +35,6 @@ export interface RadioGroupItemProps extends React.ComponentProps<typeof RnrRadi
   label?: string;
 }
 
-// Radio group item with optional label — wraps the reusable RadioGroupItem
 function RadioGroupItem({ label, ...props }: RadioGroupItemProps) {
   const id = React.useId();
 

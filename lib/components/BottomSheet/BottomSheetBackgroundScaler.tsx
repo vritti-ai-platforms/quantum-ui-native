@@ -14,14 +14,11 @@ import {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeOnlyAnimatedView } from '../../reusables/native-only-animated-view';
-import { getTheme, THEME } from '../../theme';
+import { THEME } from '../../theme';
 import { Button } from '../Button';
 import { DynamicIcon } from '../DynamicIcon';
 
-// Drag-down threshold to count as a dismissal swipe on the dim area.
 const PAN_DISMISS_THRESHOLD = 50;
-
-// ---------- Context ----------
 
 type BottomSheetBackgroundScalerContextValue = {
   progress: SharedValue<number>;
@@ -33,8 +30,6 @@ const BottomSheetBackgroundScalerContext = createContext<BottomSheetBackgroundSc
 export const useBottomSheetBackgroundScaler = (): BottomSheetBackgroundScalerContextValue | null =>
   useContext(BottomSheetBackgroundScalerContext);
 
-// ---------- Provider ----------
-
 export const BottomSheetBackgroundScalerProvider = ({ children }: { children: ReactNode }) => {
   const progress = useSharedValue(0);
   const sheetTop = useSharedValue(0);
@@ -44,18 +39,10 @@ export const BottomSheetBackgroundScalerProvider = ({ children }: { children: Re
   );
 };
 
-// ---------- Scaled screen wrapper ----------
-
 const CLOSE_ICON = { sfSymbol: 'xmark', materialIcon: 'close' } as const;
-// Gap between the sheet's top edge and the bottom of the close button.
 const CLOSE_BUTTON_OFFSET = 56;
 
-// NativeWind's className→variable lookup (useUnstableNativeVariable inside
-// DynamicIcon) is unreliable inside LiquidGlassView's render layer on iOS 26+
-// — it resolves to the light-mode foreground even in dark mode, leaving the
-// glyph almost invisible against the dark glass. Bypass it by passing an
-// explicit DynamicColorIOS so UIKit re-resolves at draw time against the
-// current trait collection.
+// NativeWind className→variable lookup is unreliable inside LiquidGlassView on iOS 26+ — pass DynamicColorIOS so UIKit re-resolves at draw time.
 const IOS_CLOSE_ICON_COLOR =
   Platform.OS === 'ios'
     ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground })
@@ -104,14 +91,9 @@ const ScaledContent = ({
   const platform = usePlatformInfo();
   const useGlass = platform.os === 'ios' && platform.version >= 26;
   const insets = useSafeAreaInsets();
-  // Subscribe so Android re-renders on theme preference flips (iOS uses
-  // DynamicColorIOS below and doesn't need a JS re-render to update).
-  useTheme();
-  const closeIconColor = (IOS_CLOSE_ICON_COLOR ?? getTheme().foreground) as unknown as string;
+  const { palette } = useTheme();
+  const closeIconColor = (IOS_CLOSE_ICON_COLOR ?? palette.foreground) as unknown as string;
 
-  // Track whether any sheet is open in React land so we can toggle the
-  // touch-capture layer on/off. When closed we set pointerEvents="none" so
-  // taps fall through to AppRender as normal.
   const [isOpen, setIsOpen] = useState(false);
   useAnimatedReaction(
     () => ctx.progress.value,
@@ -124,7 +106,6 @@ const ScaledContent = ({
     [],
   );
 
-  // Tap on the dim area dismisses; vertical swipe past threshold dismisses too.
   const dismissGesture = useMemo(
     () =>
       Gesture.Race(
@@ -139,10 +120,6 @@ const ScaledContent = ({
   );
 
   const containerStyle = useAnimatedStyle(() => ({
-    // Scale first, then translate down by the safe-area top inset so the scaled
-    // screen's top edge sits below the notch / Dynamic Island when fully open.
-    // translateY isn't subject to the scale factor when it comes after scale in
-    // the transform array.
     transform: [
       { scale: interpolate(ctx.progress.value, [0, 1], [1, scale]) },
       { translateY: ctx.progress.value * insets.top },
@@ -154,11 +131,7 @@ const ScaledContent = ({
     opacity: ctx.progress.value * overlayOpacity,
   }));
 
-  // Use paint-only transforms (translateY + scale) instead of layout-time `top`
-  // and alpha-suppressing `opacity`. Animating opacity from 0 prevents iOS 26's
-  // UIGlassEffect from initialising on a LiquidGlassView descendant; animating
-  // `top` thrashes layout each frame and tears down the glass material before
-  // it can render. Scale keeps layer alpha at 1.0; translateY is paint-only.
+  // Paint-only transforms — opacity from 0 prevents iOS 26 UIGlassEffect init; layout-time `top` thrashes and tears down the glass.
   const closeButtonStyle = useAnimatedStyle(() => ({
     transform: [
       { translateY: ctx.sheetTop.value - CLOSE_BUTTON_OFFSET },
@@ -175,10 +148,6 @@ const ScaledContent = ({
           style={[StyleSheet.absoluteFillObject, styles.overlay, overlayStyle]}
         />
       </NativeOnlyAnimatedView>
-      {/* Touch-capture layer: blocks AppRender taps while a sheet is open, and
-          dismisses on tap or swipe-down. Sits above the scaled view but below
-          the close button. The sheet itself is rendered via the portal at a
-          higher z-order, so taps inside the sheet still reach it. */}
       <GestureDetector gesture={dismissGesture}>
         <View
           pointerEvents={isOpen ? 'auto' : 'none'}

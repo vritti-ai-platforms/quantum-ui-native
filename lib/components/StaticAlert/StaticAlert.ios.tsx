@@ -1,8 +1,3 @@
-// iOS-flavored StaticAlert.
-// Surface matches the Card primitive (bg-card, hairline border, rounded-xl)
-// so alerts feel like a small card with a leading icon. The variant only
-// affects the icon colour — title and description stay in the neutral
-// foreground / muted-foreground tokens used everywhere else in the UI.
 import type { ViewProps } from 'react-native';
 import { View } from 'react-native';
 import { Text } from '../../reusables/text';
@@ -53,8 +48,6 @@ export const StaticAlert = ({
       )}
       {...props}
     >
-      {/* h-[22px] matches the text-sm line-height (16px font × 1.375 leading)
-          so the icon centres inside the title line regardless of font scaling. */}
       <View className="h-[22px] items-center justify-center">
         <DynamicIcon icon={iconDescriptor} className={cn('size-4', variantIconColor[variant])} />
       </View>

@@ -1,4 +1,4 @@
-export { darkColors, getTheme, lightColors, THEME, THEME_TOKENS, type ThemeScheme } from './colors';
+export { darkColors, lightColors, THEME, THEME_TOKENS, type ThemePalette, type ThemeScheme } from './colors';
 export {
   ThemeContext,
   type ThemeContextValue,
