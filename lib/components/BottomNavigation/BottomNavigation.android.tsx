@@ -11,7 +11,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
-import { PushNavigator } from '../PushNavigator';
+import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
 
@@ -60,7 +60,7 @@ function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] 
 function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] } } }) {
   const overflowRoutes = route.params?.routes ?? [];
 
-  const screens = useMemo(
+  const screens = useMemo<PushScreenConfig[]>(
     () => [
       {
         name: '__more_list__',
@@ -70,12 +70,16 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
           items: overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon })),
         },
       },
-      ...overflowRoutes.map((r) => ({
-        name: r.name,
-        component: r.component,
-        title: r.label ?? r.name,
-        initialParams: r.params,
-      })),
+      ...overflowRoutes.map((r) => {
+        // reuse the route's header fn as the push-screen header (the host value ignores props)
+        const header = r.options?.header as PushScreenConfig['header'];
+        return {
+          name: r.name,
+          component: r.component,
+          initialParams: r.params,
+          ...(header ? { header } : { headerShown: false }),
+        };
+      }),
     ],
     [overflowRoutes],
   );

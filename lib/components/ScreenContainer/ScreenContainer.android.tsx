@@ -1,7 +1,9 @@
 import { type Context, createContext, type ReactNode, useContext } from 'react';
 import { ScrollView, type ScrollViewProps, View, type ViewProps } from 'react-native';
+import Animated, { useAnimatedReaction, useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
+import { useScreenScrollY } from './screenScrollRegistry';
 
 // HeaderShownContext via the same globalThis-keyed Map that
 // @react-navigation/elements uses internally (see the iOS file for the long
@@ -36,6 +38,37 @@ type StaticProps = {
 
 export type ScreenContainerProps = ScrollableProps | StaticProps;
 
+const ScrollableBody = ({
+  className,
+  style,
+  topPad,
+  rest,
+}: {
+  className?: string;
+  style?: ScrollViewProps['style'];
+  topPad: number;
+  rest: Omit<ScrollViewProps, 'children' | 'style'> & { children?: ReactNode };
+}) => {
+  const scrollRef = useAnimatedRef<ScrollView>();
+  const offset = useScrollViewOffset(scrollRef);
+  const scrollY = useScreenScrollY();
+  useAnimatedReaction(
+    () => offset.value,
+    (current) => {
+      scrollY.value = current;
+    },
+  );
+  return (
+    <Animated.ScrollView
+      ref={scrollRef as never}
+      {...rest}
+      className={cn('flex-1 bg-background', className)}
+      style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}
+      scrollEventThrottle={16}
+    />
+  );
+};
+
 export const ScreenContainer = (props: ScreenContainerProps) => {
   const insets = useSafeAreaInsets();
   const isHeaderShown = useContext(HeaderShownContext) ?? false;
@@ -43,13 +76,7 @@ export const ScreenContainer = (props: ScreenContainerProps) => {
 
   if (props.scrollable) {
     const { scrollable: _scrollable, className, style, ...rest } = props;
-    return (
-      <ScrollView
-        {...rest}
-        className={cn('flex-1 bg-background', className)}
-        style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}
-      />
-    );
+    return <ScrollableBody className={className} style={style} topPad={topPad} rest={rest} />;
   }
 
   const { scrollable: _scrollable, className, style, ...rest } = props;

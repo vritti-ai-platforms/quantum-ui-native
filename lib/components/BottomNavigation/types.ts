@@ -19,6 +19,7 @@ interface RouteConfigBase {
 }
 
 export interface RouteConfig extends RouteConfigBase {
+  // biome-ignore lint/suspicious/noExplicitAny: <>
   component: React.ComponentType<any>;
 }
 

@@ -2,10 +2,12 @@ import type { ComponentType, ReactNode } from 'react';
 
 export interface PushScreenConfig<RouteName extends string = string> {
   name: RouteName;
+  // biome-ignore lint/suspicious/noExplicitAny: <>
   component: ComponentType<any>;
   title?: string;
   headerShown?: boolean;
   initialParams?: object;
+  header?: () => ReactNode;
 }
 
 export interface PushNavigatorHeaderProps<RouteName extends string = string> {
