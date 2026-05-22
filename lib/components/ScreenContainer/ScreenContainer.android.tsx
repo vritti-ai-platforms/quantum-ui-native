@@ -1,6 +1,6 @@
 import { type Context, createContext, type ReactNode, useContext } from 'react';
-import { ScrollView, type ScrollViewProps, View, type ViewProps } from 'react-native';
-import Animated, { useAnimatedReaction, useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
+import { type ScrollViewProps, View, type ViewProps } from 'react-native';
+import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
 import { useScreenScrollY } from './screenScrollRegistry';
@@ -29,7 +29,7 @@ const HeaderShownContext: Context<boolean | undefined> =
 type ScrollableProps = {
   scrollable: true;
   children?: ReactNode;
-} & Omit<ScrollViewProps, 'children'>;
+} & Omit<ScrollViewProps, 'children' | 'onScroll'>;
 
 type StaticProps = {
   scrollable?: false;
@@ -47,24 +47,21 @@ const ScrollableBody = ({
   className?: string;
   style?: ScrollViewProps['style'];
   topPad: number;
-  rest: Omit<ScrollViewProps, 'children' | 'style'> & { children?: ReactNode };
+  rest: Omit<ScrollViewProps, 'children' | 'style' | 'onScroll'> & { children?: ReactNode };
 }) => {
-  const scrollRef = useAnimatedRef<ScrollView>();
-  const offset = useScrollViewOffset(scrollRef);
   const scrollY = useScreenScrollY();
-  useAnimatedReaction(
-    () => offset.value,
-    (current) => {
-      scrollY.value = current;
-    },
-  );
+  // useAnimatedScrollHandler writes scrollY (which drives a collapsing
+  // ScreenHeader) on real scroll events.
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
   return (
     <Animated.ScrollView
-      ref={scrollRef as never}
       {...rest}
       className={cn('flex-1 bg-background', className)}
       style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}
       scrollEventThrottle={16}
+      onScroll={onScroll}
     />
   );
 };

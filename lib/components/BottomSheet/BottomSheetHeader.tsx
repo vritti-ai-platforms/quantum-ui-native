@@ -6,13 +6,13 @@ import {
   Platform,
   type StyleProp,
   StyleSheet,
+  useColorScheme,
   View,
   type ViewStyle,
 } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
-import { useTheme } from '../../hooks/useTheme';
 import { THEME } from '../../theme/colors';
 import { Button } from '../Button';
 import { DynamicIcon } from '../DynamicIcon';
@@ -65,7 +65,7 @@ function BottomSheetHeaderImpl({
 }: BottomSheetHeaderProps) {
   const insets = useSafeAreaInsets();
   const { version } = usePlatformInfo();
-  const { palette: headerColors } = useTheme();
+  const systemColorScheme = useColorScheme();
   const useGlass = Platform.OS === 'ios' && version >= 26 && LiquidGlass != null;
   const ctx = useBottomSheetFullContext();
 
@@ -86,7 +86,7 @@ function BottomSheetHeaderImpl({
     opacity: interpolate(animatedPosition.value, [0, MORPH_DISTANCE], [0, 1], 'clamp'),
   }));
 
-  const androidHeaderBg = headerColors.background;
+  const androidHeaderBg = THEME[systemColorScheme === 'dark' ? 'dark' : 'light'].background;
 
   const leftSlot =
     leftAction ??

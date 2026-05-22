@@ -110,6 +110,11 @@
       "types": "./dist/typescript/lib/components/ScreenContainer/index.d.ts",
       "default": "./dist/module/components/ScreenContainer/index.js"
     },
+    "./ScreenHeader": {
+      "source": "./lib/components/ScreenHeader/index.ts",
+      "types": "./dist/typescript/lib/components/ScreenHeader/index.d.ts",
+      "default": "./dist/module/components/ScreenHeader/index.js"
+    },
     "./ScreenLayout": {
       "source": "./lib/components/ScreenLayout/index.ts",
       "types": "./dist/typescript/lib/components/ScreenLayout/index.d.ts",

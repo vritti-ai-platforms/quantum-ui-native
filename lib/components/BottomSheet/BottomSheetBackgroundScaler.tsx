@@ -1,8 +1,7 @@
 import { useBottomSheetModal } from '@gorhom/bottom-sheet';
-import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
-import { DynamicColorIOS, Platform, StyleSheet, View } from 'react-native';
+import { DynamicColorIOS, Platform, StyleSheet, useColorScheme, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
   interpolate,
@@ -91,7 +90,8 @@ const ScaledContent = ({
   const platform = usePlatformInfo();
   const useGlass = platform.os === 'ios' && platform.version >= 26;
   const insets = useSafeAreaInsets();
-  const { palette } = useTheme();
+  const systemColorScheme = useColorScheme();
+  const palette = THEME[systemColorScheme === 'dark' ? 'dark' : 'light'];
   const closeIconColor = (IOS_CLOSE_ICON_COLOR ?? palette.foreground) as unknown as string;
 
   const [isOpen, setIsOpen] = useState(false);

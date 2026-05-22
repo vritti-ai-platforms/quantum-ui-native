@@ -5,7 +5,7 @@ import { cn } from '../../utils/cn';
 type ScrollableProps = {
   scrollable: true;
   children?: ReactNode;
-} & Omit<ScrollViewProps, 'children'>;
+} & Omit<ScrollViewProps, 'children' | 'onScroll'>;
 
 type StaticProps = {
   scrollable?: false;
