@@ -3,7 +3,7 @@ import { type ScrollViewProps, View, type ViewProps } from 'react-native';
 import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
-import { useScreenScrollY } from './screenScrollRegistry';
+import { useScreenHeaderInset, useScreenScrollY } from './screenScrollRegistry';
 
 // HeaderShownContext via the same globalThis-keyed Map that
 // @react-navigation/elements uses internally (see the iOS file for the long
@@ -50,16 +50,25 @@ const ScrollableBody = ({
   rest: Omit<ScrollViewProps, 'children' | 'style' | 'onScroll'> & { children?: ReactNode };
 }) => {
   const scrollY = useScreenScrollY();
+  const headerInset = useScreenHeaderInset();
   // useAnimatedScrollHandler writes scrollY (which drives a collapsing
   // ScreenHeader) on real scroll events.
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
+  const { contentContainerStyle, ...scrollViewProps } = rest;
+  const composedContainerStyle =
+    headerInset > 0
+      ? contentContainerStyle != null
+        ? [{ paddingTop: headerInset }, contentContainerStyle]
+        : { paddingTop: headerInset }
+      : contentContainerStyle;
   return (
     <Animated.ScrollView
-      {...rest}
+      {...scrollViewProps}
       className={cn('flex-1 bg-background', className)}
       style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}
+      {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
     />
