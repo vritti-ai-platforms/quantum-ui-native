@@ -103,10 +103,12 @@ const ScrollableBody = ({
   return (
     <Animated.ScrollView
       ref={scrollRef}
+      showsVerticalScrollIndicator={false}
       {...scrollViewProps}
       className={cn('flex-1 bg-background', className)}
       contentInsetAdjustmentBehavior="automatic"
       {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
+      {...(headerInset > 0 ? { scrollIndicatorInsets: { top: headerInset } } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
     />

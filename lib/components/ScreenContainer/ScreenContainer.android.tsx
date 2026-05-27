@@ -65,6 +65,7 @@ const ScrollableBody = ({
       : contentContainerStyle;
   return (
     <Animated.ScrollView
+      showsVerticalScrollIndicator={false}
       {...scrollViewProps}
       className={cn('flex-1 bg-background', className)}
       style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}

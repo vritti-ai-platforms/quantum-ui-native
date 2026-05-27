@@ -17,7 +17,13 @@ export type ScreenContainerProps = ScrollableProps | StaticProps;
 export const ScreenContainer = (props: ScreenContainerProps) => {
   if (props.scrollable) {
     const { scrollable: _scrollable, className, ...rest } = props;
-    return <ScrollView {...rest} className={cn('flex-1 bg-background', className)} />;
+    return (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        {...rest}
+        className={cn('flex-1 bg-background', className)}
+      />
+    );
   }
 
   const { scrollable: _scrollable, className, ...rest } = props;

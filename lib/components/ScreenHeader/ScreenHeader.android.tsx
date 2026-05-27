@@ -2,16 +2,21 @@ import { View } from 'react-native';
 import { ScreenHeaderBase } from './ScreenHeaderBase';
 import type { ScreenHeaderProps } from './types';
 
-export function ScreenHeader({ title, subtitle, leftActions, rightActions }: ScreenHeaderProps) {
+export function ScreenHeader(props: ScreenHeaderProps) {
+  const variant = props.variant ?? 'standard';
+
   return (
     <ScreenHeaderBase
-      title={title}
-      subtitle={subtitle}
+      title={props.title}
+      subtitle={props.subtitle}
+      variant={variant}
       backdrop={<View className="flex-1 bg-background" />}
       overlay
       animateBackdrop
-      leftActions={leftActions}
-      rightActions={rightActions}
+      tabsBackground={undefined}
+      leftActions={props.variant === 'tabs' ? undefined : props.leftActions}
+      rightActions={props.variant === 'tabs' ? undefined : props.rightActions}
+      tabs={props.variant === 'tabs' ? props.tabs : undefined}
     />
   );
 }
