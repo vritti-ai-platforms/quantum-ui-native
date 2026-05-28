@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { Image, type ImageSourcePropType, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
 import { Text } from '../Typography';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
+import { ScreenHeaderTabsBackground } from './ScreenHeaderTabsBackground';
 import { useRegisterScreenHeaderTabs } from './screenHeaderTabsRegistry';
 import type { ScreenHeaderTabConfig, ScreenHeaderVariant } from './types';
 
@@ -27,6 +28,7 @@ interface ScreenHeaderBaseProps {
   overlay?: boolean;
   animateBackdrop?: boolean;
   tabsBackground?: ReactNode;
+  backgroundImage?: ImageSourcePropType;
 }
 
 export function ScreenHeaderBase({
@@ -40,6 +42,7 @@ export function ScreenHeaderBase({
   overlay = false,
   animateBackdrop = false,
   tabsBackground,
+  backgroundImage,
 }: ScreenHeaderBaseProps) {
   const insets = useSafeAreaInsets();
   const scrollY = useScreenScrollY();
@@ -52,8 +55,7 @@ export function ScreenHeaderBase({
   // spacer to fade in.
   const reserveBar = hasActions;
   const largeTitleHeight = subtitle ? LARGE_TITLE_HEIGHT : LARGE_TITLE_HEIGHT_NO_SUBTITLE;
-  const heroHeight =
-    (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight + (hasTabs ? TABS_HEIGHT : 0);
+  const heroHeight = (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight + (hasTabs ? TABS_HEIGHT : 0);
   const collapsedTarget = hasTabs ? TABS_HEIGHT : BAR_HEIGHT + BOTTOM_GAP;
 
   useRegisterScreenHeaderInset(overlay ? heroHeight : 0);
@@ -70,6 +72,10 @@ export function ScreenHeaderBase({
       opacity: interpolate(scrollY.value, [0, BACKDROP_FADE_AT], [0, 1], Extrapolation.CLAMP),
     };
   });
+
+  const imageFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, COLLAPSE_AT], [1, 0], Extrapolation.CLAMP),
+  }));
 
   const largeTitleStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [0, COLLAPSE_AT * 0.6], [1, 0], Extrapolation.CLAMP),
@@ -89,13 +95,19 @@ export function ScreenHeaderBase({
         </Animated.View>
       ) : null}
 
+      {hasTabs ? (
+        <Animated.View className="absolute inset-0" style={imageFadeStyle} pointerEvents="none">
+          <ScreenHeaderTabsBackground fallback={backgroundImage} />
+        </Animated.View>
+      ) : backgroundImage ? (
+        <Animated.View className="absolute inset-0" style={imageFadeStyle} pointerEvents="none">
+          <Image source={backgroundImage} resizeMode="cover" className="h-full w-full" />
+        </Animated.View>
+      ) : null}
+
       {reserveBar ? <View className="h-11" pointerEvents="none" /> : null}
 
-      <Animated.View
-        className="flex-1 justify-start gap-0.5 px-4 pb-1"
-        style={largeTitleStyle}
-        pointerEvents="none"
-      >
+      <Animated.View className="flex-1 justify-start gap-0.5 px-4 pb-1" style={largeTitleStyle} pointerEvents="none">
         <Text className="text-2xl font-bold text-foreground" numberOfLines={1}>
           {title}
         </Text>
@@ -106,7 +118,7 @@ export function ScreenHeaderBase({
         ) : null}
       </Animated.View>
 
-      {hasTabs ? <ScreenHeaderTabs tabs={tabs!} background={tabsBackground} /> : null}
+      {hasTabs ? <ScreenHeaderTabs tabs={tabs ?? []} background={tabsBackground} /> : null}
 
       {/* Compact title — centered in the nav-bar band; fades in on scroll. Hidden in tabs variant. */}
       {!hasTabs ? (

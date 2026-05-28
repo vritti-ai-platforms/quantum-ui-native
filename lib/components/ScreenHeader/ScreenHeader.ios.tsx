@@ -64,6 +64,7 @@ export function ScreenHeader(props: ScreenHeaderProps) {
       overlay
       animateBackdrop={animateBackdrop}
       tabsBackground={tabsBackground}
+      backgroundImage={props.backgroundImage}
       leftActions={props.variant === 'tabs' ? undefined : props.leftActions}
       rightActions={props.variant === 'tabs' ? undefined : props.rightActions}
       tabs={props.variant === 'tabs' ? props.tabs : undefined}

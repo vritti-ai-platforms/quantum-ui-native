@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { ImageSourcePropType } from 'react-native';
 import type { PlatformIconDescriptor } from '../DynamicIcon';
 
 export interface ScreenHeaderTabConfig {
@@ -7,6 +8,7 @@ export interface ScreenHeaderTabConfig {
   content: ReactNode;
   icon: PlatformIconDescriptor;
   activeIcon?: PlatformIconDescriptor;
+  backgroundImage?: ImageSourcePropType;
 }
 
 export type ScreenHeaderVariant = 'standard' | 'tabs';
@@ -14,6 +16,7 @@ export type ScreenHeaderVariant = 'standard' | 'tabs';
 interface ScreenHeaderCommonProps {
   title: string;
   subtitle?: string;
+  backgroundImage?: ImageSourcePropType;
 }
 
 interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {
