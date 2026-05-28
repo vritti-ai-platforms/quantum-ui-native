@@ -5,7 +5,8 @@ export interface ScreenHeaderTabConfig {
   id: string;
   label: string;
   content: ReactNode;
-  icon?: PlatformIconDescriptor;
+  icon: PlatformIconDescriptor;
+  activeIcon?: PlatformIconDescriptor;
 }
 
 export type ScreenHeaderVariant = 'standard' | 'tabs';

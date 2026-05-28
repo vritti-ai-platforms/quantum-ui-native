@@ -1,5 +1,5 @@
 import { NavigationRouteContext } from '@react-navigation/native';
-import { type ReactNode, useCallback, useContext, useLayoutEffect, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useLayoutEffect, useSyncExternalStore } from 'react';
 import type { ScreenHeaderTabConfig } from './types';
 
 interface TabsEntry {
@@ -99,14 +99,17 @@ export function useScreenHeaderActiveIndex(): number {
   });
 }
 
-// Public hook the screen body uses to render the active tab's content.
-export function useScreenHeaderTabContent(): ReactNode {
+const EMPTY_TABS_SNAPSHOT: { tabs: ScreenHeaderTabConfig[]; activeIndex: number } = { tabs: [], activeIndex: 0 };
+
+// Returns the registered tabs array + the active tab's index (O(1) via indexById).
+// getSnapshot returns the raw entry reference (stable until the registry's set()
+// replaces it) so useSyncExternalStore can dedupe; the derived snapshot is built
+// in the hook body. Used by the content fade-transition component.
+export function useScreenHeaderTabsEntry(): { tabs: ScreenHeaderTabConfig[]; activeIndex: number } {
   const route = useContext(NavigationRouteContext);
   const key = getRouteKey(route);
   const subscribe = useCallback((onChange: () => void) => subscribeFor(key, onChange), [key]);
-  return useSyncExternalStore(subscribe, () => {
-    const entry = registry.get(key);
-    if (!entry) return null;
-    return entry.byId.get(entry.activeTabId)?.content ?? null;
-  });
+  const entry = useSyncExternalStore(subscribe, () => registry.get(key) ?? null);
+  if (!entry) return EMPTY_TABS_SNAPSHOT;
+  return { tabs: entry.tabs, activeIndex: entry.indexById.get(entry.activeTabId) ?? 0 };
 }
