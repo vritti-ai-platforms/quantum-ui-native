@@ -6,7 +6,7 @@ import { DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Typography';
 import {
   setScreenHeaderActiveTabId,
-  useScreenHeaderActiveTabId,
+  useScreenHeaderActiveIndex,
   useScreenHeaderRouteKey,
 } from './screenHeaderTabsRegistry';
 import type { ScreenHeaderTabConfig } from './types';
@@ -14,31 +14,41 @@ import type { ScreenHeaderTabConfig } from './types';
 export const TABS_HEIGHT = 56;
 
 const UNDERLINE_HEIGHT = 4;
-const UNDERLINE_WIDTH = 32;
-const UNDERLINE_DURATION = 220;
+const UNDERLINE_MIN_WIDTH = 32;
+const UNDERLINE_DURATION = 300;
 
 interface ScreenHeaderTabsProps {
   tabs: ScreenHeaderTabConfig[];
   background?: ReactNode;
 }
 
-export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
-  const activeTabId = useScreenHeaderActiveTabId();
-  const routeKey = useScreenHeaderRouteKey();
-  const activeIndex = Math.max(
-    0,
-    tabs.findIndex((t) => t.id === activeTabId),
-  );
+interface TabPosition {
+  x: number;
+  w: number;
+  labelW: number;
+}
 
-  const positionsRef = useRef<Array<{ x: number; w: number }>>([]);
+export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
+  const activeIndex = useScreenHeaderActiveIndex();
+  const routeKey = useScreenHeaderRouteKey();
+
+  const positionsRef = useRef<Array<TabPosition>>([]);
   const translateX = useSharedValue(0);
+  const underlineWidth = useSharedValue(UNDERLINE_MIN_WIDTH);
   const hasMeasured = useSharedValue(false);
 
   const setTarget = (animated: boolean) => {
     const pos = positionsRef.current[activeIndex];
     if (!pos) return;
-    const center = pos.x + pos.w / 2 - UNDERLINE_WIDTH / 2;
-    translateX.value = animated ? withTiming(center, { duration: UNDERLINE_DURATION }) : center;
+    const w = Math.max(UNDERLINE_MIN_WIDTH, pos.labelW);
+    const center = pos.x + pos.w / 2 - w / 2;
+    if (animated) {
+      translateX.value = withTiming(center, { duration: UNDERLINE_DURATION });
+      underlineWidth.value = withTiming(w, { duration: UNDERLINE_DURATION });
+    } else {
+      translateX.value = center;
+      underlineWidth.value = w;
+    }
     hasMeasured.value = true;
   };
 
@@ -49,12 +59,34 @@ export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
   }, [activeIndex]);
 
   const handleTabLayout = (index: number, e: LayoutChangeEvent) => {
-    positionsRef.current[index] = { x: e.nativeEvent.layout.x, w: e.nativeEvent.layout.width };
-    if (index === activeIndex) setTarget(false);
+    const prev = positionsRef.current[index];
+    const isFirstMeasure = !prev;
+    positionsRef.current[index] = {
+      x: e.nativeEvent.layout.x,
+      w: e.nativeEvent.layout.width,
+      labelW: prev?.labelW ?? 0,
+    };
+    // Snap-without-animation only on the first layout for a tab; later relayouts
+    // (e.g. the font-weight change when active flips) must NOT cancel the
+    // withTiming animation started by the useEffect.
+    if (index === activeIndex && isFirstMeasure) setTarget(false);
+  };
+
+  const handleLabelLayout = (index: number, e: LayoutChangeEvent) => {
+    const labelW = e.nativeEvent.layout.width;
+    const prev = positionsRef.current[index];
+    if (prev && prev.labelW === labelW) return;
+    positionsRef.current[index] = prev
+      ? { ...prev, labelW }
+      : { x: 0, w: 0, labelW };
+    // Re-target so the new label width takes effect. Animate only if the
+    // underline has already been placed once — first-paint should snap.
+    if (index === activeIndex) setTarget(hasMeasured.value);
   };
 
   const underlineStyle = useAnimatedStyle(() => ({
     opacity: hasMeasured.value ? 1 : 0,
+    width: underlineWidth.value,
     transform: [{ translateX: translateX.value }],
   }));
 
@@ -74,15 +106,16 @@ export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
           <TabItem
             key={tab.id}
             tab={tab}
-            active={tab.id === activeTabId}
+            active={index === activeIndex}
             onPress={() => setScreenHeaderActiveTabId(routeKey, tab.id)}
             onLayout={(e) => handleTabLayout(index, e)}
+            onLabelLayout={(e) => handleLabelLayout(index, e)}
           />
         ))}
         <Animated.View
           pointerEvents="none"
           className="absolute bg-primary rounded-full"
-          style={[{ left: 0, bottom: 0, width: UNDERLINE_WIDTH, height: UNDERLINE_HEIGHT }, underlineStyle]}
+          style={[{ left: 0, bottom: 0, height: UNDERLINE_HEIGHT }, underlineStyle]}
         />
       </ScrollView>
     </View>
@@ -94,9 +127,10 @@ interface TabItemProps {
   active: boolean;
   onPress: () => void;
   onLayout: (e: LayoutChangeEvent) => void;
+  onLabelLayout: (e: LayoutChangeEvent) => void;
 }
 
-function TabItem({ tab, active, onPress, onLayout }: TabItemProps) {
+function TabItem({ tab, active, onPress, onLayout, onLabelLayout }: TabItemProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -110,6 +144,7 @@ function TabItem({ tab, active, onPress, onLayout }: TabItemProps) {
         <DynamicIcon icon={tab.icon} size={18} className={active ? 'text-foreground' : 'text-muted-foreground'} />
       ) : null}
       <Text
+        onLayout={onLabelLayout}
         className={cn('text-[11px]', active ? 'text-foreground font-semibold' : 'text-muted-foreground')}
         numberOfLines={1}
       >

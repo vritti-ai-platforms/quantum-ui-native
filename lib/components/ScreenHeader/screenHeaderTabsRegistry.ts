@@ -4,6 +4,8 @@ import type { ScreenHeaderTabConfig } from './types';
 
 interface TabsEntry {
   tabs: ScreenHeaderTabConfig[];
+  byId: Map<string, ScreenHeaderTabConfig>;
+  indexById: Map<string, number>;
   activeTabId: string;
 }
 
@@ -35,7 +37,8 @@ function getRouteKey(route: { key: string } | undefined): string {
 
 // Called from ScreenHeader's render (via a layout-effect hook) so the registry
 // always reflects the currently-mounted tabs. Preserves the user's selection
-// across re-renders when the active id is still in the array.
+// across re-renders when the active id is still in the array. Pre-builds the
+// id → tab and id → index maps once so the read-side hooks below stay O(1).
 export function useRegisterScreenHeaderTabs(tabs: ScreenHeaderTabConfig[] | undefined): void {
   const route = useContext(NavigationRouteContext);
   const key = getRouteKey(route);
@@ -44,10 +47,17 @@ export function useRegisterScreenHeaderTabs(tabs: ScreenHeaderTabConfig[] | unde
       if (registry.delete(key)) notify(key);
       return;
     }
+    const byId = new Map<string, ScreenHeaderTabConfig>();
+    const indexById = new Map<string, number>();
+    for (let i = 0; i < tabs.length; i++) {
+      const t = tabs[i]!;
+      byId.set(t.id, t);
+      indexById.set(t.id, i);
+    }
     const existing = registry.get(key);
-    const stillValid = existing && tabs.some((t) => t.id === existing.activeTabId);
+    const stillValid = existing && byId.has(existing.activeTabId);
     const activeTabId = stillValid ? existing.activeTabId : tabs[0]!.id;
-    registry.set(key, { tabs, activeTabId });
+    registry.set(key, { tabs, byId, indexById, activeTabId });
     notify(key);
   }, [key, tabs]);
 }
@@ -55,7 +65,14 @@ export function useRegisterScreenHeaderTabs(tabs: ScreenHeaderTabConfig[] | unde
 export function setScreenHeaderActiveTabId(routeKey: string, id: string): void {
   const entry = registry.get(routeKey);
   if (!entry || entry.activeTabId === id) return;
-  registry.set(routeKey, { tabs: entry.tabs, activeTabId: id });
+  // byId/indexById are stable until the tabs array changes, so carry the same
+  // refs forward — no rebuild on every tab tap.
+  registry.set(routeKey, {
+    tabs: entry.tabs,
+    byId: entry.byId,
+    indexById: entry.indexById,
+    activeTabId: id,
+  });
   notify(routeKey);
 }
 
@@ -71,6 +88,17 @@ export function useScreenHeaderActiveTabId(): string | undefined {
   return useSyncExternalStore(subscribe, () => registry.get(key)?.activeTabId);
 }
 
+export function useScreenHeaderActiveIndex(): number {
+  const route = useContext(NavigationRouteContext);
+  const key = getRouteKey(route);
+  const subscribe = useCallback((onChange: () => void) => subscribeFor(key, onChange), [key]);
+  return useSyncExternalStore(subscribe, () => {
+    const entry = registry.get(key);
+    if (!entry) return 0;
+    return entry.indexById.get(entry.activeTabId) ?? 0;
+  });
+}
+
 // Public hook the screen body uses to render the active tab's content.
 export function useScreenHeaderTabContent(): ReactNode {
   const route = useContext(NavigationRouteContext);
@@ -79,6 +107,6 @@ export function useScreenHeaderTabContent(): ReactNode {
   return useSyncExternalStore(subscribe, () => {
     const entry = registry.get(key);
     if (!entry) return null;
-    return entry.tabs.find((t) => t.id === entry.activeTabId)?.content ?? null;
+    return entry.byId.get(entry.activeTabId)?.content ?? null;
   });
 }
