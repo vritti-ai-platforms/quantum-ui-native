@@ -1,45 +1,49 @@
 import { useEffect } from 'react';
-import { StyleSheet, useWindowDimensions } from 'react-native';
-import Animated, { Easing, runOnJS, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { Circle, Defs, Mask, Rect } from 'react-native-svg';
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+import { StyleSheet } from 'react-native';
+import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 export interface ThemeTransitionOverlayProps {
   fromBg: string;
-  origin: { x: number; y: number };
-  duration?: number;
+  // Called after the opaque cover has painted — the parent swaps the theme behind it.
+  onCovered: () => void;
   onComplete: () => void;
+  duration?: number;
 }
 
-export const ThemeTransitionOverlay = ({ fromBg, origin, duration = 600, onComplete }: ThemeTransitionOverlayProps) => {
-  const { width, height } = useWindowDimensions();
-  // Distance to the farthest corner — guarantees full-screen coverage regardless of origin.
-  const dx = Math.max(origin.x, width - origin.x);
-  const dy = Math.max(origin.y, height - origin.y);
-  const maxRadius = Math.hypot(dx, dy);
+const DEFAULT_FADE_DURATION = 400;
 
-  const r = useSharedValue(0);
+// Cover-first fade for all platforms. The cover mounts fully opaque in the OLD
+// background color (so the screen looks unchanged), then on the next frame asks the
+// parent to swap the theme UNDERNEATH it (iOS native Appearance re-theme + Android
+// surface remount happen hidden), then fades the cover out to reveal the settled new
+// theme. Painting the cover BEFORE the swap is what eliminates the 1-frame blink.
+export const ThemeTransitionOverlay = ({
+  fromBg,
+  onCovered,
+  onComplete,
+  duration = DEFAULT_FADE_DURATION,
+}: ThemeTransitionOverlayProps) => {
+  const opacity = useSharedValue(1); // opaque from the first frame
 
   useEffect(() => {
-    r.value = withTiming(maxRadius, { duration, easing: Easing.bezier(0.4, 0, 0.2, 1) }, (finished) => {
-      'worklet';
-      // Worklets-3 requires runOnJS for the JS-side callback.
-      if (finished) runOnJS(onComplete)();
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      onCovered(); // swap the theme behind the opaque cover
+      raf2 = requestAnimationFrame(() => {
+        // give the swap a frame to commit under the cover, then reveal it
+        opacity.value = withTiming(0, { duration, easing: Easing.bezier(0.4, 0, 0.2, 1) }, (finished) => {
+          'worklet';
+          if (finished) runOnJS(onComplete)();
+        });
+      });
     });
-  }, [maxRadius, duration, r, onComplete]);
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [onCovered, onComplete, duration, opacity]);
 
-  const animatedProps = useAnimatedProps(() => ({ r: r.value }));
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  return (
-    <Svg width={width} height={height} style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Defs>
-        <Mask id="reveal" x="0" y="0" width={width} height={height}>
-          <Rect width={width} height={height} fill="white" />
-          <AnimatedCircle cx={origin.x} cy={origin.y} fill="black" animatedProps={animatedProps} />
-        </Mask>
-      </Defs>
-      <Rect width={width} height={height} fill={fromBg} mask="url(#reveal)" />
-    </Svg>
-  );
+  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: fromBg }, animatedStyle]} />;
 };

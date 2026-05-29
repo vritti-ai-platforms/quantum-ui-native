@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef } from 'react';
-import { type LayoutChangeEvent, Pressable, ScrollView, useColorScheme, View } from 'react-native';
+import { type LayoutChangeEvent, Platform, Pressable, ScrollView, useColorScheme, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useTheme } from '../../hooks/useTheme';
 import { cn } from '../../utils/cn';
 import { DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Typography';
@@ -32,6 +33,7 @@ interface TabPosition {
 }
 
 export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
+  const { colorScheme } = useTheme();
   const activeIndex = useScreenHeaderActiveIndex();
   const routeKey = useScreenHeaderRouteKey();
 
@@ -143,6 +145,7 @@ export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
           />
         ))}
         <Animated.View
+          key={colorScheme}
           pointerEvents="none"
           className="absolute bg-primary rounded-full"
           style={[{ left: 0, bottom: 0, height: UNDERLINE_HEIGHT }, underlineStyle]}
@@ -174,7 +177,8 @@ function TabItem({ tab, active, scrollable, onPress, onLayout, onLabelLayout }: 
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       hitSlop={{ top: 12, bottom: 16, left: 6, right: 6 }}
-      className={cn('items-center gap-3', scrollable ? 'px-3' : 'flex-1')}
+      className={cn('items-center', scrollable ? 'px-3' : 'flex-1')}
+      style={{ gap: Platform.OS === 'android' ? 4 : 12 }}
     >
       <DynamicIcon
         icon={active ? (tab.activeIcon ?? tab.icon) : tab.icon}
@@ -184,6 +188,7 @@ function TabItem({ tab, active, scrollable, onPress, onLayout, onLabelLayout }: 
       <Text
         onLayout={onLabelLayout}
         className={cn('text-[11px]', active ? `${activeColor} font-semibold` : 'text-muted-foreground')}
+        style={{ includeFontPadding: false }}
         numberOfLines={1}
       >
         {tab.label}

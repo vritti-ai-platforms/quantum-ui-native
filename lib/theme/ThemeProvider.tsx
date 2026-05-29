@@ -1,7 +1,7 @@
 import { VariableContextProvider } from 'nativewind';
 import type React from 'react';
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { Appearance, AppState, Dimensions, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Appearance, AppState, Platform, useColorScheme as useSystemColorScheme, View } from 'react-native';
 import { THEME, THEME_TOKENS, type ThemePalette } from './colors';
 import { ThemeTransitionOverlay } from './ThemeTransitionOverlay';
 
@@ -27,7 +27,22 @@ export interface ThemeContextValue {
   isHydrated: boolean;
 }
 
-export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+// Compute a sensible default so useTheme() never throws when called outside a
+// ThemeProvider (e.g. in an MF remote). ThemeProvider still overrides this
+// entirely when mounted — the default only matters in the no-provider case.
+function makeDefaultContextValue(): ThemeContextValue {
+  const scheme = Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+  return {
+    colorScheme: scheme,
+    isDark: scheme === 'dark',
+    palette: THEME[scheme],
+    themePreference: 'system',
+    setThemePreference: async () => {},
+    isHydrated: true,
+  };
+}
+
+export const ThemeContext = createContext<ThemeContextValue>(makeDefaultContextValue());
 
 export interface ThemeProviderProps {
   children: React.ReactNode;
@@ -74,7 +89,9 @@ export const ThemeProvider = ({
 
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>(defaultPreference);
   const [isHydrated, setIsHydrated] = useState(!storage);
-  const [transition, setTransition] = useState<{ fromBg: string; origin: { x: number; y: number } } | null>(null);
+  const [transition, setTransition] = useState<{ fromBg: string } | null>(null);
+  // Preference awaiting the cover-first swap — applied by the overlay's onCovered, behind the opaque cover.
+  const pendingRef = useRef<ThemePreference | null>(null);
 
   const [lastKnownSystemScheme, setLastKnownSystemScheme] = useState<'light' | 'dark'>(() => {
     const initial = Appearance.getColorScheme();
@@ -138,42 +155,51 @@ export const ThemeProvider = ({
     async (preference: ThemePreference, options?: SetThemePreferenceOptions) => {
       const animated = options?.animated !== false;
 
-      // iOS only — Android setColorScheme is one-way (no setColorScheme(null) — @NonNull bridge) and masks device events.
-      if (Platform.OS === 'ios') {
-        if (preference === 'system') {
-          (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
-        } else {
-          Appearance.setColorScheme(preference);
-        }
+      // Decide whether the resolved scheme will actually change. Appearance is NOT
+      // touched here — the real swap is deferred to applyPendingSwap (behind the cover),
+      // so getColorScheme() is never transiently poisoned at decision time.
+      let willChange = false;
+      if (preference === 'system' && Platform.OS === 'ios') {
+        // While an iOS override is active the true device scheme isn't readable; assume a change if currently overriding.
+        willChange = themePreference !== 'system';
+      } else {
+        const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
+        const nextScheme: 'light' | 'dark' = rawScheme === 'dark' ? 'dark' : 'light';
+        willChange = nextScheme !== resolvedScheme;
       }
 
-      let shouldAnimate = false;
-      if (animated) {
-        if (preference === 'system' && Platform.OS === 'ios') {
-          // setColorScheme(null) transiently poisons getColorScheme() to null; animate optimistically.
-          shouldAnimate = themePreference !== 'system';
-        } else {
-          const rawScheme = preference === 'system' ? Appearance.getColorScheme() : preference;
-          const nextScheme: 'light' | 'dark' = rawScheme === 'dark' ? 'dark' : 'light';
-          shouldAnimate = nextScheme !== resolvedScheme;
-        }
+      if (animated && willChange && pendingRef.current == null) {
+        // PHASE 1: raise the opaque cover over the CURRENT theme; defer the real swap.
+        pendingRef.current = preference;
+        setTransition({ fromBg: THEME[resolvedScheme].background });
+      } else {
+        // No new cover (no visible change / animated:false / a cover already mid-flight): swap now.
+        // If a cover IS mid-flight, point its deferred swap at this latest preference too.
+        if (pendingRef.current != null) pendingRef.current = preference;
+        applyAppearanceScheme(preference);
+        setThemePreferenceState(preference);
       }
 
-      if (shouldAnimate) {
-        const { width, height } = Dimensions.get('window');
-        setTransition({
-          fromBg: THEME[resolvedScheme].background,
-          origin: options?.origin ?? { x: width / 2, y: height },
-        });
-      }
-
-      setThemePreferenceState(preference);
       if (storage) {
         await storage.setItem(storageKey, preference);
       }
     },
     [storage, storageKey, resolvedScheme, themePreference],
   );
+
+  // PHASE 2: invoked by the overlay once the opaque cover has painted — the swap
+  // (iOS native Appearance re-theme + the Android surface remount via colorScheme) happens behind it.
+  const applyPendingSwap = useCallback(() => {
+    const preference = pendingRef.current;
+    if (preference == null) return;
+    applyAppearanceScheme(preference);
+    setThemePreferenceState(preference);
+  }, []);
+
+  const finishTransition = useCallback(() => {
+    pendingRef.current = null;
+    setTransition(null);
+  }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -199,8 +225,8 @@ export const ThemeProvider = ({
           {transition && (
             <ThemeTransitionOverlay
               fromBg={transition.fromBg}
-              origin={transition.origin}
-              onComplete={() => setTransition(null)}
+              onCovered={applyPendingSwap}
+              onComplete={finishTransition}
             />
           )}
         </View>

@@ -55,6 +55,12 @@ export function DynamicIcon({
   const resolvedColor = color ?? (typeof hsl === 'string' ? `hsl(${hsl})` : undefined);
 
   return (
-    <MaterialIcons name={icon.materialIcon as MaterialIconsIconName} color={resolvedColor} size={size} {...props} />
+    <MaterialIcons
+      name={icon.materialIcon as MaterialIconsIconName}
+      color={resolvedColor}
+      size={size}
+      style={{ lineHeight: size, includeFontPadding: false }}
+      {...props}
+    />
   );
 }
