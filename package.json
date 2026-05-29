@@ -50,11 +50,6 @@
       "types": "./dist/typescript/lib/components/CardPressable/index.d.ts",
       "default": "./dist/module/components/CardPressable/index.js"
     },
-    "./Checkbox": {
-      "source": "./lib/components/Checkbox/index.ts",
-      "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
-      "default": "./dist/module/components/Checkbox/index.js"
-    },
     "./DynamicIcon": {
       "source": "./lib/components/DynamicIcon/index.ts",
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
@@ -120,11 +115,6 @@
       "types": "./dist/typescript/lib/components/ScreenLayout/index.d.ts",
       "default": "./dist/module/components/ScreenLayout/index.js"
     },
-    "./Separator": {
-      "source": "./lib/components/Separator/index.ts",
-      "types": "./dist/typescript/lib/components/Separator/index.d.ts",
-      "default": "./dist/module/components/Separator/index.js"
-    },
     "./Skeleton": {
       "source": "./lib/components/Skeleton/index.ts",
       "types": "./dist/typescript/lib/components/Skeleton/index.d.ts",
@@ -144,11 +134,6 @@
       "source": "./lib/components/StaticAlert/index.ts",
       "types": "./dist/typescript/lib/components/StaticAlert/index.d.ts",
       "default": "./dist/module/components/StaticAlert/index.js"
-    },
-    "./Switch": {
-      "source": "./lib/components/Switch/index.ts",
-      "types": "./dist/typescript/lib/components/Switch/index.d.ts",
-      "default": "./dist/module/components/Switch/index.js"
     },
     "./PasswordField": {
       "source": "./lib/components/PasswordField/index.ts",
@@ -405,11 +390,9 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.2.13",
-    "@rn-primitives/accordion": "^1.4.0",
+    "@rn-primitives/avatar": "^1.4.0",
     "@rn-primitives/alert-dialog": "^1.4.0",
     "@rn-primitives/aspect-ratio": "^1.4.0",
-    "@rn-primitives/avatar": "^1.4.0",
-    "@rn-primitives/checkbox": "^1.4.0",
     "@rn-primitives/collapsible": "^1.4.0",
     "@rn-primitives/context-menu": "^1.4.0",
     "@rn-primitives/dialog": "^1.4.0",
@@ -422,12 +405,7 @@
     "@rn-primitives/progress": "^1.4.0",
     "@rn-primitives/radio-group": "^1.4.0",
     "@rn-primitives/select": "^1.4.0",
-    "@rn-primitives/separator": "^1.4.0",
     "@rn-primitives/slot": "^1.4.0",
-    "@rn-primitives/switch": "^1.4.0",
-    "@rn-primitives/tabs": "^1.4.0",
-    "@rn-primitives/toggle": "^1.4.0",
-    "@rn-primitives/toggle-group": "^1.4.0",
     "@rn-primitives/tooltip": "^1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

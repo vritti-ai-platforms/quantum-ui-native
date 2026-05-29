@@ -14,9 +14,7 @@ import { getAxios, restoreErrorToasts, suppressErrorToasts } from '../../utils/a
 import { cn } from '../../utils/cn';
 import { type FieldMapping, mapApiErrorsToForm } from '../../utils/formHelpers';
 import { Button } from '../Button';
-import { Checkbox } from '../Checkbox';
 import { StaticAlert } from '../StaticAlert';
-import { Switch } from '../Switch';
 
 function processChildren<
   TFieldValues extends FieldValues = FieldValues,
@@ -46,22 +44,12 @@ function processChildren<
           control={control}
           name={name}
           render={({ field, fieldState }) => {
-            const isCheckbox = child.type === Checkbox;
-            const isSwitch = child.type === Switch;
-
-            const fieldProps =
-              isCheckbox || isSwitch
-                ? {
-                    checked: field.value,
-                    onCheckedChange: field.onChange,
-                    onBlur: field.onBlur,
-                  }
-                : {
-                    value: field.value,
-                    onChangeText: field.onChange,
-                    onBlur: field.onBlur,
-                    ref: field.ref,
-                  };
+            const fieldProps = {
+              value: field.value,
+              onChangeText: field.onChange,
+              onBlur: field.onBlur,
+              ref: field.ref,
+            };
 
             return cloneElement(child, {
               ...childProps,
