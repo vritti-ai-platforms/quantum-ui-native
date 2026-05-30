@@ -1,7 +1,7 @@
+import { useUnstableNativeVariable } from 'nativewind';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { type LayoutChangeEvent, Platform, Pressable, ScrollView, useColorScheme, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { useTheme } from '../../hooks/useTheme';
 import { cn } from '../../utils/cn';
 import { DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Typography';
@@ -33,7 +33,8 @@ interface TabPosition {
 }
 
 export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
-  const { colorScheme } = useTheme();
+  const primaryVar = (useUnstableNativeVariable as unknown as (name: string) => string | undefined)('--primary');
+  const primaryColor = typeof primaryVar === 'string' ? `hsl(${primaryVar})` : undefined;
   const activeIndex = useScreenHeaderActiveIndex();
   const routeKey = useScreenHeaderRouteKey();
 
@@ -100,9 +101,7 @@ export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
     const labelW = e.nativeEvent.layout.width;
     const prev = positionsRef.current[index];
     if (prev && prev.labelW === labelW) return;
-    positionsRef.current[index] = prev
-      ? { ...prev, labelW }
-      : { x: 0, w: 0, labelW };
+    positionsRef.current[index] = prev ? { ...prev, labelW } : { x: 0, w: 0, labelW };
     // Re-target so the new label width takes effect. Animate only if the
     // underline has already been placed once — first-paint should snap.
     if (index === activeIndex) setTarget(hasMeasured.value);
@@ -145,10 +144,9 @@ export function ScreenHeaderTabs({ tabs, background }: ScreenHeaderTabsProps) {
           />
         ))}
         <Animated.View
-          key={colorScheme}
           pointerEvents="none"
-          className="absolute bg-primary rounded-full"
-          style={[{ left: 0, bottom: 0, height: UNDERLINE_HEIGHT }, underlineStyle]}
+          className="absolute rounded-full"
+          style={[{ left: 0, bottom: 0, height: UNDERLINE_HEIGHT, backgroundColor: primaryColor }, underlineStyle]}
         />
       </ScrollView>
     </View>

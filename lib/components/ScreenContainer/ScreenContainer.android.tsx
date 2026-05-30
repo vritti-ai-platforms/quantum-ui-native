@@ -1,8 +1,8 @@
+import { useUnstableNativeVariable } from 'nativewind';
 import { type Context, createContext, type ReactNode, useContext } from 'react';
 import { type ScrollViewProps, View, type ViewProps } from 'react-native';
 import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../hooks/useTheme';
 import { cn } from '../../utils/cn';
 import { useScreenHeaderInset, useScreenScrollY } from './screenScrollRegistry';
 
@@ -50,7 +50,8 @@ const ScrollableBody = ({
   topPad: number;
   rest: Omit<ScrollViewProps, 'children' | 'style' | 'onScroll'> & { children?: ReactNode };
 }) => {
-  const { colorScheme } = useTheme();
+  const bgVar = (useUnstableNativeVariable as unknown as (name: string) => string | undefined)('--background');
+  const bgColor = typeof bgVar === 'string' ? `hsl(${bgVar})` : undefined;
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
   const { top: safeAreaTop } = useSafeAreaInsets();
@@ -72,11 +73,10 @@ const ScrollableBody = ({
       : contentContainerStyle;
   return (
     <Animated.ScrollView
-      key={colorScheme}
       showsVerticalScrollIndicator={false}
       {...scrollViewProps}
-      className={cn('flex-1 bg-background', className)}
-      style={topPad > 0 ? [{ paddingTop: topPad }, style] : style}
+      className={cn('flex-1', className)}
+      style={[{ backgroundColor: bgColor }, topPad > 0 ? { paddingTop: topPad } : null, style]}
       {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
@@ -85,7 +85,8 @@ const ScrollableBody = ({
 };
 
 export const ScreenContainer = (props: ScreenContainerProps) => {
-  const { colorScheme } = useTheme();
+  const bgVar = (useUnstableNativeVariable as unknown as (name: string) => string | undefined)('--background');
+  const bgColor = typeof bgVar === 'string' ? `hsl(${bgVar})` : undefined;
   const insets = useSafeAreaInsets();
   const isHeaderShown = useContext(HeaderShownContext) ?? false;
   const topPad = isHeaderShown ? 0 : insets.top;
@@ -98,10 +99,9 @@ export const ScreenContainer = (props: ScreenContainerProps) => {
   const { scrollable: _scrollable, className, style, ...rest } = props;
   return (
     <View
-      key={colorScheme}
       {...rest}
-      className={cn('flex-1 bg-background', className)}
-      style={[topPad > 0 ? { paddingTop: topPad } : null, style]}
+      className={cn('flex-1', className)}
+      style={[{ backgroundColor: bgColor }, topPad > 0 ? { paddingTop: topPad } : null, style]}
     />
   );
 };

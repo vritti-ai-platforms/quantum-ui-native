@@ -5,9 +5,17 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useEffect, useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useEffect, useMemo, useRef } from 'react';
+import { type LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
@@ -87,6 +95,8 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
   return <PushNavigator initialRoute="__more_list__" screens={screens} />;
 }
 
+const PILL_SIZE = 42;
+
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { isDark, palette: theme } = useTheme();
@@ -111,6 +121,36 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     transform: [{ translateY: (1 - visibility.value) * slideDistance }],
   }));
 
+  // Sliding selection pill. Tabs are equal width, so the pill's position is linear in the
+  // (animated) active index: translateX = pillLeft0 + progress * step.
+  const progress = useSharedValue(state.index);
+  const pillLeft0 = useSharedValue(0);
+  const pillTop = useSharedValue(0);
+  const step = useSharedValue(0);
+  const ready = useSharedValue(0);
+  const positionsRef = useRef<Array<{ x: number; y: number; w: number; h: number }>>([]);
+
+  useEffect(() => {
+    progress.value = withTiming(state.index, { duration: 260, easing: Easing.bezier(0.4, 0, 0.2, 1) });
+  }, [state.index, progress]);
+
+  const handleTabLayout = (index: number, e: LayoutChangeEvent) => {
+    const { x, y, width, height } = e.nativeEvent.layout;
+    positionsRef.current[index] = { x, y, w: width, h: height };
+    const p0 = positionsRef.current[0];
+    if (!p0) return;
+    const p1 = positionsRef.current[1];
+    pillLeft0.value = p0.x + (p0.w - PILL_SIZE) / 2;
+    pillTop.value = p0.y + (p0.h - PILL_SIZE) / 2;
+    step.value = p1 ? p1.x - p0.x : p0.w;
+    ready.value = 1;
+  };
+
+  const pillStyle = useAnimatedStyle(() => ({
+    opacity: ready.value,
+    transform: [{ translateX: pillLeft0.value + progress.value * step.value }, { translateY: pillTop.value }],
+  }));
+
   return (
     <Animated.View
       style={[styles.barWrapper, { paddingBottom: barBottomGap }, animatedStyle]}
@@ -126,6 +166,8 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           },
         ]}
       >
+        {/* Single pill that slides between tabs; painted behind the icons. */}
+        <Animated.View pointerEvents="none" style={[styles.slidingPill, { backgroundColor: theme.primary }, pillStyle]} />
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -149,29 +191,74 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           };
 
           return (
-            <Pressable
+            <TabButton
               key={route.key}
+              index={index}
+              progress={progress}
+              iconName={iconName}
+              iconColor={theme.foreground}
+              activeIconColor={theme.primaryForeground}
+              selected={isFocused}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={({ pressed }) => [styles.tabItem, pressed && styles.tabItemPressed]}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isFocused }}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-            >
-              <View style={styles.iconSlot}>
-                {/* Mount a fresh node per selection — Android's drawable can't transition backgroundColor without flattening to a square. */}
-                {isFocused ? <View style={[styles.activeBg, { backgroundColor: theme.primary }]} /> : null}
-                <MaterialIcons
-                  name={iconName}
-                  size={22}
-                  color={isFocused ? theme.primaryForeground : theme.foreground}
-                />
-              </View>
-            </Pressable>
+              onLayout={(e) => handleTabLayout(index, e)}
+            />
           );
         })}
       </View>
     </Animated.View>
+  );
+}
+
+interface TabButtonProps {
+  index: number;
+  progress: SharedValue<number>;
+  iconName: MaterialIconsIconName;
+  iconColor: string;
+  activeIconColor: string;
+  selected: boolean;
+  accessibilityLabel?: string;
+  onPress: () => void;
+  onLongPress: () => void;
+  onLayout: (e: LayoutChangeEvent) => void;
+}
+
+function TabButton({
+  index,
+  progress,
+  iconName,
+  iconColor,
+  activeIconColor,
+  selected,
+  accessibilityLabel,
+  onPress,
+  onLongPress,
+  onLayout,
+}: TabButtonProps) {
+  // The white (active) icon crossfades in as the pill arrives over this tab and out as it
+  // leaves, over the always-visible base icon — so a white icon never shows without the pill.
+  const activeIconStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [index - 1, index, index + 1], [0, 1, 0], Extrapolation.CLAMP),
+  }));
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      onLayout={onLayout}
+      style={({ pressed }) => [styles.tabItem, pressed && styles.tabItemPressed]}
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel}
+    >
+      <View style={styles.iconSlot}>
+        <MaterialIcons name={iconName} size={22} color={iconColor} />
+        <Animated.View style={[styles.iconOverlay, activeIconStyle]} pointerEvents="none">
+          <MaterialIcons name={iconName} size={22} color={activeIconColor} />
+        </Animated.View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -209,9 +296,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeBg: {
+  slidingPill: {
+    position: 'absolute',
+    width: PILL_SIZE,
+    height: PILL_SIZE,
+    borderRadius: PILL_SIZE / 2,
+  },
+  iconOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   row: {
     flexDirection: 'row',

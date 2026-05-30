@@ -1,10 +1,11 @@
+import { useUnstableNativeVariable } from 'nativewind';
 import { View } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
 import { ScreenHeaderBase } from './ScreenHeaderBase';
 import type { ScreenHeaderProps } from './types';
 
 export function ScreenHeader(props: ScreenHeaderProps) {
-  const { colorScheme } = useTheme();
+  const bgVar = (useUnstableNativeVariable as unknown as (name: string) => string | undefined)('--background');
+  const bgColor = typeof bgVar === 'string' ? `hsl(${bgVar})` : undefined;
   const variant = props.variant ?? 'standard';
 
   return (
@@ -12,7 +13,7 @@ export function ScreenHeader(props: ScreenHeaderProps) {
       title={props.title}
       subtitle={props.subtitle}
       variant={variant}
-      backdrop={<View key={colorScheme} className="flex-1 bg-background" />}
+      backdrop={<View style={{ flex: 1, backgroundColor: bgColor }} />}
       overlay
       animateBackdrop
       tabsBackground={undefined}

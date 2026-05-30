@@ -71,10 +71,17 @@ function resolveScheme(
 
 function applyAppearanceScheme(preference: ThemePreference): void {
   if (preference === 'system') {
-    if (Platform.OS === 'ios') {
-      (Appearance.setColorScheme as (s: 'light' | 'dark' | null) => void)(null);
-    }
-  } else {
+    // Release any override so the OS scheme drives 'system'. iOS: null. Android: 'unspecified'
+    // (= AppCompat MODE_NIGHT_FOLLOW_SYSTEM) — null throws on Android (@NonNull), and only
+    // 'unspecified' lets useColorScheme() read the real device again.
+    (Appearance.setColorScheme as (s: 'light' | 'dark' | 'unspecified' | null) => void)(
+      Platform.OS === 'ios' ? null : 'unspecified',
+    );
+    return;
+  }
+  // Explicit light/dark: iOS applies the native override. Android is driven by React state only
+  // (no native override → no AppCompat activity recreation on theme switches).
+  if (Platform.OS === 'ios') {
     Appearance.setColorScheme(preference);
   }
 }
@@ -119,6 +126,15 @@ export const ThemeProvider = ({
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    // Android invariant: AppCompat night mode must stay FOLLOW_SYSTEM, because the app themes
+    // itself via React state. Clears any stale override left by a prior version/session so
+    // useColorScheme() reflects the real device. 'unspecified' = MODE_NIGHT_FOLLOW_SYSTEM
+    // (no-op / no recreation when already following the system).
+    if (Platform.OS !== 'android') return;
+    (Appearance.setColorScheme as (s: 'unspecified') => void)('unspecified');
+  }, []);
+
   const resolvedScheme = resolveScheme(themePreference, liveSystemScheme, lastKnownSystemScheme);
   const isDark = resolvedScheme === 'dark';
 
@@ -129,6 +145,7 @@ export const ThemeProvider = ({
 
     async function hydrateThemePreference() {
       try {
+        // biome-ignore lint/style/noNonNullAssertion: <>
         const storedPreference = await storage!.getItem(storageKey);
         if (!isMounted) return;
 
