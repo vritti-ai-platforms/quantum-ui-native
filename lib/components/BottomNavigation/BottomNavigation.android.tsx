@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useEffect, useMemo, useRef } from 'react';
-import { type LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import { type LayoutChangeEvent, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -95,18 +95,35 @@ function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] 
   return <PushNavigator initialRoute="__more_list__" screens={screens} />;
 }
 
-const PILL_SIZE = 42;
+// Base sizes (tuned for ~390dp width → scale 1). Scaled proportionally to the device width.
+const REF_WIDTH = 390;
+const SCALE_MIN = 0.85;
+const SCALE_MAX = 1.3;
+const BASE_TAB = 52;
+const BASE_PILL = 42;
+const BASE_ICON = 22;
+const BASE_PAD = 5;
 
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { isDark, palette: theme } = useTheme();
+
+  // Scale the whole pill proportionally to the device width (clamped) so it isn't a fixed
+  // size across very different screens. useWindowDimensions re-runs on rotation/foldables.
+  const { width: screenWidth } = useWindowDimensions();
+  const scale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, screenWidth / REF_WIDTH));
+  const tabSize = Math.round(BASE_TAB * scale);
+  const pillSize = Math.round(BASE_PILL * scale);
+  const iconSize = Math.round(BASE_ICON * scale);
+  const pillPad = Math.round(BASE_PAD * scale);
+  const barRadius = (tabSize + pillPad * 2) / 2;
 
   // Hide the pill when the focused tab's nested navigator has pushed past its initial route.
   const nestedState = state.routes[state.index]?.state;
   const isOnPushedScreen = typeof nestedState?.index === 'number' && nestedState.index > 0;
 
   const barBottomGap = Math.max(insets.bottom, 6) + 6;
-  const slideDistance = 62 + barBottomGap + 8;
+  const slideDistance = tabSize + pillPad * 2 + barBottomGap + 8;
   const visibility = useSharedValue(isOnPushedScreen ? 0 : 1);
 
   useEffect(() => {
@@ -140,8 +157,8 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     const p0 = positionsRef.current[0];
     if (!p0) return;
     const p1 = positionsRef.current[1];
-    pillLeft0.value = p0.x + (p0.w - PILL_SIZE) / 2;
-    pillTop.value = p0.y + (p0.h - PILL_SIZE) / 2;
+    pillLeft0.value = p0.x + (p0.w - pillSize) / 2;
+    pillTop.value = p0.y + (p0.h - pillSize) / 2;
     step.value = p1 ? p1.x - p0.x : p0.w;
     ready.value = 1;
   };
@@ -163,11 +180,20 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             backgroundColor: theme.card,
             borderWidth: isDark ? StyleSheet.hairlineWidth : 0,
             borderColor: theme.border,
+            borderRadius: barRadius,
+            padding: pillPad,
           },
         ]}
       >
         {/* Single pill that slides between tabs; painted behind the icons. */}
-        <Animated.View pointerEvents="none" style={[styles.slidingPill, { backgroundColor: theme.primary }, pillStyle]} />
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.slidingPill,
+            { width: pillSize, height: pillSize, borderRadius: pillSize / 2, backgroundColor: theme.primary },
+            pillStyle,
+          ]}
+        />
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -198,6 +224,9 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               iconName={iconName}
               iconColor={theme.foreground}
               activeIconColor={theme.primaryForeground}
+              tabSize={tabSize}
+              slotSize={pillSize}
+              iconSize={iconSize}
               selected={isFocused}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
@@ -217,6 +246,9 @@ interface TabButtonProps {
   iconName: MaterialIconsIconName;
   iconColor: string;
   activeIconColor: string;
+  tabSize: number;
+  slotSize: number;
+  iconSize: number;
   selected: boolean;
   accessibilityLabel?: string;
   onPress: () => void;
@@ -230,6 +262,9 @@ function TabButton({
   iconName,
   iconColor,
   activeIconColor,
+  tabSize,
+  slotSize,
+  iconSize,
   selected,
   accessibilityLabel,
   onPress,
@@ -247,15 +282,15 @@ function TabButton({
       onPress={onPress}
       onLongPress={onLongPress}
       onLayout={onLayout}
-      style={({ pressed }) => [styles.tabItem, pressed && styles.tabItemPressed]}
+      style={({ pressed }) => [styles.tabItem, { width: tabSize, height: tabSize }, pressed && styles.tabItemPressed]}
       accessibilityRole="tab"
       accessibilityState={{ selected }}
       accessibilityLabel={accessibilityLabel}
     >
-      <View style={styles.iconSlot}>
-        <MaterialIcons name={iconName} size={22} color={iconColor} />
+      <View style={[styles.iconSlot, { width: slotSize, height: slotSize }]}>
+        <MaterialIcons name={iconName} size={iconSize} color={iconColor} />
         <Animated.View style={[styles.iconOverlay, activeIconStyle]} pointerEvents="none">
-          <MaterialIcons name={iconName} size={22} color={activeIconColor} />
+          <MaterialIcons name={iconName} size={iconSize} color={activeIconColor} />
         </Animated.View>
       </View>
     </Pressable>
@@ -298,9 +333,6 @@ const styles = StyleSheet.create({
   },
   slidingPill: {
     position: 'absolute',
-    width: PILL_SIZE,
-    height: PILL_SIZE,
-    borderRadius: PILL_SIZE / 2,
   },
   iconOverlay: {
     ...StyleSheet.absoluteFillObject,
