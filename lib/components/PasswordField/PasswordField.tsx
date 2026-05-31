@@ -19,7 +19,8 @@ function getPasswordStrength(password: string) {
   if (/[0-9]/.test(password)) strength += 1;
   if (/[^A-Za-z0-9]/.test(password)) strength += 1;
 
-  if (strength < 2) return { label: 'Weak', textClass: 'text-destructive', bgClass: 'bg-destructive', width: '25%' as const };
+  if (strength < 2)
+    return { label: 'Weak', textClass: 'text-destructive', bgClass: 'bg-destructive', width: '25%' as const };
   if (strength < 4) return { label: 'Fair', textClass: 'text-warning', bgClass: 'bg-warning', width: '60%' as const };
   return { label: 'Strong', textClass: 'text-success', bgClass: 'bg-success', width: '100%' as const };
 }
@@ -52,7 +53,7 @@ function PasswordField({
             ? { sfSymbol: 'eye.slash', materialIcon: 'visibility-off' }
             : { sfSymbol: 'eye', materialIcon: 'visibility' }
         }
-        size={18}
+        size={14}
         className="text-muted-foreground"
       />
     </Pressable>

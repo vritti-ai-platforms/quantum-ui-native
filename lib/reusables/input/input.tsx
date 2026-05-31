@@ -1,32 +1,60 @@
-import { Platform, TextInput, type TextInputProps } from 'react-native';
+import { useUnstableNativeVariable } from 'nativewind';
+import { useState } from 'react';
+import { TextInput, type TextInputProps } from 'react-native';
 import { cn } from '../../utils/index';
+
+// Resolve theme colors from the NativeWind variable context — it's shared across the MF boundary
+// and always reflects the active theme. ThemeContext/useTheme isn't reliably connected for a
+// component bundled inside a micro-app, and NativeWind className colors don't apply to TextInput,
+// so bg + border are resolved here and applied via inline style (like ScreenContainer does for
+// --background). Matches the Select trigger: --input/30 fill, blue border on focus.
+const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
 
 function Input({
   className,
   multiline = false,
-  numberOfLines = multiline ? Platform.select({ web: 4, native: 5 }) : 1,
+  numberOfLines = multiline ? 5 : 1,
+  style,
+  onFocus,
+  onBlur,
+  'aria-invalid': ariaInvalid,
   ...props
-}: TextInputProps & React.RefAttributes<TextInput>) {
+}: TextInputProps & { 'aria-invalid'?: boolean | 'true' | 'false' } & React.RefAttributes<TextInput>) {
+  const [focused, setFocused] = useState(false);
+  const inputVar = useVar('--input');
+  const borderVar = useVar('--border');
+  const primaryVar = useVar('--primary');
+  const destructiveVar = useVar('--destructive');
+
+  const isError = ariaInvalid === true || ariaInvalid === 'true';
+  const backgroundColor = inputVar ? `hsla(${inputVar.split(' ').join(', ')}, 0.3)` : undefined;
+  const borderToken = isError ? destructiveVar : focused ? primaryVar : borderVar;
+  const borderColor = borderToken ? `hsl(${borderToken})` : undefined;
+  const borderWidth = isError ? 2 : focused ? 1.5 : 1;
+
   return (
     <TextInput
       className={cn(
-        'border-input bg-background text-foreground w-full min-w-0 rounded-xl border px-3 text-base shadow-sm shadow-black/5 md:text-sm',
-        multiline ? 'min-h-24 py-3' : 'h-11 py-0',
-        props.editable === false &&
-          cn('opacity-50', Platform.select({ web: 'disabled:pointer-events-none disabled:cursor-not-allowed' })),
-        Platform.select({
-          web: cn(
-            'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground outline-none transition-[color,box-shadow]',
-            'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-            'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-          ),
-          native: 'dark:bg-input/30 placeholder:text-muted-foreground/50',
-        }),
-        className,
+        'text-foreground placeholder:text-muted-foreground/50 w-full min-w-0 rounded-md text-[16px]',
+        multiline ? 'min-h-24' : 'h-12',
+        props.editable === false && 'opacity-50',
+        className
       )}
       multiline={multiline}
       numberOfLines={numberOfLines}
       textAlignVertical={multiline ? 'top' : props.textAlignVertical}
+      style={[
+        { backgroundColor, borderColor, borderWidth, paddingHorizontal: 12, paddingVertical: multiline ? 12 : 0 },
+        style,
+      ]}
+      onFocus={(e) => {
+        setFocused(true);
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setFocused(false);
+        onBlur?.(e);
+      }}
       {...props}
     />
   );

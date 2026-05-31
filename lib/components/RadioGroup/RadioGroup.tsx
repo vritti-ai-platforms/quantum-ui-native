@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { Pressable, View } from 'react-native';
-import { Label } from '../../reusables/label';
+import { Pressable } from 'react-native';
+import { Field, FieldError, FieldLabel, FieldLegend } from '../../reusables/field';
 import {
   RadioGroup as RnrRadioGroup,
   RadioGroupItem as RnrRadioGroupItem,
 } from '../../reusables/radio-group';
-import { Text } from '../../reusables/text';
 
 export interface RadioGroupProps extends React.ComponentProps<typeof RnrRadioGroup> {
   name?: string;
@@ -21,11 +20,11 @@ function RadioGroup({ label, error, className, ...props }: RadioGroupProps) {
   }
 
   return (
-    <View className="gap-1.5">
-      {label && <Label nativeID={id}>{label}</Label>}
+    <Field>
+      {label ? <FieldLegend variant="label" nativeID={id}>{label}</FieldLegend> : null}
       <RnrRadioGroup className={className} {...props} />
-      {error && <Text className="text-sm text-destructive">{error}</Text>}
-    </View>
+      {error ? <FieldError>{error}</FieldError> : null}
+    </Field>
   );
 }
 
@@ -49,9 +48,9 @@ function RadioGroupItem({ label, ...props }: RadioGroupItemProps) {
       accessibilityRole="radio"
     >
       <RnrRadioGroupItem nativeID={id} {...props} />
-      <Label nativeID={id} onPress={() => props.onPress?.({} as any)}>
+      <FieldLabel nativeID={id} onPress={() => props.onPress?.({} as any)}>
         {label}
-      </Label>
+      </FieldLabel>
     </Pressable>
   );
 }

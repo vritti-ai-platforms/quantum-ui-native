@@ -50,10 +50,20 @@
       "types": "./dist/typescript/lib/components/CardPressable/index.d.ts",
       "default": "./dist/module/components/CardPressable/index.js"
     },
+    "./Checkbox": {
+      "source": "./lib/components/Checkbox/index.ts",
+      "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
+      "default": "./dist/module/components/Checkbox/index.js"
+    },
     "./DynamicIcon": {
       "source": "./lib/components/DynamicIcon/index.ts",
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
       "default": "./dist/module/components/DynamicIcon/index.js"
+    },
+    "./Field": {
+      "source": "./lib/components/Field/index.ts",
+      "types": "./dist/typescript/lib/components/Field/index.d.ts",
+      "default": "./dist/module/components/Field/index.js"
     },
     "./FlashList": {
       "source": "./lib/components/FlashList/index.ts",
@@ -114,6 +124,11 @@
       "source": "./lib/components/ScreenLayout/index.ts",
       "types": "./dist/typescript/lib/components/ScreenLayout/index.d.ts",
       "default": "./dist/module/components/ScreenLayout/index.js"
+    },
+    "./Select": {
+      "source": "./lib/components/Select/index.ts",
+      "types": "./dist/typescript/lib/components/Select/index.d.ts",
+      "default": "./dist/module/components/Select/index.js"
     },
     "./Skeleton": {
       "source": "./lib/components/Skeleton/index.ts",
@@ -393,6 +408,7 @@
     "@rn-primitives/avatar": "^1.4.0",
     "@rn-primitives/alert-dialog": "^1.4.0",
     "@rn-primitives/aspect-ratio": "^1.4.0",
+    "@rn-primitives/checkbox": "^1.4.0",
     "@rn-primitives/collapsible": "^1.4.0",
     "@rn-primitives/context-menu": "^1.4.0",
     "@rn-primitives/dialog": "^1.4.0",
