@@ -57,9 +57,9 @@ const GRABBER_LIGHT = withOpacity(THEME.light.foreground, 0.22);
 const GRABBER_DARK = withOpacity(THEME.dark.foreground, 0.35);
 
 const IOS_SHEET_BG =
-  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.secondary }) : null;
+  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.background, dark: THEME.dark.background }) : null;
 const IOS_FULL_SHEET_BG =
-  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.secondary, dark: THEME.dark.background }) : null;
+  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.background, dark: THEME.dark.background }) : null;
 const IOS_BACKDROP = Platform.OS === 'ios' ? DynamicColorIOS({ light: BACKDROP_LIGHT, dark: BACKDROP_DARK }) : null;
 const IOS_GRABBER = Platform.OS === 'ios' ? DynamicColorIOS({ light: GRABBER_LIGHT, dark: GRABBER_DARK }) : null;
 const DEFAULT_DETENTS: SheetDetent[] = ['auto'];
@@ -108,6 +108,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       headerLeft,
       headerRight,
       scrollable,
+      backgroundColor,
     },
     ref,
   ) => {
@@ -124,7 +125,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const themeValues = THEME_TOKENS[scheme].variables;
     const useGlass = variant === 'glass' && version >= 26 && LiquidGlass != null;
 
-    const sheetBg: ColorValue = IOS_SHEET_BG ?? THEME[scheme].secondary;
+    const sheetBg: ColorValue = IOS_SHEET_BG ?? THEME[scheme].background;
     const backdropColor: ColorValue = IOS_BACKDROP ?? (isDark ? BACKDROP_DARK : BACKDROP_LIGHT);
     const grabberColor: ColorValue = IOS_GRABBER ?? (isDark ? GRABBER_DARK : GRABBER_LIGHT);
 
@@ -160,6 +161,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     );
 
     const useSolidBodyForFullHeader = hasHeader && detents.includes('full');
+    const isFull = detents.includes('full');
 
     const renderBackground = useCallback(
       ({ style }: BottomSheetBackgroundProps) => {
@@ -167,13 +169,26 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           borderTopLeftRadius: cornerRadius,
           borderTopRightRadius: cornerRadius,
         };
-        if (useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
+        // Glass only when there's no explicit color override, it's supported, and not a full+header sheet.
+        if (backgroundColor == null && useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
           return <LiquidGlass style={[style, radius]} effect="regular" />;
         }
-        const bg = useSolidBodyForFullHeader ? ((IOS_FULL_SHEET_BG as unknown as string) ?? sheetBg) : sheetBg;
-        return <View style={[style, radius, { backgroundColor: bg }]} />;
+        const bg =
+          backgroundColor ??
+          (useSolidBodyForFullHeader ? ((IOS_FULL_SHEET_BG as unknown as string) ?? sheetBg) : sheetBg);
+        // Dark mode (non-full): a thin border delineates the near-black sheet from the near-black screen.
+        return (
+          <View
+            style={[
+              style,
+              radius,
+              { backgroundColor: bg },
+              isDark && !isFull && { borderWidth: 1, borderColor: THEME.dark.border },
+            ]}
+          />
+        );
       },
-      [useGlass, cornerRadius, sheetBg, useSolidBodyForFullHeader],
+      [backgroundColor, isDark, isFull, useGlass, cornerRadius, sheetBg, useSolidBodyForFullHeader],
     );
 
     const renderHandle = useCallback(

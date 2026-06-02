@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Text } from '@vritti/quantum-ui-native/Text';
 import { Progress } from '@vritti/quantum-ui-native/Progress';
 import { Separator } from '@vritti/quantum-ui-native/Separator';
 import { Skeleton } from '@vritti/quantum-ui-native/Skeleton';

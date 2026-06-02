@@ -3,7 +3,7 @@ import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
 import { DynamicColorIOS, Platform, StyleSheet, useColorScheme, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import {
+import Animated, {
   interpolate,
   runOnJS,
   type SharedValue,
@@ -12,8 +12,8 @@ import {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NativeOnlyAnimatedView } from '../../reusables/native-only-animated-view';
 import { THEME } from '../../theme';
+import { ThemeContext } from '../../theme/ThemeProvider';
 import { Button } from '../Button';
 import { DynamicIcon } from '../DynamicIcon';
 
@@ -43,9 +43,7 @@ const CLOSE_BUTTON_OFFSET = 56;
 
 // NativeWind className→variable lookup is unreliable inside LiquidGlassView on iOS 26+ — pass DynamicColorIOS so UIKit re-resolves at draw time.
 const IOS_CLOSE_ICON_COLOR =
-  Platform.OS === 'ios'
-    ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground })
-    : null;
+  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground }) : null;
 
 export interface BottomSheetScaledScreenProps {
   children: ReactNode;
@@ -91,15 +89,20 @@ const ScaledContent = ({
   const useGlass = platform.os === 'ios' && platform.version >= 26;
   const insets = useSafeAreaInsets();
   const systemColorScheme = useColorScheme();
-  const palette = THEME[systemColorScheme === 'dark' ? 'dark' : 'light'];
+  const themeCtx = useContext(ThemeContext);
+  const isDark = (themeCtx?.colorScheme ?? systemColorScheme) === 'dark';
+  const palette = THEME[isDark ? 'dark' : 'light'];
   const closeIconColor = (IOS_CLOSE_ICON_COLOR ?? palette.foreground) as unknown as string;
+  // The dim separates the sheet from the screen: darken a light screen, lighten a dark one.
+  const overlayColor = isDark ? '#ffffff' : '#000000';
+  const overlayMaxOpacity = isDark ? 0.09 : overlayOpacity;
 
   const [isOpen, setIsOpen] = useState(false);
   useAnimatedReaction(
     () => ctx.progress.value,
     (current, prev) => {
       const open = current > 0.05;
-      if (prev === null || (prev > 0.05) !== open) {
+      if (prev === null || prev > 0.05 !== open) {
         runOnJS(setIsOpen)(open);
       }
     },
@@ -128,44 +131,38 @@ const ScaledContent = ({
   }));
 
   const overlayStyle = useAnimatedStyle(() => ({
-    opacity: ctx.progress.value * overlayOpacity,
+    opacity: ctx.progress.value * overlayMaxOpacity,
   }));
 
   // Paint-only transforms — opacity from 0 prevents iOS 26 UIGlassEffect init; layout-time `top` thrashes and tears down the glass.
   const closeButtonStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: ctx.sheetTop.value - CLOSE_BUTTON_OFFSET },
-      { scale: ctx.progress.value },
-    ],
+    transform: [{ translateY: ctx.sheetTop.value - CLOSE_BUTTON_OFFSET }, { scale: ctx.progress.value }],
   }));
 
   return (
     <View style={styles.systemBg}>
-      <NativeOnlyAnimatedView style={[styles.container, containerStyle]}>
+      <Animated.View style={[styles.container, containerStyle]}>
         {children}
-        <NativeOnlyAnimatedView
+        <Animated.View
           pointerEvents="none"
-          style={[StyleSheet.absoluteFillObject, styles.overlay, overlayStyle]}
+          style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }, overlayStyle]}
         />
-      </NativeOnlyAnimatedView>
+      </Animated.View>
       <GestureDetector gesture={dismissGesture}>
-        <View
-          pointerEvents={isOpen ? 'auto' : 'none'}
-          style={StyleSheet.absoluteFillObject}
-          collapsable={false}
-        />
+        <View pointerEvents={isOpen ? 'auto' : 'none'} style={StyleSheet.absoluteFillObject} collapsable={false} />
       </GestureDetector>
-      <NativeOnlyAnimatedView pointerEvents="box-none" style={[styles.closeButtonContainer, closeButtonStyle]}>
+      <Animated.View pointerEvents="box-none" style={[styles.closeButtonContainer, closeButtonStyle]}>
         <Button
           variant={useGlass ? 'glass' : 'secondary'}
           size="icon"
           onPress={dismissAll}
           accessibilityLabel="Close"
           hitSlop={8}
+          className={useGlass ? undefined : 'bg-background'}
         >
           <DynamicIcon icon={CLOSE_ICON} size={18} color={closeIconColor} />
         </Button>
-      </NativeOnlyAnimatedView>
+      </Animated.View>
     </View>
   );
 };
@@ -178,9 +175,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
-    backgroundColor: '#000',
-  },
-  overlay: {
     backgroundColor: '#000',
   },
   closeButtonContainer: {

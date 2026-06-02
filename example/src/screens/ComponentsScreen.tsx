@@ -5,7 +5,7 @@ import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIc
 import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { StaticAlert } from '@vritti/quantum-ui-native/StaticAlert';
-import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Text } from '@vritti/quantum-ui-native/Text';
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
@@ -141,18 +141,24 @@ export default function ComponentsScreen() {
 
       {/* Badges */}
       <Section title="Badges">
-        <View className="flex-row gap-2">
+        <View className="flex-row flex-wrap gap-2">
           <Badge>
             <Text>Default</Text>
           </Badge>
-          <Badge className="bg-primary">
-            <Text className="text-primary-foreground">Primary</Text>
+          <Badge variant="secondary">
+            <Text>Secondary</Text>
           </Badge>
-          <Badge className="bg-destructive">
-            <Text className="text-destructive-foreground">Error</Text>
+          <Badge variant="destructive">
+            <Text>Error</Text>
           </Badge>
-          <Badge className="bg-success">
-            <Text className="text-success-foreground">Success</Text>
+          <Badge variant="success">
+            <Text>Success</Text>
+          </Badge>
+          <Badge variant="warning">
+            <Text>Warning</Text>
+          </Badge>
+          <Badge variant="outline">
+            <Text>Outline</Text>
           </Badge>
         </View>
       </Section>

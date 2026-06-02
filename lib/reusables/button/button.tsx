@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Platform, Pressable } from 'react-native';
 import { cn } from '../../utils/index';
-import { TextClassContext } from '../text';
+import { TextClassContext } from '../../components/Text';
 
 const buttonVariants = cva(
   cn(
@@ -47,7 +47,7 @@ const buttonVariants = cva(
         default: cn('h-10 px-5 py-2', Platform.select({ web: 'has-[>svg]:px-4' })),
         sm: cn('h-[34px] gap-1.5 rounded-lg px-3.5', Platform.select({ web: 'has-[>svg]:px-2.5' })),
         lg: cn('h-[46px] px-7', Platform.select({ web: 'has-[>svg]:px-5' })),
-        icon: 'h-10 w-10',
+        icon: 'h-10 w-10 rounded-full',
       },
     },
     defaultVariants: {

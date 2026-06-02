@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { DynamicIcon } from '../DynamicIcon';
 import { TextField, type TextFieldProps } from '../TextField';
 

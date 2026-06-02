@@ -1,6 +1,6 @@
 import * as CheckboxPrimitive from '@rn-primitives/checkbox';
-import { COMMON_ICONS, DynamicIcon } from '../components/DynamicIcon';
-import { cn } from '../utils/index';
+import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
+import { cn } from '../../utils/index';
 
 // RN analog of the web shadcnCheckbox — wraps @rn-primitives/checkbox with theming.
 // Controlled: requires `checked` + `onCheckedChange`.

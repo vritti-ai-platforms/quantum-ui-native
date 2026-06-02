@@ -1,7 +1,7 @@
 import type * as React from 'react';
 import { Pressable, type PressableProps, useColorScheme } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { TextClassContext } from '../../reusables/text';
+import { TextClassContext } from '../Text';
 import { cn } from '../../utils/cn';
 
 export interface CardPressableProps extends Omit<PressableProps, 'children'> {
@@ -27,15 +27,12 @@ function CardPressable({
       : { color: 'rgba(0,0,0,0.12)', foreground: true };
 
   // Inline borderColor — NativeWind v5-preview's `border-primary` resolver is unreliable on Pressable subtrees.
+  // No elevation/shadowColor here: on Android a colored elevation casts a tinted ambient/spot shadow that
+  // reads as a blue glow around the border. Keep just the border for the selected state.
   const selectedShadow = selected
     ? {
         borderWidth: 1,
         borderColor: palette.primary,
-        shadowColor: palette.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
       }
     : null;
 

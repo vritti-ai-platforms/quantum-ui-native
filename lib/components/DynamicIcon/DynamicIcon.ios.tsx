@@ -1,7 +1,7 @@
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
 import { SFSymbol } from 'react-native-sfsymbols';
-import { TextClassContext } from '../../reusables/text';
+import { TextClassContext } from '../Text';
 import { cn } from '../../utils/index';
 import type { DynamicIconProps } from './types';
 

@@ -46,7 +46,13 @@ export function Checkbox({
     <Field orientation="horizontal" disabled={disabled} className={cn('items-center', className)}>
       <BaseCheckbox checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} {...props} />
       <Pressable accessibilityRole="button" onPress={toggle} disabled={disabled} className="flex-1 gap-1">
-        {label ? <FieldLabel className="font-normal">{label}</FieldLabel> : null}
+        {/* The label is a @rn-primitives/label Root (pressable) — it captures its own taps, so wire
+            onPress to toggle directly; description/error (plain Text) bubble to the outer Pressable. */}
+        {label ? (
+          <FieldLabel className="font-normal" onPress={toggle}>
+            {label}
+          </FieldLabel>
+        ) : null}
         {description ? <FieldDescription>{description}</FieldDescription> : null}
         {error ? <FieldError>{error}</FieldError> : null}
       </Pressable>

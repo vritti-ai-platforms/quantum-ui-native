@@ -4,7 +4,7 @@ import { type LayoutChangeEvent, Platform, Pressable, ScrollView, useColorScheme
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { cn } from '../../utils/cn';
 import { DynamicIcon } from '../DynamicIcon';
-import { Text } from '../Typography';
+import { Text } from '../Text';
 import {
   setScreenHeaderActiveTabId,
   useScreenHeaderActiveIndex,

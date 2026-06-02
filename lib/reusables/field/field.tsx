@@ -2,7 +2,7 @@ import * as React from 'react';
 import { View, type ViewProps } from 'react-native';
 import { cn } from '../../utils/index';
 import { Label } from '../label';
-import { Text } from '../text';
+import { Text } from '../../components/Text';
 
 // RN port of the web shadcnField — a simplified View/Text + flex version (NativeWind has no
 // has-[]/group-data/container-query CSS). Standardizes the label/description/error layout that

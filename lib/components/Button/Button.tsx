@@ -5,7 +5,7 @@ import {
   Button as RnrButton,
   type ButtonProps as RnrButtonProps,
 } from '../../reusables/button';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 import { Spinner } from '../Spinner';
 

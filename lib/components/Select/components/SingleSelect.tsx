@@ -14,7 +14,7 @@ import {
   SingleSelectRow,
 } from '../../../reusables/single-select';
 import { cn } from '../../../utils/index';
-import { Text } from '../../Typography';
+import { Text } from '../../Text';
 import { useSingleSelect } from '../hooks/useSingleSelect';
 import type { AsyncSelectState, SelectGroup, SelectOption, SelectValue } from '../types';
 
@@ -109,7 +109,7 @@ export const SingleSelect = React.forwardRef<View, SingleSelectProps>(
       transformLabel,
       transformDescription,
       footer,
-      contentClassName,
+      contentClassName: _contentClassName,
       onOpenChange,
     },
     ref,
@@ -192,7 +192,7 @@ export const SingleSelect = React.forwardRef<View, SingleSelectProps>(
       <Field ref={ref}>
         {label ? <FieldLabel nativeID={id}>{label}</FieldLabel> : null}
 
-        <SelectListRoot open={state.open} onOpenChange={handleOpenChange} disabled={disabled}>
+        <SelectListRoot open={state.open} onOpenChange={handleOpenChange} disabled={disabled} title={label}>
           <SelectTrigger disabled={disabled} invalid={!!error} className={cn('w-full', className)}>
             {triggerLabel ? (
               <Text className="text-foreground text-sm" numberOfLines={1}>
@@ -205,11 +205,23 @@ export const SingleSelect = React.forwardRef<View, SingleSelectProps>(
             )}
           </SelectTrigger>
 
-          <SelectContent className={contentClassName}>
-            {showSearch ? (
-              <SelectSearch value={searchValue} onValueChange={setSearchValue} placeholder={searchPlaceholder} />
-            ) : null}
-
+          <SelectContent
+            search={
+              showSearch ? (
+                <SelectSearch value={searchValue} onValueChange={setSearchValue} placeholder={searchPlaceholder} />
+              ) : undefined
+            }
+            footer={
+              clearable || footer ? (
+                <>
+                  {clearable ? (
+                    <SingleSelectClear onClear={handleClearSelection} disabled={!state.selectedValue} />
+                  ) : null}
+                  {footer}
+                </>
+              ) : undefined
+            }
+          >
             {asyncState?.loading ? (
               <SelectLoading />
             ) : (
@@ -220,9 +232,6 @@ export const SingleSelect = React.forwardRef<View, SingleSelectProps>(
                 loadingMore={asyncState?.loadingMore}
               />
             )}
-
-            {clearable ? <SingleSelectClear onClear={handleClearSelection} disabled={!state.selectedValue} /> : null}
-            {footer}
           </SelectContent>
         </SelectListRoot>
 

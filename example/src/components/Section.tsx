@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Text } from '@vritti/quantum-ui-native/Text';
 import { Separator } from '@vritti/quantum-ui-native/Separator';
 
 export function Section({

@@ -1,5 +1,6 @@
 // Re-exports the reusable Badge
-import { Badge as RnrBadge, type BadgeProps } from '../../reusables/badge';
+import { Badge as RnrBadge, badgeVariants, type BadgeProps } from '../../reusables/badge';
 
 export const Badge = RnrBadge;
+export { badgeVariants };
 export type { BadgeProps };

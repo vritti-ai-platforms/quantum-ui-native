@@ -1,3 +1,5 @@
+import type { ColorValue } from 'react-native';
+
 export interface BottomSheetRef {
   present: (index?: number) => void;
   dismiss: () => void;
@@ -23,6 +25,8 @@ export interface BottomSheetProps {
   headerLeft?: React.ReactNode;
   headerRight?: React.ReactNode;
   scrollable?: boolean;
+  /** Overrides the sheet surface color. Defaults to the theme background. */
+  backgroundColor?: ColorValue;
 }
 
 export function mapDetents(detents: SheetDetent[]): {

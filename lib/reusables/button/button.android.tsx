@@ -2,7 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable } from 'react-native';
 import { cn } from '../../utils/index';
-import { TextClassContext } from '../text';
+import { TextClassContext } from '../../components/Text';
 
 const buttonVariants = cva(
   'group shrink-0 flex-row items-center justify-center gap-2 rounded-[14px] shadow-sm shadow-black/5',
@@ -23,7 +23,7 @@ const buttonVariants = cva(
         default: 'h-12 px-5 py-2',
         sm: 'h-10 px-4 py-2',
         lg: 'h-14 px-7 py-2',
-        icon: 'h-12 w-12',
+        icon: 'h-12 w-12 rounded-full',
       },
     },
     defaultVariants: {

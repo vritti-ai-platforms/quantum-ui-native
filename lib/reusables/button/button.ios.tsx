@@ -4,7 +4,7 @@ import * as React from 'react';
 import { type GestureResponderEvent, type LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { cn } from '../../utils/index';
-import { TextClassContext } from '../text';
+import { TextClassContext } from '../../components/Text';
 
 const buttonVariants = cva(
   'group relative shrink-0 flex-row items-center justify-center gap-2 overflow-hidden rounded-[18px] shadow-sm shadow-black/10',
@@ -25,7 +25,7 @@ const buttonVariants = cva(
         default: 'h-12 px-5 py-2',
         sm: 'h-10 rounded-[16px] px-4 py-2',
         lg: 'h-14 rounded-[20px] px-7 py-2',
-        icon: 'h-12 w-12',
+        icon: 'h-12 w-12 rounded-full',
       },
     },
     defaultVariants: {
@@ -80,7 +80,9 @@ function Button({
   const { version } = usePlatformInfo();
   // glass variant requires iOS 26 LiquidGlass — fall back to default on older devices
   const resolvedVariant = variant === 'glass' && version < 26 ? 'default' : (variant ?? 'default');
-  const radius = size === 'sm' ? 16 : size === 'lg' ? 20 : 18;
+  // icon is rounded-full — the glass borderRadius must match (clamps to a circle) so the
+  // specular rim follows the circular edge instead of being clipped to a rounded-square.
+  const radius = size === 'icon' ? 9999 : size === 'sm' ? 16 : size === 'lg' ? 20 : 18;
   const [hasLaidOut, setHasLaidOut] = React.useState(false);
   const [pressed, setPressed] = React.useState(false);
 

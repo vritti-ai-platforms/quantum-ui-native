@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 
 export interface TagGroupProps {

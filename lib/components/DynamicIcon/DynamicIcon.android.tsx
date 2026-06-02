@@ -1,7 +1,7 @@
 import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
-import { TextClassContext } from '../../reusables/text';
+import { TextClassContext } from '../Text';
 import { cn } from '../../utils/index';
 import type { DynamicIconProps } from './types';
 

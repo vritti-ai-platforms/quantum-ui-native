@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
 import { Skeleton } from '../../reusables/skeleton';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 import { CardPressable } from '../CardPressable';
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';

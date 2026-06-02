@@ -1,6 +1,6 @@
-import { Text, TextClassContext } from './text';
-import { cn } from '../utils/index';
 import { View, type ViewProps } from 'react-native';
+import { Text, TextClassContext } from '../../components/Text';
+import { cn } from '../../utils/index';
 
 function Card({ className, ...props }: ViewProps & React.RefAttributes<View>) {
   return (
@@ -8,7 +8,7 @@ function Card({ className, ...props }: ViewProps & React.RefAttributes<View>) {
       <View
         className={cn(
           'bg-card border-border flex flex-col gap-6 rounded-xl border py-6 shadow-sm shadow-black/5',
-          className
+          className,
         )}
         {...props}
       />
@@ -20,24 +20,11 @@ function CardHeader({ className, ...props }: ViewProps & React.RefAttributes<Vie
   return <View className={cn('flex flex-col gap-1.5 px-6', className)} {...props} />;
 }
 
-function CardTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof Text> & React.RefAttributes<Text>) {
-  return (
-    <Text
-      role="heading"
-      aria-level={3}
-      className={cn('font-semibold leading-none', className)}
-      {...props}
-    />
-  );
+function CardTitle({ className, ...props }: React.ComponentProps<typeof Text> & React.RefAttributes<Text>) {
+  return <Text role="heading" aria-level={3} className={cn('font-semibold leading-none', className)} {...props} />;
 }
 
-function CardDescription({
-  className,
-  ...props
-}: React.ComponentProps<typeof Text> & React.RefAttributes<Text>) {
+function CardDescription({ className, ...props }: React.ComponentProps<typeof Text> & React.RefAttributes<Text>) {
   return <Text className={cn('text-muted-foreground text-sm', className)} {...props} />;
 }
 

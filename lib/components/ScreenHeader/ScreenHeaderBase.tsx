@@ -3,7 +3,7 @@ import { Image, type ImageSourcePropType, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
-import { Text } from '../Typography';
+import { Text } from '../Text';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
 import { ScreenHeaderTabsBackground } from './ScreenHeaderTabsBackground';
 import { useRegisterScreenHeaderTabs } from './screenHeaderTabsRegistry';

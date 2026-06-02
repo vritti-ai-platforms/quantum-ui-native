@@ -15,7 +15,7 @@ import {
 } from '../../../reusables/multi-select';
 import { Badge } from '../../Badge';
 import { COMMON_ICONS, DynamicIcon } from '../../DynamicIcon';
-import { Text } from '../../Typography';
+import { Text } from '../../Text';
 import { useMultiSelect } from '../hooks/useMultiSelect';
 import type { AsyncSelectState, SelectGroup, SelectOption, SelectValue } from '../types';
 
@@ -98,7 +98,7 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
       asyncState,
       transformLabel,
       transformDescription,
-      contentClassName,
+      contentClassName: _contentClassName,
       onOpenChange,
     },
     ref,
@@ -169,7 +169,7 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
       }
 
       return state.selectedOptions.map((option) => (
-        <Badge key={String(option.value)} className="gap-2 px-3">
+        <Badge key={String(option.value)} variant="secondary" className="gap-2 px-3">
           <Text className="text-muted-foreground text-xs font-medium">
             {transformLabel ? transformLabel(option.label, option, 'trigger') : option.label}
           </Text>
@@ -189,16 +189,19 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
       <Field ref={ref}>
         {label ? <FieldLabel nativeID={id}>{label}</FieldLabel> : null}
 
-        <SelectListRoot open={state.open} onOpenChange={handleOpenChange} disabled={disabled}>
+        <SelectListRoot open={state.open} onOpenChange={handleOpenChange} disabled={disabled} title={label}>
           <SelectTrigger disabled={disabled} invalid={!!error} minHeight className={className}>
             {renderTriggerContent()}
           </SelectTrigger>
 
-          <SelectContent className={contentClassName}>
-            {showSearch ? (
-              <SelectSearch value={searchValue} onValueChange={setSearchValue} placeholder={searchPlaceholder} />
-            ) : null}
-
+          <SelectContent
+            search={
+              showSearch ? (
+                <SelectSearch value={searchValue} onValueChange={setSearchValue} placeholder={searchPlaceholder} />
+              ) : undefined
+            }
+            footer={<MultiSelectActions onSelectAll={state.selectAll} onClear={state.clearAll} disabled={disabled} />}
+          >
             {asyncState?.loading ? (
               <SelectLoading />
             ) : (
@@ -209,8 +212,6 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
                 loadingMore={asyncState?.loadingMore}
               />
             )}
-
-            <MultiSelectActions onSelectAll={state.selectAll} onClear={state.clearAll} disabled={disabled} />
           </SelectContent>
         </SelectListRoot>
 

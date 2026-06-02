@@ -1,6 +1,6 @@
 import type { ViewProps } from 'react-native';
 import { View } from 'react-native';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 import { COMMON_ICONS, DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 

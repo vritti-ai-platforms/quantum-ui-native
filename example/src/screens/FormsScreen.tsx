@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Text } from '@vritti/quantum-ui-native/Text';
 import { Checkbox } from '@vritti/quantum-ui-native/Checkbox';
-import { Input } from '@vritti/quantum-ui-native/Input';
 import { TextField } from '@vritti/quantum-ui-native/TextField';
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from '@vritti/quantum-ui-native/RadioGroup';
+import { RadioGroup } from '@vritti/quantum-ui-native/RadioGroup';
 import { Switch } from '@vritti/quantum-ui-native/Switch';
 import { Section } from '../components/Section';
 
@@ -60,11 +56,6 @@ export default function FormsScreen() {
         />
       </Section>
 
-      {/* Input raw */}
-      <Section title="Input">
-        <Input placeholder="Basic input..." />
-      </Section>
-
       {/* Checkbox */}
       <Section title="Checkbox">
         <Checkbox
@@ -106,26 +97,15 @@ export default function FormsScreen() {
       {/* RadioGroup */}
       <Section title="Radio Group">
         <RadioGroup
+          label="Select a plan"
           value={radioVal}
           onValueChange={setRadioVal}
-          label="Select a plan"
-        >
-          <RadioGroupItem
-            value="free"
-            label="Free"
-            onPress={() => setRadioVal('free')}
-          />
-          <RadioGroupItem
-            value="pro"
-            label="Pro"
-            onPress={() => setRadioVal('pro')}
-          />
-          <RadioGroupItem
-            value="enterprise"
-            label="Enterprise"
-            onPress={() => setRadioVal('enterprise')}
-          />
-        </RadioGroup>
+          options={[
+            { value: 'free', label: 'Free' },
+            { value: 'pro', label: 'Pro' },
+            { value: 'enterprise', label: 'Enterprise' },
+          ]}
+        />
       </Section>
     </ScrollView>
   );

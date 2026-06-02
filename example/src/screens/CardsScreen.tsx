@@ -5,7 +5,7 @@ import { ListItem } from '@vritti/quantum-ui-native/ListItem';
 import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
 import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
 import { FlashList } from '@vritti/quantum-ui-native/FlashList';
-import { Text } from '@vritti/quantum-ui-native/Typography';
+import { Text } from '@vritti/quantum-ui-native/Text';
 import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
 

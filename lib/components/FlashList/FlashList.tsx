@@ -1,7 +1,7 @@
 import { FlashList as ShopifyFlashList, type FlashListProps as ShopifyFlashListProps } from '@shopify/flash-list';
 import type React from 'react';
 import { View } from 'react-native';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 import { ListItem } from '../ListItem';
 

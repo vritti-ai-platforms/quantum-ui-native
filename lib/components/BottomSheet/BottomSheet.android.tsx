@@ -74,6 +74,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       headerLeft,
       headerRight,
       scrollable,
+      backgroundColor,
     },
     ref,
   ) => {
@@ -86,8 +87,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     const scheme = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
-    const sheetBg = THEME_TOKENS[scheme].palette.secondary;
-    const fullSheetBg = isDark ? THEME_TOKENS.dark.palette.background : THEME_TOKENS.light.palette.secondary;
+    const sheetBg = THEME_TOKENS[scheme].palette.background;
+    const fullSheetBg = isDark ? THEME_TOKENS.dark.palette.background : THEME_TOKENS.light.palette.background;
     const themeValues = THEME_TOKENS[scheme].variables;
     const backdropBg = isDark ? BACKDROP_DARK : BACKDROP_LIGHT;
     const grabberColor = isDark ? GRABBER_DARK : GRABBER_LIGHT;
@@ -123,6 +124,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     );
 
     const fullWithHeader = hasHeader && detents.includes('full');
+    const isFull = detents.includes('full');
 
     const renderBackground = useCallback(
       ({ style }: BottomSheetBackgroundProps) => (
@@ -130,14 +132,16 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           style={[
             style,
             {
-              backgroundColor: fullWithHeader ? fullSheetBg : sheetBg,
+              backgroundColor: backgroundColor ?? (fullWithHeader ? fullSheetBg : sheetBg),
               borderTopLeftRadius: cornerRadius,
               borderTopRightRadius: cornerRadius,
             },
+            // Dark mode (non-full): a thin border delineates the near-black sheet from the near-black screen.
+            isDark && !isFull && { borderWidth: 1, borderColor: THEME.dark.border },
           ]}
         />
       ),
-      [sheetBg, fullSheetBg, fullWithHeader, cornerRadius],
+      [backgroundColor, isDark, isFull, sheetBg, fullSheetBg, fullWithHeader, cornerRadius],
     );
     const renderHandle = useCallback(
       () => (grabber && !fullWithHeader ? <Grabber color={grabberColor} /> : null),
@@ -204,6 +208,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               onClose={onClose}
               leftAction={headerLeft}
               rightAction={headerRight}
+              // The header renders in the portal (no theme context) — pass the wrapper's app-theme
+              // background so it matches the sheet instead of following the system Appearance.
+              backgroundColor={THEME[scheme].background}
             />
           ) : null}
         </BottomSheetFullProvider>

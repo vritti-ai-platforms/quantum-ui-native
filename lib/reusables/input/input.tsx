@@ -25,26 +25,41 @@ function Input({
   const borderVar = useVar('--border');
   const primaryVar = useVar('--primary');
   const destructiveVar = useVar('--destructive');
+  const foregroundVar = useVar('--foreground');
+  const mutedFgVar = useVar('--muted-foreground');
 
   const isError = ariaInvalid === true || ariaInvalid === 'true';
   const backgroundColor = inputVar ? `hsla(${inputVar.split(' ').join(', ')}, 0.3)` : undefined;
   const borderToken = isError ? destructiveVar : focused ? primaryVar : borderVar;
   const borderColor = borderToken ? `hsl(${borderToken})` : undefined;
   const borderWidth = isError ? 2 : focused ? 1.5 : 1;
+  // Text + placeholder colors resolved inline too (not className): on Android, NativeWind className
+  // color resolution follows the system Appearance, so app-dark/system-light made the placeholder
+  // resolve to the light --muted-foreground and vanish on the dark input.
+  const color = foregroundVar ? `hsl(${foregroundVar})` : undefined;
+  const placeholderColor = mutedFgVar ? `hsla(${mutedFgVar.split(' ').join(', ')}, 0.9)` : undefined;
 
   return (
     <TextInput
       className={cn(
-        'text-foreground placeholder:text-muted-foreground/50 w-full min-w-0 rounded-md text-[16px]',
+        'w-full min-w-0 rounded-md text-[16px]',
         multiline ? 'min-h-24' : 'h-12',
         props.editable === false && 'opacity-50',
-        className
+        className,
       )}
       multiline={multiline}
       numberOfLines={numberOfLines}
       textAlignVertical={multiline ? 'top' : props.textAlignVertical}
+      placeholderTextColor={placeholderColor}
       style={[
-        { backgroundColor, borderColor, borderWidth, paddingHorizontal: 12, paddingVertical: multiline ? 12 : 0 },
+        {
+          backgroundColor,
+          borderColor,
+          borderWidth,
+          color,
+          paddingHorizontal: 12,
+          paddingVertical: multiline ? 12 : 0,
+        },
         style,
       ]}
       onFocus={(e) => {

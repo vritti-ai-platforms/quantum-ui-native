@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { COMMON_ICONS } from '../DynamicIcon';
 import { DynamicIcon } from '../DynamicIcon';
-import { Text } from '../../reusables/text';
+import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 
 export interface ChipProps {

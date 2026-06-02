@@ -60,11 +60,6 @@
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
       "default": "./dist/module/components/DynamicIcon/index.js"
     },
-    "./Field": {
-      "source": "./lib/components/Field/index.ts",
-      "types": "./dist/typescript/lib/components/Field/index.d.ts",
-      "default": "./dist/module/components/Field/index.js"
-    },
     "./FlashList": {
       "source": "./lib/components/FlashList/index.ts",
       "types": "./dist/typescript/lib/components/FlashList/index.d.ts",
@@ -74,11 +69,6 @@
       "source": "./lib/components/Form/index.ts",
       "types": "./dist/typescript/lib/components/Form/index.d.ts",
       "default": "./dist/module/components/Form/index.js"
-    },
-    "./Input": {
-      "source": "./lib/components/Input/index.ts",
-      "types": "./dist/typescript/lib/components/Input/index.d.ts",
-      "default": "./dist/module/components/Input/index.js"
     },
     "./Label": {
       "source": "./lib/components/Label/index.ts",
@@ -160,10 +150,10 @@
       "types": "./dist/typescript/lib/components/TextField/index.d.ts",
       "default": "./dist/module/components/TextField/index.js"
     },
-    "./Typography": {
-      "source": "./lib/components/Typography/index.ts",
-      "types": "./dist/typescript/lib/components/Typography/index.d.ts",
-      "default": "./dist/module/components/Typography/index.js"
+    "./Text": {
+      "source": "./lib/components/Text/index.ts",
+      "types": "./dist/typescript/lib/components/Text/index.d.ts",
+      "default": "./dist/module/components/Text/index.js"
     },
     "./theme": {
       "source": "./lib/theme/index.ts",

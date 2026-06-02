@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable, type PressableProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { TextClassContext } from '../../reusables/text';
+import { TextClassContext } from '../Text';
 import { cn } from '../../utils/cn';
 
 export interface CardPressableProps extends Omit<PressableProps, 'children'> {

@@ -1,6 +1,7 @@
 import { useBottomSheet } from '@gorhom/bottom-sheet';
 import { memo, useCallback } from 'react';
 import {
+  type ColorValue,
   DynamicColorIOS,
   type LayoutChangeEvent,
   Platform,
@@ -16,7 +17,7 @@ import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { THEME } from '../../theme/colors';
 import { Button } from '../Button';
 import { DynamicIcon } from '../DynamicIcon';
-import { Text } from '../Typography';
+import { Text } from '../Text';
 import { useBottomSheetFullContext } from './BottomSheetFullContext';
 
 const HEADER_CONTENT_HEIGHT = 56;
@@ -53,6 +54,9 @@ export interface BottomSheetHeaderProps {
   leftAction?: React.ReactNode;
   rightAction?: React.ReactNode;
   children?: React.ReactNode;
+  /** App-theme-resolved surface color from the sheet wrapper. The header renders inside the portal
+   *  (no theme context), so useColorScheme would follow the SYSTEM appearance — pass this instead. */
+  backgroundColor?: ColorValue;
 }
 
 function BottomSheetHeaderImpl({
@@ -62,6 +66,7 @@ function BottomSheetHeaderImpl({
   leftAction,
   rightAction,
   children,
+  backgroundColor,
 }: BottomSheetHeaderProps) {
   const insets = useSafeAreaInsets();
   const { version } = usePlatformInfo();
@@ -107,13 +112,18 @@ function BottomSheetHeaderImpl({
         <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
           <LiquidGlass style={StyleSheet.absoluteFillObject} effect="regular" />
         </View>
-      ) : Platform.OS === 'ios' ? (
+      ) : (
         <View
-          style={[StyleSheet.absoluteFillObject, { backgroundColor: IOS_HEADER_BG as unknown as string }]}
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              // App-theme bg from the wrapper (Android) wins; iOS falls back to the dynamic IOS_HEADER_BG.
+              backgroundColor:
+                backgroundColor ?? (Platform.OS === 'ios' ? (IOS_HEADER_BG as unknown as string) : androidHeaderBg),
+            },
+          ]}
           pointerEvents="none"
         />
-      ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: androidHeaderBg }]} pointerEvents="none" />
       )}
 
       <View style={[styles.row, { height: HEADER_CONTENT_HEIGHT }]}>

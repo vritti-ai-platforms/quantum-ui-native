@@ -34,7 +34,9 @@ function BottomSheetScrollViewImpl({
   const mergedContentContainerStyle = useMemo<StyleProp<ViewStyle>>(
     () => [
       {
-        paddingTop: (ctx?.headerHeight ?? 0) + insets.top,
+        // headerHeight already includes the header's own paddingTop (insets.top); fall back to
+        // insets.top when there's no header. Adding both double-counted the inset → extra top gap.
+        paddingTop: Math.max(ctx?.headerHeight ?? 0, insets.top),
         paddingBottom: insets.bottom + extraBottomPadding,
       },
       contentContainerStyle,
