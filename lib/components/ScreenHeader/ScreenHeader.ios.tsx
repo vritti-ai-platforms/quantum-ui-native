@@ -37,12 +37,14 @@ export function ScreenHeader(props: ScreenHeaderProps) {
   const variant = props.variant ?? 'standard';
   const isTabsVariant = variant === 'tabs';
 
-  // iOS 26 standard variant: soft gradient (always visible).
+  // iOS 26 standard variant: a soft gradient fade — solid through the bar, then a gradual taper to
+  // transparent so content softly fades out under the header, mirroring the native iOS 26 'soft'
+  // scrollEdgeEffect the PushNavigator native header uses (NOT a uniform glass bar).
   // iOS 26 tabs variant: always-on LiquidGlass with a self-contained cover fade.
   // Pre-iOS 26: solid bg-background that fades in via the wrapper-level animateBackdrop.
   const backdrop =
     isIos26 && !isTabsVariant ? (
-      <View className="flex-1 bg-linear-to-b from-background via-background via-[60%] to-transparent" />
+      <View className="flex-1 bg-linear-to-b from-background via-background via-[40%] to-transparent" />
     ) : isIos26 && isTabsVariant ? (
       <Ios26TabsBackdrop />
     ) : (
