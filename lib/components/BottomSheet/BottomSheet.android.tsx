@@ -10,6 +10,7 @@ import { VariableContextProvider } from 'nativewind';
 import { forwardRef, memo, useCallback, useContext, useImperativeHandle, useMemo, useRef } from 'react';
 import { type ColorValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
@@ -37,7 +38,7 @@ const Grabber = memo<{ color: ColorValue }>(({ color }) => (
 ));
 Grabber.displayName = 'BottomSheet.Grabber';
 
-const SheetProgressBridge = () => {
+const SheetProgressBridge = ({ showCloseButton }: { showCloseButton: boolean }) => {
   const { animatedIndex, animatedPosition } = useBottomSheet();
   const scaler = useBottomSheetBackgroundScaler();
   useAnimatedReaction(
@@ -45,6 +46,8 @@ const SheetProgressBridge = () => {
     (current, prev) => {
       if (!scaler) return;
       scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
+      // Tie the floating close button to whichever sheet is presenting (Select hides it — it has its own ✕).
+      scaler.showCloseButton.value = showCloseButton;
       // Freeze sheet top during drag-down so the floating close button stays put.
       if (!prev || current.idx >= prev.idx) {
         scaler.sheetTop.value = current.pos;
@@ -75,6 +78,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       headerRight,
       scrollable,
       backgroundColor,
+      showCloseButton = true,
     },
     ref,
   ) => {
@@ -84,6 +88,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const modalRef = useRef<BottomSheetModal>(null);
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
+    const insets = useSafeAreaInsets();
 
     const scheme = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
@@ -158,6 +163,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     return (
       <BottomSheetModal
         ref={modalRef}
+        topInset={insets.top}
         snapPoints={snapPoints}
         enableDynamicSizing={dynamic}
         enablePanDownToClose={dismissible}
@@ -172,7 +178,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         <BottomSheetFullProvider>
           {isScrollable ? (
             <BottomSheetScrollView>
-              {!fullWithHeader && <SheetProgressBridge />}
+              {!fullWithHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
@@ -187,7 +193,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             </BottomSheetScrollView>
           ) : (
             <BottomSheetView>
-              {!fullWithHeader && <SheetProgressBridge />}
+              {!fullWithHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>

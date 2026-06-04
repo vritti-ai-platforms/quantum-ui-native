@@ -5,9 +5,9 @@ import {
   Button as RnrButton,
   type ButtonProps as RnrButtonProps,
 } from '../../reusables/button';
-import { Text } from '../Text';
 import { cn } from '../../utils/cn';
 import { Spinner } from '../Spinner';
+import { Text } from '../Text';
 
 export interface ButtonProps extends Omit<RnrButtonProps, 'children'> {
   children?: React.ReactNode;
@@ -31,13 +31,7 @@ function Button({
   ...props
 }: ButtonProps) {
   return (
-    <RnrButton
-      variant={variant}
-      size={size}
-      disabled={disabled || isLoading}
-      className={className}
-      {...props}
-    >
+    <RnrButton variant={variant} size={size} disabled={disabled || isLoading} className={className} {...props}>
       {isLoading ? (
         <View className="flex-row items-center gap-2">
           <Spinner size="small" />

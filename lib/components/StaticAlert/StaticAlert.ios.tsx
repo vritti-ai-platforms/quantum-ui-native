@@ -36,6 +36,7 @@ export const StaticAlert = ({
   icon,
   className,
   children,
+  style,
   ...props
 }: StaticAlertProps) => {
   const iconDescriptor = icon ?? variantIcons[variant];
@@ -46,6 +47,8 @@ export const StaticAlert = ({
         'flex-row items-start gap-3 rounded-xl shadow-sm border border-border bg-card px-4 py-3',
         className,
       )}
+      // iOS squircle (cornerCurve = .continuous); ignored on Android/web
+      style={[{ borderCurve: 'continuous' }, style]}
       {...props}
     >
       <View className="h-[22px] items-center justify-center">

@@ -7,7 +7,7 @@ export interface CardProps extends ViewProps {
   loading?: boolean;
 }
 
-function Card({ loading, className, children, ...props }: CardProps) {
+function Card({ loading, className, children, style, ...props }: CardProps) {
   return (
     <TextClassContext.Provider value="text-card-foreground">
       <View
@@ -16,6 +16,8 @@ function Card({ loading, className, children, ...props }: CardProps) {
           loading && 'opacity-60',
           className,
         )}
+        // iOS squircle (cornerCurve = .continuous); ignored on Android/web
+        style={[{ borderCurve: 'continuous' }, style]}
         {...props}
       >
         {children}

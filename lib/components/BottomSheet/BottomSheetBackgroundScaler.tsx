@@ -22,6 +22,8 @@ const PAN_DISMISS_THRESHOLD = 50;
 type BottomSheetBackgroundScalerContextValue = {
   progress: SharedValue<number>;
   sheetTop: SharedValue<number>;
+  // The presenting sheet drives this; false hides the floating close button (e.g. Select has its own ✕).
+  showCloseButton: SharedValue<boolean>;
 };
 
 const BottomSheetBackgroundScalerContext = createContext<BottomSheetBackgroundScalerContextValue | null>(null);
@@ -32,7 +34,11 @@ export const useBottomSheetBackgroundScaler = (): BottomSheetBackgroundScalerCon
 export const BottomSheetBackgroundScalerProvider = ({ children }: { children: ReactNode }) => {
   const progress = useSharedValue(0);
   const sheetTop = useSharedValue(0);
-  const value = useMemo<BottomSheetBackgroundScalerContextValue>(() => ({ progress, sheetTop }), [progress, sheetTop]);
+  const showCloseButton = useSharedValue(true);
+  const value = useMemo<BottomSheetBackgroundScalerContextValue>(
+    () => ({ progress, sheetTop, showCloseButton }),
+    [progress, sheetTop, showCloseButton],
+  );
   return (
     <BottomSheetBackgroundScalerContext.Provider value={value}>{children}</BottomSheetBackgroundScalerContext.Provider>
   );
@@ -135,7 +141,9 @@ const ScaledContent = ({
   }));
 
   // Paint-only transforms — opacity from 0 prevents iOS 26 UIGlassEffect init; layout-time `top` thrashes and tears down the glass.
+  // `showCloseButton` lets the presenting sheet hide it (Select renders its own ✕ inside the sheet).
   const closeButtonStyle = useAnimatedStyle(() => ({
+    opacity: ctx.showCloseButton.value ? 1 : 0,
     transform: [{ translateY: ctx.sheetTop.value - CLOSE_BUTTON_OFFSET }, { scale: ctx.progress.value }],
   }));
 

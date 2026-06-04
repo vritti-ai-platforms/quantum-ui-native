@@ -1,7 +1,17 @@
-import { BottomSheetFlashList, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetTextInput, useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
-import { Platform, Pressable, useWindowDimensions, View } from 'react-native';
+import {
+  DynamicColorIOS,
+  Platform,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet, type BottomSheetRef } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
@@ -9,7 +19,8 @@ import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
 import type { SelectOption } from '../../components/Select/types';
 import { Spinner } from '../../components/Spinner';
 import { Text } from '../../components/Text';
-import { darkColors, lightColors } from '../../theme/colors';
+import { usePlatformInfo } from '../../hooks/usePlatformInfo';
+import { darkColors, lightColors, THEME } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { cn } from '../../utils/index';
 import { Checkbox } from '../checkbox';
@@ -27,6 +38,32 @@ export type SelectListItem =
 // so the search resolves theme colors from the shared NativeWind variable context and applies them
 // inline — same approach as reusables/input. Shared across the MF boundary, always the active theme.
 const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
+
+type LiquidGlassComponent = React.ComponentType<{
+  style?: StyleProp<ViewStyle>;
+  effect?: 'clear' | 'regular' | 'none';
+  interactive?: boolean;
+}>;
+
+// Optional iOS-26 liquid glass (null on Android / when the lib is absent), mirroring BottomSheet.ios.
+const LiquidGlass: LiquidGlassComponent | null =
+  Platform.OS === 'ios'
+    ? (() => {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          return require('@callstack/liquid-glass').LiquidGlassView ?? null;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
+// Neutral icon color for the glass close button (NativeWind var lookup is unreliable inside glass).
+const IOS_FG =
+  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground }) : null;
+
+const SEARCH_HEIGHT = 44;
+const SEARCH_RADIUS = 9999; // clamps to a pill at SEARCH_HEIGHT
 
 interface SelectSheetContextValue {
   open: boolean;
@@ -122,9 +159,8 @@ function SelectContent({ children, search, footer }: SelectContentProps) {
   const { open, onOpenChange, title } = ctx;
   const insets = useSafeAreaInsets();
   const { height: winH } = useWindowDimensions();
-  // Select-scoped sheet surface color (resolved from the active scheme, like the trigger fill).
-  const { colorScheme } = React.useContext(ThemeContext);
-  const sheetBackground = `hsl(${(colorScheme === 'dark' ? darkColors : lightColors)['--background'].split(' ').join(', ')})`;
+  const platform = usePlatformInfo();
+  const isIos26 = platform.os === 'ios' && platform.version >= 26 && LiquidGlass != null;
   const sheetRef = React.useRef<BottomSheetRef>(null);
   // Bridges the declarative `open` to the imperative sheet without looping: a drag-down dismiss
   // fires onDismiss → onOpenChange(false), which must not trigger another dismiss().
@@ -146,26 +182,30 @@ function SelectContent({ children, search, footer }: SelectContentProps) {
   }, [onOpenChange]);
 
   return (
-    <BottomSheet ref={sheetRef} detents={['80%']} backgroundColor={sheetBackground} onDismiss={handleDismiss}>
+    <BottomSheet ref={sheetRef} detents={['80%']} variant="solid" showCloseButton={false} onDismiss={handleDismiss}>
       {/* The sheet renders children in a portal (context doesn't cross it) — re-inject so the
           rows/footer can close the sheet, mirroring how BottomSheet re-injects ThemeContext. */}
       <SelectSheetContext.Provider value={ctx}>
         {/* Explicit height so the flex-1 list is bounded on iOS too (BottomSheetView sizes to content there). */}
-        <View className="px-2" style={{ height: winH * 0.8, paddingBottom: insets.bottom }}>
-          {/* Custom header (the wrapper's BottomSheetHeader is off — no title/onClose passed). */}
-          <View className="flex-row items-center justify-between pb-2 pt-1">
-            <Text className="text-foreground flex-1 text-base font-semibold" numberOfLines={1}>
+        <View className="px-4" style={{ height: winH * 0.8, paddingBottom: insets.bottom }}>
+          {/* Header — circular close on the left + centered title (WhatsApp-style). */}
+          <View className="flex-row items-center pb-3">
+            {isIos26 ? (
+              // iOS 26: glass icon button (size="icon" → 48×48 LiquidGlass circle).
+              <Button variant="glass" size="icon" onPress={() => onOpenChange(false)} accessibilityLabel="Close">
+                <DynamicIcon icon={COMMON_ICONS.close} size={18} color={IOS_FG as unknown as string} />
+              </Button>
+            ) : (
+              // Other platforms: a solid circular secondary button mirroring the iOS-26 close.
+              <Button variant="secondary" size="icon" onPress={() => onOpenChange(false)} accessibilityLabel="Close">
+                <DynamicIcon icon={COMMON_ICONS.close} className="text-foreground" size={20} />
+              </Button>
+            )}
+            <Text className="text-foreground flex-1 text-center text-base font-semibold" numberOfLines={1}>
               {title}
             </Text>
-            <Pressable
-              onPress={() => onOpenChange(false)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-              className="-mr-1 ml-2 p-1"
-            >
-              <DynamicIcon icon={COMMON_ICONS.close} className="text-muted-foreground" size={22} />
-            </Pressable>
+            {/* Spacer matching the close button width so the title stays optically centered. */}
+            <View className="w-12" />
           </View>
           {search}
           {children}
@@ -184,35 +224,71 @@ interface SelectSearchProps {
 
 function SelectSearch({ value, onValueChange, placeholder = 'Search...' }: SelectSearchProps) {
   const [focused, setFocused] = React.useState(false);
+  const platform = usePlatformInfo();
+  const isIos26 = platform.os === 'ios' && platform.version >= 26 && LiquidGlass != null;
   const inputVar = useVar('--input');
   const borderVar = useVar('--border');
   const primaryVar = useVar('--primary');
   const foregroundVar = useVar('--foreground');
   const mutedFgVar = useVar('--muted-foreground');
 
+  // The input floats on top of the glass (not inside it), so useVar colors still resolve.
+  const textColor = foregroundVar ? `hsl(${foregroundVar})` : undefined;
+  const placeholderColor = mutedFgVar ? `hsla(${mutedFgVar.split(' ').join(', ')}, 0.5)` : undefined;
+  const commonProps = {
+    value,
+    onChangeText: onValueChange,
+    placeholder,
+    placeholderTextColor: placeholderColor,
+    accessibilityLabel: 'Search options',
+    autoCapitalize: 'none' as const,
+    autoCorrect: false,
+    onFocus: () => setFocused(true),
+    onBlur: () => setFocused(false),
+  };
+
+  // iOS 26: a glass capsule — LiquidGlass fills a rounded clip, the input floats on top (transparent).
+  if (isIos26 && LiquidGlass) {
+    return (
+      <View className="pb-2">
+        <View style={{ height: SEARCH_HEIGHT, borderRadius: SEARCH_RADIUS, overflow: 'hidden' }}>
+          <LiquidGlass
+            style={[StyleSheet.absoluteFillObject, { borderRadius: SEARCH_RADIUS }]}
+            effect="regular"
+            interactive={false}
+          />
+          <BottomSheetTextInput
+            {...commonProps}
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              borderWidth: 0,
+              paddingHorizontal: 16,
+              fontSize: 16,
+              color: textColor,
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // pre-iOS 26 / Android: bordered fill, pill-shaped.
   const borderToken = focused ? primaryVar : borderVar;
   return (
     <View className="pb-2">
       <BottomSheetTextInput
-        value={value}
-        onChangeText={onValueChange}
-        placeholder={placeholder}
-        placeholderTextColor={mutedFgVar ? `hsla(${mutedFgVar.split(' ').join(', ')}, 0.5)` : undefined}
-        accessibilityLabel="Search options"
-        autoCapitalize="none"
-        autoCorrect={false}
+        {...commonProps}
         style={{
           backgroundColor: inputVar ? `hsla(${inputVar.split(' ').join(', ')}, 0.3)` : undefined,
           borderColor: borderToken ? `hsl(${borderToken})` : undefined,
           borderWidth: focused ? 1.5 : 1,
-          borderRadius: 10,
-          height: 44,
-          paddingHorizontal: 12,
+          borderRadius: SEARCH_RADIUS,
+          height: SEARCH_HEIGHT,
+          paddingHorizontal: 16,
           fontSize: 16,
-          color: foregroundVar ? `hsl(${foregroundVar})` : undefined,
+          color: textColor,
         }}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
       />
     </View>
   );
@@ -232,10 +308,15 @@ function SelectList({ data, renderRow, onEndReached, loadingMore }: SelectListPr
     [renderRow],
   );
 
-  // flex-1 fills the middle of the explicit-height sheet box; BottomSheetFlashList scrolls within it.
+  // Bottom-sheet-aware scroll component (replaces the deprecated BottomSheetFlashList wrapper) so the
+  // FlashList's scroll/drag interactions integrate with the sheet.
+  const renderScrollComponent = useBottomSheetScrollableCreator();
+
+  // flex-1 fills the middle of the explicit-height sheet box; the FlashList scrolls within it.
   return (
     <View style={{ flex: 1 }}>
-      <BottomSheetFlashList
+      <FlashList
+        renderScrollComponent={renderScrollComponent}
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => item.key}

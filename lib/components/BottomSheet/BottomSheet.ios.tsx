@@ -20,6 +20,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
@@ -63,6 +64,10 @@ const IOS_FULL_SHEET_BG =
 const IOS_BACKDROP = Platform.OS === 'ios' ? DynamicColorIOS({ light: BACKDROP_LIGHT, dark: BACKDROP_DARK }) : null;
 const IOS_GRABBER = Platform.OS === 'ios' ? DynamicColorIOS({ light: GRABBER_LIGHT, dark: GRABBER_DARK }) : null;
 const DEFAULT_DETENTS: SheetDetent[] = ['auto'];
+// Matches the iPhone display corner radius so the sheet's top corners read as continuous with the
+// device. RN can't read UIScreen's exact displayCornerRadius without private native API, so this is a
+// tunable constant set for current (Dynamic Island) iPhones — adjust if it looks off on your device.
+const IOS_SCREEN_CORNER_RADIUS = 40;
 
 const Grabber = memo<{ color: ColorValue }>(({ color }) => (
   <View style={styles.handleContainer}>
@@ -71,7 +76,7 @@ const Grabber = memo<{ color: ColorValue }>(({ color }) => (
 ));
 Grabber.displayName = 'BottomSheet.Grabber';
 
-const SheetProgressBridge = () => {
+const SheetProgressBridge = ({ showCloseButton }: { showCloseButton: boolean }) => {
   const { animatedIndex, animatedPosition } = useBottomSheet();
   const scaler = useBottomSheetBackgroundScaler();
   useAnimatedReaction(
@@ -79,6 +84,8 @@ const SheetProgressBridge = () => {
     (current, prev) => {
       if (!scaler) return;
       scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
+      // Tie the floating close button to whichever sheet is presenting (Select hides it — it has its own ✕).
+      scaler.showCloseButton.value = showCloseButton;
       // Freeze sheet top during drag-down so the floating close button stays put.
       if (!prev || current.idx >= prev.idx) {
         scaler.sheetTop.value = current.pos;
@@ -93,7 +100,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     {
       children,
       detents = DEFAULT_DETENTS,
-      cornerRadius = 28,
+      cornerRadius = IOS_SCREEN_CORNER_RADIUS,
       grabber = true,
       dismissible = true,
       draggable = true,
@@ -109,16 +116,17 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       headerRight,
       scrollable,
       backgroundColor,
+      showCloseButton = true,
     },
     ref,
   ) => {
-    const hasHeader =
-      title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
+    const hasHeader = title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
     const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
     const { version } = usePlatformInfo();
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
+    const insets = useSafeAreaInsets();
 
     const scheme: 'light' | 'dark' = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
@@ -168,6 +176,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         const radius: ViewStyle = {
           borderTopLeftRadius: cornerRadius,
           borderTopRightRadius: cornerRadius,
+          // iOS squircle (superellipse) instead of RN's default circular arc — matches the system
+          // corner curve (UIKit cornerCurve = .continuous), noticeably smoother at this radius.
+          borderCurve: 'continuous',
         };
         // Glass only when there's no explicit color override, it's supported, and not a full+header sheet.
         if (backgroundColor == null && useGlass && LiquidGlass && !useSolidBodyForFullHeader) {
@@ -206,6 +217,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     return (
       <BottomSheetModal
         ref={modalRef}
+        topInset={insets.top}
         snapPoints={snapPoints}
         enableDynamicSizing={dynamic}
         enablePanDownToClose={dismissible}
@@ -220,7 +232,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         <BottomSheetFullProvider>
           {isScrollable ? (
             <BottomSheetScrollView>
-              {!useSolidBodyForFullHeader && <SheetProgressBridge />}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
@@ -235,7 +247,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             </BottomSheetScrollView>
           ) : (
             <BottomSheetView>
-              {!useSolidBodyForFullHeader && <SheetProgressBridge />}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
@@ -269,8 +281,8 @@ BottomSheet.displayName = 'BottomSheet';
 const styles = StyleSheet.create({
   handleContainer: {
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 6,
+    paddingTop: 6,
+    paddingBottom: 4,
   },
   grabber: {
     width: 36,

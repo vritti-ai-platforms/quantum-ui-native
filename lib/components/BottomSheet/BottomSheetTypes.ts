@@ -27,6 +27,11 @@ export interface BottomSheetProps {
   scrollable?: boolean;
   /** Overrides the sheet surface color. Defaults to the theme background. */
   backgroundColor?: ColorValue;
+  /**
+   * Show the floating close button rendered by the background scaler. Defaults to true.
+   * Set false when the sheet content provides its own close affordance (e.g. Select).
+   */
+  showCloseButton?: boolean;
 }
 
 export function mapDetents(detents: SheetDetent[]): {

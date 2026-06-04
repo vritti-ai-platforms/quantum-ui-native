@@ -75,6 +75,7 @@ function Button({
   onLayout,
   onPressIn,
   onPressOut,
+  style,
   ...props
 }: ButtonProps) {
   const { version } = usePlatformInfo();
@@ -122,11 +123,17 @@ function Button({
         onLayout={handleLayout}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        // iOS squircle (cornerCurve = .continuous) for the button's rounded corners
+        style={
+          typeof style === 'function'
+            ? (state) => [{ borderCurve: 'continuous' }, style(state)]
+            : [{ borderCurve: 'continuous' }, style]
+        }
         {...props}
       >
         {hasLaidOut && (
           <LiquidGlassView
-            style={[StyleSheet.absoluteFillObject, { borderRadius: radius }]}
+            style={[StyleSheet.absoluteFillObject, { borderRadius: radius, borderCurve: 'continuous' }]}
             effect={resolvedVariant === 'glass' ? 'regular' : 'none'}
             interactive={false}
           />

@@ -63,7 +63,11 @@ function CardPressable({
           pressed && 'opacity-70',
           className,
         )}
-        style={typeof style === 'function' ? (state) => [selectedShadow, style(state)] : [selectedShadow, style]}
+        style={
+          typeof style === 'function'
+            ? (state) => [{ borderCurve: 'continuous' }, selectedShadow, style(state)]
+            : [{ borderCurve: 'continuous' }, selectedShadow, style]
+        }
         {...props}
       >
         {children}

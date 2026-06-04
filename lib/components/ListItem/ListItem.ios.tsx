@@ -54,6 +54,7 @@ function ListItem({
   className,
   index,
   total,
+  style,
   ...props
 }: ListItemProps) {
   if (loading) return <ListItemSkeleton className={className} index={index} total={total} />;
@@ -93,6 +94,7 @@ function ListItem({
         selected={selected}
         disabled={disabled}
         className={cn(layout, groupStyle, className)}
+        style={style}
         {...props}
       >
         {body}
@@ -101,7 +103,7 @@ function ListItem({
   }
 
   return (
-    <View className={cn(layout, groupStyle, className)} {...props}>
+    <View className={cn(layout, groupStyle, className)} style={[{ borderCurve: 'continuous' }, style]} {...props}>
       {body}
     </View>
   );
