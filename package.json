@@ -195,6 +195,101 @@
       "types": "./dist/typescript/lib/utils/index.d.ts",
       "default": "./dist/module/utils/index.js"
     },
+    "./selects": {
+      "source": "./lib/selects/index.ts",
+      "types": "./dist/typescript/lib/selects/index.d.ts",
+      "default": "./dist/module/selects/index.js"
+    },
+    "./selects/bom": {
+      "source": "./lib/selects/bom/index.ts",
+      "types": "./dist/typescript/lib/selects/bom/index.d.ts",
+      "default": "./dist/module/selects/bom/index.js"
+    },
+    "./selects/category": {
+      "source": "./lib/selects/category/index.ts",
+      "types": "./dist/typescript/lib/selects/category/index.d.ts",
+      "default": "./dist/module/selects/category/index.js"
+    },
+    "./selects/cost-category": {
+      "source": "./lib/selects/cost-category/index.ts",
+      "types": "./dist/typescript/lib/selects/cost-category/index.d.ts",
+      "default": "./dist/module/selects/cost-category/index.js"
+    },
+    "./selects/currency": {
+      "source": "./lib/selects/currency/index.ts",
+      "types": "./dist/typescript/lib/selects/currency/index.d.ts",
+      "default": "./dist/module/selects/currency/index.js"
+    },
+    "./selects/customer": {
+      "source": "./lib/selects/customer/index.ts",
+      "types": "./dist/typescript/lib/selects/customer/index.d.ts",
+      "default": "./dist/module/selects/customer/index.js"
+    },
+    "./selects/inventory-item": {
+      "source": "./lib/selects/inventory-item/index.ts",
+      "types": "./dist/typescript/lib/selects/inventory-item/index.d.ts",
+      "default": "./dist/module/selects/inventory-item/index.js"
+    },
+    "./selects/locale": {
+      "source": "./lib/selects/locale/index.ts",
+      "types": "./dist/typescript/lib/selects/locale/index.d.ts",
+      "default": "./dist/module/selects/locale/index.js"
+    },
+    "./selects/location": {
+      "source": "./lib/selects/location/index.ts",
+      "types": "./dist/typescript/lib/selects/location/index.d.ts",
+      "default": "./dist/module/selects/location/index.js"
+    },
+    "./selects/lot": {
+      "source": "./lib/selects/lot/index.ts",
+      "types": "./dist/typescript/lib/selects/lot/index.d.ts",
+      "default": "./dist/module/selects/lot/index.js"
+    },
+    "./selects/purchase-order": {
+      "source": "./lib/selects/purchase-order/index.ts",
+      "types": "./dist/typescript/lib/selects/purchase-order/index.d.ts",
+      "default": "./dist/module/selects/purchase-order/index.js"
+    },
+    "./selects/purchase-order-item": {
+      "source": "./lib/selects/purchase-order-item/index.ts",
+      "types": "./dist/typescript/lib/selects/purchase-order-item/index.d.ts",
+      "default": "./dist/module/selects/purchase-order-item/index.js"
+    },
+    "./selects/quant": {
+      "source": "./lib/selects/quant/index.ts",
+      "types": "./dist/typescript/lib/selects/quant/index.d.ts",
+      "default": "./dist/module/selects/quant/index.js"
+    },
+    "./selects/serial": {
+      "source": "./lib/selects/serial/index.ts",
+      "types": "./dist/typescript/lib/selects/serial/index.d.ts",
+      "default": "./dist/module/selects/serial/index.js"
+    },
+    "./selects/supplier": {
+      "source": "./lib/selects/supplier/index.ts",
+      "types": "./dist/typescript/lib/selects/supplier/index.d.ts",
+      "default": "./dist/module/selects/supplier/index.js"
+    },
+    "./selects/supplier-item": {
+      "source": "./lib/selects/supplier-item/index.ts",
+      "types": "./dist/typescript/lib/selects/supplier-item/index.d.ts",
+      "default": "./dist/module/selects/supplier-item/index.js"
+    },
+    "./selects/timezone": {
+      "source": "./lib/selects/timezone/index.ts",
+      "types": "./dist/typescript/lib/selects/timezone/index.d.ts",
+      "default": "./dist/module/selects/timezone/index.js"
+    },
+    "./selects/uom": {
+      "source": "./lib/selects/uom/index.ts",
+      "types": "./dist/typescript/lib/selects/uom/index.d.ts",
+      "default": "./dist/module/selects/uom/index.js"
+    },
+    "./selects/user": {
+      "source": "./lib/selects/user/index.ts",
+      "types": "./dist/typescript/lib/selects/user/index.d.ts",
+      "default": "./dist/module/selects/user/index.js"
+    },
     "./index.css": "./lib/index.css",
     "./package.json": "./package.json"
   },

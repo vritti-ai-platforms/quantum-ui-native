@@ -18,6 +18,7 @@
       "@vritti/quantum-ui-native/NativeStack": ["./lib/components/NativeStack/index"],
       "@vritti/quantum-ui-native/Progress": ["./lib/components/Progress/index"],
       "@vritti/quantum-ui-native/RadioGroup": ["./lib/components/RadioGroup/index"],
+      "@vritti/quantum-ui-native/Select": ["./lib/components/Select/index"],
       "@vritti/quantum-ui-native/Separator": ["./lib/components/Separator/index"],
       "@vritti/quantum-ui-native/Skeleton": ["./lib/components/Skeleton/index"],
       "@vritti/quantum-ui-native/Spinner": ["./lib/components/Spinner/index"],
