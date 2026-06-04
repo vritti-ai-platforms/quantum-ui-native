@@ -4,14 +4,12 @@ import { createContext, type ReactNode, useContext, useMemo, useState } from 're
 import { DynamicColorIOS, Platform, StyleSheet, useColorScheme, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  interpolate,
   runOnJS,
   type SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEME } from '../../theme';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { Button } from '../Button';
@@ -53,17 +51,13 @@ const IOS_CLOSE_ICON_COLOR =
 
 export interface BottomSheetScaledScreenProps {
   children: ReactNode;
-  scale?: number;
-  cornerRadius?: number;
   overlayOpacity?: number;
 }
 
-export const BottomSheetScaledScreen = ({
-  children,
-  scale = 0.94,
-  cornerRadius = 24,
-  overlayOpacity = 0.5,
-}: BottomSheetScaledScreenProps) => {
+// Dims the app behind an open sheet and shows the floating close button. The screen is intentionally
+// NOT scaled/translated — transforming the native-stack navigator corrupts its native header's
+// safe-area inset across background/restore. Dim + close button only; no transform on the navigator.
+export const BottomSheetScaledScreen = ({ children, overlayOpacity = 0.5 }: BottomSheetScaledScreenProps) => {
   const ctx = useBottomSheetBackgroundScaler();
 
   if (!ctx) {
@@ -71,7 +65,7 @@ export const BottomSheetScaledScreen = ({
   }
 
   return (
-    <ScaledContent ctx={ctx} scale={scale} cornerRadius={cornerRadius} overlayOpacity={overlayOpacity}>
+    <ScaledContent ctx={ctx} overlayOpacity={overlayOpacity}>
       {children}
     </ScaledContent>
   );
@@ -79,21 +73,16 @@ export const BottomSheetScaledScreen = ({
 
 const ScaledContent = ({
   ctx,
-  scale,
-  cornerRadius,
   overlayOpacity,
   children,
 }: {
   ctx: BottomSheetBackgroundScalerContextValue;
-  scale: number;
-  cornerRadius: number;
   overlayOpacity: number;
   children: ReactNode;
 }) => {
   const { dismissAll } = useBottomSheetModal();
   const platform = usePlatformInfo();
   const useGlass = platform.os === 'ios' && platform.version >= 26;
-  const insets = useSafeAreaInsets();
   const systemColorScheme = useColorScheme();
   const themeCtx = useContext(ThemeContext);
   const isDark = (themeCtx?.colorScheme ?? systemColorScheme) === 'dark';
@@ -128,14 +117,6 @@ const ScaledContent = ({
     [dismissAll],
   );
 
-  const containerStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: interpolate(ctx.progress.value, [0, 1], [1, scale]) },
-      { translateY: ctx.progress.value * insets.top },
-    ],
-    borderRadius: interpolate(ctx.progress.value, [0, 1], [0, cornerRadius]),
-  }));
-
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: ctx.progress.value * overlayMaxOpacity,
   }));
@@ -149,13 +130,13 @@ const ScaledContent = ({
 
   return (
     <View style={styles.systemBg}>
-      <Animated.View style={[styles.container, containerStyle]}>
+      <View style={styles.container}>
         {children}
         <Animated.View
           pointerEvents="none"
           style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }, overlayStyle]}
         />
-      </Animated.View>
+      </View>
       <GestureDetector gesture={dismissGesture}>
         <View pointerEvents={isOpen ? 'auto' : 'none'} style={StyleSheet.absoluteFillObject} collapsable={false} />
       </GestureDetector>
@@ -182,8 +163,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    overflow: 'hidden',
-    backgroundColor: '#000',
   },
   closeButtonContainer: {
     position: 'absolute',

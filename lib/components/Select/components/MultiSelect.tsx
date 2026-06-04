@@ -170,7 +170,7 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
 
       return state.selectedOptions.map((option) => (
         <Badge key={String(option.value)} variant="secondary" className="gap-2 px-3">
-          <Text className="text-muted-foreground text-xs font-medium">
+          <Text className="text-foreground text-xs font-medium">
             {transformLabel ? transformLabel(option.label, option, 'trigger') : option.label}
           </Text>
           <Pressable
@@ -179,7 +179,7 @@ export const MultiSelect = React.forwardRef<View, MultiSelectProps>(
             hitSlop={6}
             onPress={() => state.toggleOption(option.value)}
           >
-            <DynamicIcon icon={COMMON_ICONS.close} className="text-muted-foreground" size={12} />
+            <DynamicIcon icon={COMMON_ICONS.close} className="text-foreground" size={12} />
           </Pressable>
         </Badge>
       ));

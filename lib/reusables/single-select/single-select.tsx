@@ -2,17 +2,7 @@ import { BottomSheetTextInput, useBottomSheetScrollableCreator } from '@gorhom/b
 import { FlashList } from '@shopify/flash-list';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
-import {
-  DynamicColorIOS,
-  Platform,
-  Pressable,
-  type StyleProp,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Platform, Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import { BottomSheet, type BottomSheetRef } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
 import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
@@ -20,7 +10,7 @@ import type { SelectOption } from '../../components/Select/types';
 import { Spinner } from '../../components/Spinner';
 import { Text } from '../../components/Text';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
-import { darkColors, lightColors, THEME } from '../../theme/colors';
+import { darkColors, lightColors } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { cn } from '../../utils/index';
 
@@ -56,10 +46,6 @@ const LiquidGlass: LiquidGlassComponent | null =
         }
       })()
     : null;
-
-// Neutral icon color for the glass close button (NativeWind var lookup is unreliable inside glass).
-const IOS_FG =
-  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground }) : null;
 
 const SEARCH_HEIGHT = 44;
 const SEARCH_RADIUS = 9999; // clamps to a pill at SEARCH_HEIGHT
@@ -117,10 +103,8 @@ const SelectTrigger = React.forwardRef<View, SelectTriggerProps>(
       colorScheme === 'dark'
         ? { backgroundColor: `hsla(${darkColors['--input'].split(' ').join(', ')}, 0.3)` }
         : { backgroundColor: `hsla(${lightColors['--input'].split(' ').join(', ')}, 0.3)` };
-    // Match the TextField/Input height (platform-specific): iOS h-12, Android h-14.
-    const triggerHeight = minHeight
-      ? Platform.select({ ios: 'min-h-12', android: 'min-h-14', default: 'min-h-11' })
-      : Platform.select({ ios: 'h-12', android: 'h-14', default: 'h-11' });
+    // Match the TextField/Input height (h-12 on all platforms).
+    const triggerHeight = minHeight ? 'min-h-12' : 'h-12';
     return (
       <Pressable
         ref={ref}
@@ -156,10 +140,6 @@ interface SelectContentProps {
 function SelectContent({ children, search, footer }: SelectContentProps) {
   const ctx = useSelectSheetContext();
   const { open, onOpenChange, title } = ctx;
-  const insets = useSafeAreaInsets();
-  const { height: winH } = useWindowDimensions();
-  const platform = usePlatformInfo();
-  const isIos26 = platform.os === 'ios' && platform.version >= 26 && LiquidGlass != null;
   const sheetRef = React.useRef<BottomSheetRef>(null);
   // Bridges the declarative `open` to the imperative sheet without looping: a drag-down dismiss
   // fires onDismiss → onOpenChange(false), which must not trigger another dismiss().
@@ -181,35 +161,21 @@ function SelectContent({ children, search, footer }: SelectContentProps) {
   }, [onOpenChange]);
 
   return (
-    <BottomSheet ref={sheetRef} detents={['80%']} variant="solid" showCloseButton={false} onDismiss={handleDismiss}>
+    <BottomSheet
+      ref={sheetRef}
+      detents={['80%']}
+      variant="inline"
+      title={title}
+      onClose={() => onOpenChange(false)}
+      onDismiss={handleDismiss}
+    >
       {/* The sheet renders children in a portal (context doesn't cross it) — re-inject so the
-          rows/footer can close the sheet, mirroring how BottomSheet re-injects ThemeContext. */}
+          rows/footer can close the sheet, mirroring how BottomSheet re-injects ThemeContext. The
+          inline header (title + right close) and the detent-sized box are provided by the sheet. */}
       <SelectSheetContext.Provider value={ctx}>
-        {/* Explicit height so the flex-1 list is bounded on iOS too (BottomSheetView sizes to content there). */}
-        <View className="px-4" style={{ height: winH * 0.8, paddingBottom: insets.bottom }}>
-          {/* Header — circular close on the left + centered title (WhatsApp-style). */}
-          <View className="flex-row items-center pb-3">
-            {isIos26 ? (
-              // iOS 26: glass icon button (size="icon" → 48×48 LiquidGlass circle).
-              <Button variant="glass" size="icon" onPress={() => onOpenChange(false)} accessibilityLabel="Close">
-                <DynamicIcon icon={COMMON_ICONS.close} size={18} color={IOS_FG as unknown as string} />
-              </Button>
-            ) : (
-              // Other platforms: a solid circular secondary button mirroring the iOS-26 close.
-              <Button variant="secondary" size="icon" onPress={() => onOpenChange(false)} accessibilityLabel="Close">
-                <DynamicIcon icon={COMMON_ICONS.close} className="text-foreground" size={20} />
-              </Button>
-            )}
-            <Text className="text-foreground flex-1 text-center text-base font-semibold" numberOfLines={1}>
-              {title}
-            </Text>
-            {/* Spacer matching the close button width so the title stays optically centered. */}
-            <View className="w-12" />
-          </View>
-          {search}
-          {children}
-          {footer}
-        </View>
+        {search}
+        {children}
+        {footer}
       </SelectSheetContext.Provider>
     </BottomSheet>
   );
@@ -316,6 +282,9 @@ function SelectList({ data, renderRow, onEndReached, loadingMore }: SelectListPr
     <View style={{ flex: 1 }}>
       <FlashList
         renderScrollComponent={renderScrollComponent}
+        // iOS: only rubber-band when the list actually overflows; with few options it stays put
+        // (like Android) instead of bouncing back.
+        alwaysBounceVertical={false}
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => item.key}

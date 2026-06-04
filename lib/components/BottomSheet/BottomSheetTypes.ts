@@ -15,7 +15,15 @@ export interface BottomSheetProps {
   dismissible?: boolean;
   draggable?: boolean;
   dimmed?: boolean;
-  variant?: 'glass' | 'solid';
+  /**
+   * Sheet surface / header style:
+   * - `'glass'` (default): liquid-glass surface on iOS 26, solid elsewhere.
+   * - `'solid'`: solid theme-background surface.
+   * - `'inline'`: solid surface + a built-in in-flow header (centered `title` + right-side circular
+   *   close button); `children` are laid out below it in a box sized to the caller-passed detent, and
+   *   the floating scaler close is hidden. For percentage/fixed detents (not `auto`/`full`).
+   */
+  variant?: 'glass' | 'solid' | 'inline';
   onDismiss?: () => void;
   onPresent?: () => void;
   onChange?: (index: number) => void;
@@ -32,6 +40,17 @@ export interface BottomSheetProps {
    * Set false when the sheet content provides its own close affordance (e.g. Select).
    */
   showCloseButton?: boolean;
+}
+
+/** Resolve the first detent to a concrete pixel height for the inline-header content box.
+ *  Uses the caller-passed detent (no hardcoded default): `'80%'` → 80% of `windowHeight`, a fraction
+ *  (0–1) → that fraction of `windowHeight`, a pixel number → itself. Returns undefined for `auto`/`full`. */
+export function resolveDetentHeight(detents: SheetDetent[], windowHeight: number): number | undefined {
+  const first = detents[0];
+  if (first == null || first === 'auto' || first === 'full') return undefined;
+  if (typeof first === 'number') return first > 0 && first <= 1 ? windowHeight * first : first;
+  const pct = Number.parseFloat(first);
+  return Number.isFinite(pct) ? windowHeight * (pct / 100) : undefined;
 }
 
 export function mapDetents(detents: SheetDetent[]): {

@@ -8,7 +8,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { usePlatformInfo } from '@vritti/quantum-ui-native/hooks';
 import { VariableContextProvider } from 'nativewind';
-import { forwardRef, memo, useCallback, useContext, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, memo, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import {
   type ColorValue,
   DynamicColorIOS,
@@ -16,18 +16,26 @@ import {
   type StyleProp,
   StyleSheet,
   useColorScheme,
+  useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native';
-import { Extrapolation, interpolate, useAnimatedReaction } from 'react-native-reanimated';
+import { Extrapolation, interpolate, useAnimatedReaction, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
 import { BottomSheetFullProvider } from './BottomSheetFullContext';
 import { BottomSheetHeader } from './BottomSheetHeader';
+import { BottomSheetHeaderBar } from './BottomSheetHeaderBar';
 import { BottomSheetScrollView } from './BottomSheetScrollView';
-import { type BottomSheetProps, type BottomSheetRef, mapDetents, type SheetDetent } from './BottomSheetTypes';
+import {
+  type BottomSheetProps,
+  type BottomSheetRef,
+  mapDetents,
+  resolveDetentHeight,
+  type SheetDetent,
+} from './BottomSheetTypes';
 
 export type { BottomSheetProps, BottomSheetRef };
 export type { SheetDetent } from './BottomSheetTypes';
@@ -79,19 +87,38 @@ Grabber.displayName = 'BottomSheet.Grabber';
 const SheetProgressBridge = ({ showCloseButton }: { showCloseButton: boolean }) => {
   const { animatedIndex, animatedPosition } = useBottomSheet();
   const scaler = useBottomSheetBackgroundScaler();
+
+  // showCloseButton is a prop, not animated — set it once (keeps the per-frame reaction lean).
+  useEffect(() => {
+    if (scaler) scaler.showCloseButton.value = showCloseButton;
+  }, [scaler, showCloseButton]);
+
   useAnimatedReaction(
     () => ({ idx: animatedIndex.value, pos: animatedPosition.value }),
     (current, prev) => {
       if (!scaler) return;
       scaler.progress.value = interpolate(current.idx, [-1, 0], [0, 1], Extrapolation.CLAMP);
-      // Tie the floating close button to whichever sheet is presenting (Select hides it — it has its own ✕).
-      scaler.showCloseButton.value = showCloseButton;
       // Freeze sheet top during drag-down so the floating close button stays put.
       if (!prev || current.idx >= prev.idx) {
         scaler.sheetTop.value = current.pos;
       }
     },
   );
+
+  // Settle the scaler back to rest whenever this sheet's content unmounts. The shared values live in
+  // the provider, so withTiming survives the unmount — this guarantees the background un-scales even on
+  // interrupted dismiss / navigate-away / app-backgrounded-mid-animation, which would otherwise strand
+  // progress > 0 (background stuck scaled + the full-screen gesture overlay freezing all touches).
+  useEffect(() => {
+    if (!scaler) return;
+    const { progress, sheetTop, showCloseButton: scb } = scaler;
+    return () => {
+      progress.value = withTiming(0, { duration: 200 });
+      sheetTop.value = 0;
+      scb.value = true;
+    };
+  }, [scaler]);
+
   return null;
 };
 
@@ -120,6 +147,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     },
     ref,
   ) => {
+    const inlineHeader = variant === 'inline';
     const hasHeader = title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
     const isScrollable = scrollable === true || detents.includes('full');
     const modalRef = useRef<BottomSheetModal>(null);
@@ -127,6 +155,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const systemColorScheme = useColorScheme();
     const themeCtx = useContext(ThemeContext);
     const insets = useSafeAreaInsets();
+    const { height: winH } = useWindowDimensions();
 
     const scheme: 'light' | 'dark' = themeCtx?.colorScheme ?? (systemColorScheme === 'dark' ? 'dark' : 'light');
     const isDark = scheme === 'dark';
@@ -142,6 +171,18 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // Scaler renders its own dim overlay synchronized with the drag — suppress the internal backdrop.
     const scaler = useBottomSheetBackgroundScaler();
     const effectiveDimmed = dimmed && !scaler;
+
+    // inlineHeader variant: hide the floating close (the header has its own) + size the content box to
+    // the caller-passed detent so the children (e.g. a FlashList) are bounded inside BottomSheetView.
+    const resolvedShowCloseButton = inlineHeader ? false : showCloseButton;
+    // gorhom sizes a percentage detent against (container − topInset), and the grabber takes height
+    // above the content — trim both so the content box doesn't overflow the sheet and clip the footer.
+    const inlineBase = inlineHeader ? resolveDetentHeight(detents, winH - insets.top) : undefined;
+    const inlineBoxHeight = inlineBase != null ? inlineBase - 16 : undefined;
+    const inlineClose = useCallback(() => {
+      if (onClose) onClose();
+      else modalRef.current?.dismiss();
+    }, [onClose]);
 
     useImperativeHandle(
       ref,
@@ -214,6 +255,16 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       [onPresent],
     );
 
+    // inlineHeader: built-in title+right-close header above the children, in a detent-sized box.
+    const body = inlineHeader ? (
+      <View className="px-4" style={{ height: inlineBoxHeight, paddingBottom: insets.bottom }}>
+        <BottomSheetHeaderBar title={title} onClose={inlineClose} />
+        <View style={{ flex: 1 }}>{children}</View>
+      </View>
+    ) : (
+      children
+    );
+
     return (
       <BottomSheetModal
         ref={modalRef}
@@ -232,7 +283,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         <BottomSheetFullProvider>
           {isScrollable ? (
             <BottomSheetScrollView>
-              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={resolvedShowCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
@@ -247,21 +298,21 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             </BottomSheetScrollView>
           ) : (
             <BottomSheetView>
-              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={showCloseButton} />}
+              {!useSolidBodyForFullHeader && <SheetProgressBridge showCloseButton={resolvedShowCloseButton} />}
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
                     <View key={scheme} className={isDark ? 'dark' : ''}>
-                      {children}
+                      {body}
                     </View>
                   </VariableContextProvider>
                 </ThemeContext.Provider>
               ) : (
-                children
+                body
               )}
             </BottomSheetView>
           )}
-          {hasHeader ? (
+          {hasHeader && !inlineHeader ? (
             <BottomSheetHeader
               title={title}
               subtitle={subtitle}
