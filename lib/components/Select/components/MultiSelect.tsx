@@ -64,7 +64,7 @@ function buildListData(
     items.push({ type: 'option', key: String(option.value), option });
   }
   for (const entry of grouped.entries) {
-    items.push({ type: 'group', key: `group:${entry.name}`, name: entry.name });
+    items.push({ type: 'group', key: `group:${entry.id}`, name: entry.name });
     for (const option of entry.options) {
       items.push({ type: 'option', key: String(option.value), option });
     }

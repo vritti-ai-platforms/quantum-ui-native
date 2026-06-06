@@ -3,7 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
 import { Platform, Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
-import { BottomSheet, type BottomSheetRef } from '../../components/BottomSheet';
+import { BottomSheet, BottomSheetDragArea, type BottomSheetRef } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
 import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
 import type { SelectOption } from '../../components/Select/types';
@@ -173,7 +173,7 @@ function SelectContent({ children, search, footer }: SelectContentProps) {
           rows/footer can close the sheet, mirroring how BottomSheet re-injects ThemeContext. The
           inline header (title + right close) and the detent-sized box are provided by the sheet. */}
       <SelectSheetContext.Provider value={ctx}>
-        {search}
+        <BottomSheetDragArea>{search}</BottomSheetDragArea>
         {children}
         {footer}
       </SelectSheetContext.Provider>
@@ -352,20 +352,20 @@ const SingleSelectRow = React.memo(function SingleSelectRow({
         onOpenChange(false); // single-select closes the sheet on pick
       }}
       className={cn(
-        'active:bg-accent relative flex-col justify-center rounded-sm px-2 pr-8',
-        description ? 'min-h-11 py-1.5' : 'h-9',
+        'active:bg-accent relative flex-col justify-center rounded-md px-2 pr-8',
+        description ? 'min-h-14 py-2' : 'h-12',
         disabled && 'opacity-50',
       )}
     >
-      <Text className="text-foreground text-sm" numberOfLines={1}>
+      <Text className="text-foreground text-base" numberOfLines={1}>
         {name}
       </Text>
       {description ? (
-        <Text className="text-muted-foreground mt-0.5 text-xs" numberOfLines={1}>
+        <Text className="text-muted-foreground mt-0.5 text-sm" numberOfLines={1}>
           {description}
         </Text>
       ) : null}
-      <View className="absolute right-2 size-3.5 items-center justify-center">
+      <View className="absolute inset-y-0 right-2 items-center justify-center">
         {selected ? <DynamicIcon icon={COMMON_ICONS.check} className="text-foreground size-4" /> : null}
       </View>
     </Pressable>

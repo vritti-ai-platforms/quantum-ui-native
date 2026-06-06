@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEME, THEME_TOKENS } from '../../theme/colors';
 import { ThemeContext } from '../../theme/ThemeProvider';
 import { useBottomSheetBackgroundScaler } from './BottomSheetBackgroundScaler';
+import { BottomSheetDragArea } from './BottomSheetDragArea';
 import { BottomSheetFullProvider } from './BottomSheetFullContext';
 import { BottomSheetHeader } from './BottomSheetHeader';
 import { BottomSheetHeaderBar } from './BottomSheetHeaderBar';
@@ -109,13 +110,18 @@ const SheetProgressBridge = ({ showCloseButton }: { showCloseButton: boolean }) 
   // the provider, so withTiming survives the unmount — this guarantees the background un-scales even on
   // interrupted dismiss / navigate-away / app-backgrounded-mid-animation, which would otherwise strand
   // progress > 0 (background stuck scaled + the full-screen gesture overlay freezing all touches).
+  // scb (showCloseButton): hide first so the floating ✕ can't flash during the 200ms progress fade —
+  // critical on iOS 26 where the LiquidGlass close button's first-frame init becomes visible. The next
+  // presenting sheet's mount effect re-writes scb to its own intent (true for normal sheets, false for
+  // inline sheets like Select that own their ✕); even if this cleanup races after that mount write, scb
+  // stays false, which is the correct presenting state for inline and the next sheet's effect re-asserts.
   useEffect(() => {
     if (!scaler) return;
     const { progress, sheetTop, showCloseButton: scb } = scaler;
     return () => {
+      scb.value = false;
       progress.value = withTiming(0, { duration: 200 });
       sheetTop.value = 0;
-      scb.value = true;
     };
   }, [scaler]);
 
@@ -150,6 +156,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const inlineHeader = variant === 'inline';
     const hasHeader = title != null || subtitle != null || onClose != null || headerLeft != null || headerRight != null;
     const isScrollable = scrollable === true || detents.includes('full');
+    // Inline (list) sheets render a FlashList inside a non-scroll BottomSheetView; gorhom's content-pan
+    // gesture competes with the list scroll and can hijack a downward scroll into drag-to-dismiss. Disable
+    // it for that case so scrolling never closes the sheet — the grabber, header X, and backdrop still do.
+    // (isScrollable sheets use BottomSheetScrollView, which coordinates pan vs scroll itself.)
+    const enableContentPan = !(inlineHeader && !isScrollable);
     const modalRef = useRef<BottomSheetModal>(null);
     const { version } = usePlatformInfo();
     const systemColorScheme = useColorScheme();
@@ -258,7 +269,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // inlineHeader: built-in title+right-close header above the children, in a detent-sized box.
     const body = inlineHeader ? (
       <View className="px-4" style={{ height: inlineBoxHeight, paddingBottom: insets.bottom }}>
-        <BottomSheetHeaderBar title={title} onClose={inlineClose} />
+        <BottomSheetDragArea>
+          <BottomSheetHeaderBar title={title} onClose={inlineClose} />
+        </BottomSheetDragArea>
         <View style={{ flex: 1 }}>{children}</View>
       </View>
     ) : (
@@ -268,11 +281,12 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     return (
       <BottomSheetModal
         ref={modalRef}
-        topInset={insets.top}
+        topInset={isFull ? 0 : insets.top}
         snapPoints={snapPoints}
         enableDynamicSizing={dynamic}
         enablePanDownToClose={dismissible}
         enableHandlePanningGesture={draggable}
+        enableContentPanningGesture={enableContentPan}
         handleComponent={renderHandle}
         backdropComponent={renderBackdrop}
         backgroundComponent={renderBackground}

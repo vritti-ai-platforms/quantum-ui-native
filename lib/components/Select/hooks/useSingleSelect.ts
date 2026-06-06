@@ -111,11 +111,13 @@ export function useSingleSelect({
       }
     }
 
-    const entries: Array<{ name: string; options: SelectOption[] }> = [];
+    // Carry the group id through — the list builder keys group headers off it, so two groups
+    // sharing a name (e.g. duplicate "Count") still get distinct FlashList keys.
+    const entries: Array<{ id: string | number; name: string; options: SelectOption[] }> = [];
     for (const g of groups) {
       const bucket = buckets.get(g.id);
       if (!bucket || bucket.length === 0) continue;
-      entries.push({ name: g.name, options: bucket });
+      entries.push({ id: g.id, name: g.name, options: bucket });
     }
 
     return { ungrouped, entries };

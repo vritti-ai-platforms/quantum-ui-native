@@ -3,7 +3,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
 import { Platform, Pressable, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
-import { BottomSheet, type BottomSheetRef } from '../../components/BottomSheet';
+import { BottomSheet, BottomSheetDragArea, type BottomSheetRef } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
 import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
 import type { SelectOption } from '../../components/Select/types';
@@ -174,7 +174,7 @@ function SelectContent({ children, search, footer }: SelectContentProps) {
           rows/footer can close the sheet, mirroring how BottomSheet re-injects ThemeContext. The
           inline header (title + right close) and the detent-sized box are provided by the sheet. */}
       <SelectSheetContext.Provider value={ctx}>
-        {search}
+        <BottomSheetDragArea>{search}</BottomSheetDragArea>
         {children}
         {footer}
       </SelectSheetContext.Provider>
@@ -351,22 +351,22 @@ const MultiSelectRow = React.memo(function MultiSelectRow({
       disabled={disabled}
       onPress={onToggle}
       className={cn(
-        'active:bg-accent flex-row gap-2 rounded-sm px-2',
-        description ? 'min-h-11 items-start py-1.5' : 'h-9 items-center',
+        'active:bg-accent flex-row gap-2 rounded-md px-2',
+        description ? 'min-h-14 items-start py-2' : 'h-12 items-center',
         disabled && 'opacity-50',
       )}
     >
-      {/* h-5 = the name's line-height (text-sm); centers the checkbox on the first text line whether the
+      {/* h-6 = the name's line-height (text-base); centers the checkbox on the first text line whether the
           row is items-center (no description) or items-start (with description). */}
-      <View pointerEvents="none" className="h-5 items-center justify-end">
+      <View pointerEvents="none" className="h-6 items-center justify-end">
         <Checkbox checked={checked} onCheckedChange={onToggle} disabled={disabled} />
       </View>
       <View className="min-w-0 flex-1">
-        <Text className="text-foreground text-sm" numberOfLines={1}>
+        <Text className="text-foreground text-base" numberOfLines={1}>
           {name}
         </Text>
         {description ? (
-          <Text className="text-muted-foreground mt-0.5 text-xs" numberOfLines={1}>
+          <Text className="text-muted-foreground mt-0.5 text-sm" numberOfLines={1}>
             {description}
           </Text>
         ) : null}
