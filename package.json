@@ -55,6 +55,16 @@
       "types": "./dist/typescript/lib/components/Checkbox/index.d.ts",
       "default": "./dist/module/components/Checkbox/index.js"
     },
+    "./DatePicker": {
+      "source": "./lib/components/DatePicker/index.ts",
+      "types": "./dist/typescript/lib/components/DatePicker/index.d.ts",
+      "default": "./dist/module/components/DatePicker/index.js"
+    },
+    "./DateRangePicker": {
+      "source": "./lib/components/DateRangePicker/index.ts",
+      "types": "./dist/typescript/lib/components/DateRangePicker/index.d.ts",
+      "default": "./dist/module/components/DateRangePicker/index.js"
+    },
     "./DynamicIcon": {
       "source": "./lib/components/DynamicIcon/index.ts",
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
@@ -354,6 +364,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.0.0",
+    "@react-native-community/datetimepicker": "^8.0.0",
     "@react-native-vector-icons/material-icons": "^12.3.0",
     "@react-native/babel-preset": "0.83.0",
     "@react-native/eslint-config": "0.83.0",
@@ -396,6 +407,7 @@
   },
   "peerDependencies": {
     "@callstack/liquid-glass": ">=0.7.0",
+    "@react-native-community/datetimepicker": ">=8.0.0",
     "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
@@ -510,6 +522,7 @@
     "@rn-primitives/tooltip": "^1.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "lodash": "^4.17.21",
     "tailwind-merge": "^3.5.0"
   },

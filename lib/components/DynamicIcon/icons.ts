@@ -5,6 +5,7 @@ export const COMMON_ICONS: Record<string, PlatformIconDescriptor> = {
   alertSuccess: { sfSymbol: 'checkmark.circle', materialIcon: 'check-circle' },
   alertWarning: { sfSymbol: 'exclamationmark.triangle', materialIcon: 'warning-amber' },
   arrowForward: { sfSymbol: 'arrow.right', materialIcon: 'arrow-forward' },
+  calendar: { sfSymbol: 'calendar', materialIcon: 'calendar-today' },
   check: { sfSymbol: 'checkmark', materialIcon: 'check' },
   chevronDown: { sfSymbol: 'chevron.down', materialIcon: 'keyboard-arrow-down' },
   chevronLeft: { sfSymbol: 'chevron.left', materialIcon: 'keyboard-arrow-left' },
