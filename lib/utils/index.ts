@@ -53,3 +53,4 @@ export {
   uniq,
   uniqBy,
 } from './lodash';
+export { createMmkvStorageAdapter, createPreferences, type MMKV } from './mmkv';

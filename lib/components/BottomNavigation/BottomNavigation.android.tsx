@@ -5,7 +5,7 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import { type LayoutChangeEvent, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
@@ -21,13 +21,11 @@ import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
 import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
-import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
+import type { BottomNavigationProps, RouteConfig } from './types';
 
 const Tab = createBottomTabNavigator();
 
 const MAX_VISIBLE = 4;
-
-type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
 
 function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon'] {
   return {
@@ -36,8 +34,13 @@ function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarI
   } as unknown as BottomTabNavigationOptions['tabBarIcon'];
 }
 
-function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
-  const items = route.params?.items ?? [];
+// Overflow routes flow to the More screens via context (not route params) so the More list
+// stays reactive when the host's route set changes — initialParams are applied only once.
+const OverflowRoutesContext = createContext<RouteConfig[]>([]);
+
+function MoreListScreen() {
+  const overflowRoutes = useContext(OverflowRoutesContext);
+  const items = overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon }));
   const { push } = usePushNavigator();
   const { palette: theme } = useTheme();
 
@@ -65,18 +68,15 @@ function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] 
   );
 }
 
-function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] } } }) {
-  const overflowRoutes = route.params?.routes ?? [];
+function MoreTabContent() {
+  const overflowRoutes = useContext(OverflowRoutesContext);
 
   const screens = useMemo<PushScreenConfig[]>(
     () => [
       {
         name: '__more_list__',
         component: MoreListScreen,
-        headerShown: false,
-        initialParams: {
-          items: overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon })),
-        },
+        title: 'More',
       },
       ...overflowRoutes.map((r) => {
         // reuse the route's header fn as the push-screen header (the host value ignores props)
@@ -358,8 +358,13 @@ const styles = StyleSheet.create({
 });
 
 export function BottomNavigation({ routes: allRoutes, initialRoute, screenOptions }: BottomNavigationProps) {
-  const visibleRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(0, MAX_VISIBLE) : allRoutes;
-  const overflowRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(MAX_VISIBLE) : [];
+  // Only split into a "More" tab when it would hold ≥2 items — a lone overflow item is shown directly.
+  const useOverflow = allRoutes.length > MAX_VISIBLE + 1;
+  const visibleRoutes = useMemo(
+    () => (useOverflow ? allRoutes.slice(0, MAX_VISIBLE) : allRoutes),
+    [allRoutes, useOverflow],
+  );
+  const overflowRoutes = useMemo(() => (useOverflow ? allRoutes.slice(MAX_VISIBLE) : []), [allRoutes, useOverflow]);
   const hasMore = overflowRoutes.length > 0;
   const { isDark } = useTheme();
 
@@ -375,46 +380,47 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const navigatorKey = `tab-nav-${allRoutes.map((r) => r.name).join(',')}`;
 
   return (
-    <ThemeProvider value={navigationTheme}>
-      <Tab.Navigator
-        key={navigatorKey}
-        initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
-        tabBar={(props) => <FloatingTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-          sceneStyle: { backgroundColor: 'transparent' },
-          ...screenOptions,
-        }}
-      >
-        {visibleRoutes.map((route) => (
-          <Tab.Screen
-            key={route.name}
-            name={route.name}
-            component={route.component}
-            initialParams={route.params}
-            options={{
-              tabBarLabel: route.label ?? route.name,
-              tabBarIcon: resolveTabIcon(route),
-              tabBarBadge: route.badge,
-              ...route.options,
-            }}
-          />
-        ))}
-        {hasMore && (
-          <Tab.Screen
-            name="__more__"
-            component={MoreTabContent}
-            initialParams={{ routes: overflowRoutes }}
-            options={{
-              tabBarLabel: 'More',
-              tabBarIcon: {
-                type: 'materialIcon',
-                name: 'more-horiz',
-              } as unknown as BottomTabNavigationOptions['tabBarIcon'],
-            }}
-          />
-        )}
-      </Tab.Navigator>
-    </ThemeProvider>
+    <OverflowRoutesContext.Provider value={overflowRoutes}>
+      <ThemeProvider value={navigationTheme}>
+        <Tab.Navigator
+          key={navigatorKey}
+          initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
+          tabBar={(props) => <FloatingTabBar {...props} />}
+          screenOptions={{
+            headerShown: false,
+            sceneStyle: { backgroundColor: 'transparent' },
+            ...screenOptions,
+          }}
+        >
+          {visibleRoutes.map((route) => (
+            <Tab.Screen
+              key={route.name}
+              name={route.name}
+              component={route.component}
+              initialParams={route.params}
+              options={{
+                tabBarLabel: route.label ?? route.name,
+                tabBarIcon: resolveTabIcon(route),
+                tabBarBadge: route.badge,
+                ...route.options,
+              }}
+            />
+          ))}
+          {hasMore && (
+            <Tab.Screen
+              name="__more__"
+              component={MoreTabContent}
+              options={{
+                tabBarLabel: 'More',
+                tabBarIcon: {
+                  type: 'materialIcon',
+                  name: 'more-horiz',
+                } as unknown as BottomTabNavigationOptions['tabBarIcon'],
+              }}
+            />
+          )}
+        </Tab.Navigator>
+      </ThemeProvider>
+    </OverflowRoutesContext.Provider>
   );
 }

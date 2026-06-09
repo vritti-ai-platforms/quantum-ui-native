@@ -94,11 +94,12 @@ const ScrollableBody = ({
     scrollY.value = event.contentOffset.y;
   });
   const { contentContainerStyle, ...scrollViewProps } = rest;
+  const topInset = headerInset;
   const composedContainerStyle =
-    headerInset > 0
+    topInset > 0
       ? contentContainerStyle != null
-        ? [{ paddingTop: headerInset }, contentContainerStyle]
-        : { paddingTop: headerInset }
+        ? [{ paddingTop: topInset }, contentContainerStyle]
+        : { paddingTop: topInset }
       : contentContainerStyle;
   return (
     <Animated.ScrollView
@@ -108,7 +109,7 @@ const ScrollableBody = ({
       className={cn('flex-1 bg-background', className)}
       contentInsetAdjustmentBehavior="automatic"
       {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
-      {...(headerInset > 0 ? { scrollIndicatorInsets: { top: headerInset } } : {})}
+      {...(topInset > 0 ? { scrollIndicatorInsets: { top: topInset } } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
     />

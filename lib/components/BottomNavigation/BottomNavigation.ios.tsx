@@ -1,6 +1,6 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { DynamicColorIOS, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SFSymbol } from 'react-native-sfsymbols';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
@@ -9,7 +9,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { THEME } from '../../theme/colors';
 import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
-import type { BottomNavigationProps, RouteConfig, TabIcon } from './types';
+import type { BottomNavigationProps, RouteConfig } from './types';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,10 +19,13 @@ function resolveIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon
   return { type: 'sfSymbol', name: route.icon.sfSymbol };
 }
 
-type MoreListItem = Pick<RouteConfig, 'name' | 'label'> & { icon: TabIcon };
+// Overflow routes flow to the More screens via context (not route params) so the More list
+// stays reactive when the host's route set changes — initialParams are applied only once.
+const OverflowRoutesContext = createContext<RouteConfig[]>([]);
 
-function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] } } }) {
-  const items = route.params?.items ?? [];
+function MoreListScreen() {
+  const overflowRoutes = useContext(OverflowRoutesContext);
+  const items = overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon }));
   const { push } = usePushNavigator();
   const { palette: theme } = useTheme();
 
@@ -45,18 +48,15 @@ function MoreListScreen({ route }: { route: { params?: { items?: MoreListItem[] 
   );
 }
 
-function MoreTabContent({ route }: { route: { params?: { routes?: RouteConfig[] } } }) {
-  const overflowRoutes = route.params?.routes ?? [];
+function MoreTabContent() {
+  const overflowRoutes = useContext(OverflowRoutesContext);
 
   const screens = useMemo<PushScreenConfig[]>(
     () => [
       {
         name: '__more_list__',
         component: MoreListScreen,
-        headerShown: false,
-        initialParams: {
-          items: overflowRoutes.map((r) => ({ name: r.name, label: r.label, icon: r.icon })),
-        },
+        title: 'More',
       },
       ...overflowRoutes.map((r) => {
         // reuse the route's header fn as the push-screen header (the host value ignores props)
@@ -96,8 +96,13 @@ const styles = StyleSheet.create({
 });
 
 export function BottomNavigation({ routes: allRoutes, initialRoute, screenOptions }: BottomNavigationProps) {
-  const visibleRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(0, MAX_VISIBLE) : allRoutes;
-  const overflowRoutes = allRoutes.length > MAX_VISIBLE ? allRoutes.slice(MAX_VISIBLE) : [];
+  // Only split into a "More" tab when it would hold ≥2 items — a lone overflow item is shown directly.
+  const useOverflow = allRoutes.length > MAX_VISIBLE + 1;
+  const visibleRoutes = useMemo(
+    () => (useOverflow ? allRoutes.slice(0, MAX_VISIBLE) : allRoutes),
+    [allRoutes, useOverflow],
+  );
+  const overflowRoutes = useMemo(() => (useOverflow ? allRoutes.slice(MAX_VISIBLE) : []), [allRoutes, useOverflow]);
   const hasMore = overflowRoutes.length > 0;
 
   const { version } = usePlatformInfo();
@@ -148,52 +153,53 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
   const navigatorKey = isIOS26Plus ? `tab-nav-${routeKey}` : `tab-nav-${isDark ? 'dark' : 'light'}-${routeKey}`;
 
   return (
-    <ThemeProvider value={navigationTheme}>
-      <Tab.Navigator
-        key={navigatorKey}
-        initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
-        screenOptions={{
-          headerShown: false,
-          // iOS 26+: 'systemDefault' tabBarBlurEffect lets UIKit apply liquid glass instead of overriding it.
-          ...(isIOS26Plus
-            ? {
-                tabBarBlurEffect: 'systemDefault',
-                tabBarStyle: { backgroundColor: 'transparent' as const },
-              }
-            : {
-                tabBarActiveBackgroundColor: 'transparent',
-                tabBarStyle,
-              }),
-          sceneStyle: { backgroundColor: sceneBackground },
-          ...screenOptions,
-        }}
-      >
-        {visibleRoutes.map((route) => (
-          <Tab.Screen
-            key={route.name}
-            name={route.name}
-            component={route.component}
-            initialParams={route.params}
-            options={{
-              tabBarLabel: route.label ?? route.name,
-              tabBarIcon: resolveIcon(route),
-              tabBarBadge: route.badge,
-              ...route.options,
-            }}
-          />
-        ))}
-        {hasMore && (
-          <Tab.Screen
-            name="__more__"
-            component={MoreTabContent}
-            initialParams={{ routes: overflowRoutes }}
-            options={{
-              tabBarLabel: 'More',
-              tabBarIcon: { type: 'sfSymbol', name: 'ellipsis' },
-            }}
-          />
-        )}
-      </Tab.Navigator>
-    </ThemeProvider>
+    <OverflowRoutesContext.Provider value={overflowRoutes}>
+      <ThemeProvider value={navigationTheme}>
+        <Tab.Navigator
+          key={navigatorKey}
+          initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
+          screenOptions={{
+            headerShown: false,
+            // iOS 26+: 'systemDefault' tabBarBlurEffect lets UIKit apply liquid glass instead of overriding it.
+            ...(isIOS26Plus
+              ? {
+                  tabBarBlurEffect: 'systemDefault',
+                  tabBarStyle: { backgroundColor: 'transparent' as const },
+                }
+              : {
+                  tabBarActiveBackgroundColor: 'transparent',
+                  tabBarStyle,
+                }),
+            sceneStyle: { backgroundColor: sceneBackground },
+            ...screenOptions,
+          }}
+        >
+          {visibleRoutes.map((route) => (
+            <Tab.Screen
+              key={route.name}
+              name={route.name}
+              component={route.component}
+              initialParams={route.params}
+              options={{
+                tabBarLabel: route.label ?? route.name,
+                tabBarIcon: resolveIcon(route),
+                tabBarBadge: route.badge,
+                ...route.options,
+              }}
+            />
+          ))}
+          {hasMore && (
+            <Tab.Screen
+              name="__more__"
+              component={MoreTabContent}
+              options={{
+                tabBarLabel: 'More',
+                tabBarIcon: { type: 'sfSymbol', name: 'ellipsis' },
+              }}
+            />
+          )}
+        </Tab.Navigator>
+      </ThemeProvider>
+    </OverflowRoutesContext.Provider>
   );
 }
