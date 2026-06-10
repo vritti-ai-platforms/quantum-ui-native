@@ -50,7 +50,10 @@ export function DateFieldTrigger({ value, placeholder, onPress, disabled, error,
       <Text numberOfLines={1} className="flex-1 text-[16px]" style={{ color: textColor }}>
         {value ?? placeholder}
       </Text>
-      {icon ? <View className="pl-2">{icon}</View> : null}
+      {/* Spacing lives on this wrapper View (a plain View honors NativeWind padding); DynamicIcon
+          itself ignores layout classes like `mr-*` on iOS/Android — it reads className only for color.
+          pl-2 = gap from the text, pr-2 = right margin so the icon isn't tight against the border. */}
+      {icon ? <View className="pl-2 pr-2">{icon}</View> : null}
     </Pressable>
   );
 }

@@ -1,6 +1,8 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
+import { View } from 'react-native';
 import {
+  DateFieldClearButton,
   DateFieldTrigger,
   formatDateDisplay,
   parseIsoDate,
@@ -23,6 +25,8 @@ export function DatePicker({
   placeholder = 'Select date',
   value,
   onChange,
+  onChangeText,
+  clearable,
   disabled,
   displayFormat = DEFAULT_DISPLAY,
   minDate,
@@ -35,12 +39,19 @@ export function DatePicker({
   const fieldId = id ?? name ?? autoId;
   const { accentColor } = usePickerTheme();
   const [selected, setSelected] = useState<string | undefined>(
-    value && parseIsoDate(value) ? value : toIsoDate(new Date()),
+    clearable
+      ? value && parseIsoDate(value)
+        ? value
+        : undefined
+      : value && parseIsoDate(value)
+        ? value
+        : toIsoDate(new Date()),
   );
 
   const commit = (next: string | undefined) => {
     setSelected(next);
     onChange?.(next);
+    onChangeText?.(next);
   };
 
   const open = () => {
@@ -65,14 +76,21 @@ export function DatePicker({
   return (
     <Field>
       {label ? <FieldLabel nativeID={fieldId}>{label}</FieldLabel> : null}
-      <DateFieldTrigger
-        value={formatDateDisplay(selected, displayFormat)}
-        placeholder={placeholder}
-        onPress={open}
-        disabled={disabled}
-        error={!!error}
-        icon={<DynamicIcon icon={COMMON_ICONS.calendar} size={18} className="text-muted-foreground" />}
-      />
+      <View className="relative">
+        <DateFieldTrigger
+          value={formatDateDisplay(selected, displayFormat)}
+          placeholder={placeholder}
+          onPress={open}
+          disabled={disabled}
+          error={!!error}
+          icon={
+            clearable && selected ? undefined : (
+              <DynamicIcon icon={COMMON_ICONS.calendar} size={18} className="text-muted-foreground" />
+            )
+          }
+        />
+        {clearable && selected && !disabled ? <DateFieldClearButton onClear={() => commit(undefined)} /> : null}
+      </View>
       {error ? (
         <FieldError>{error}</FieldError>
       ) : description ? (

@@ -12,6 +12,10 @@ export interface DatePickerProps {
   value?: string;
   /** Called when the user picks a date. */
   onChange?: (value: string | undefined) => void;
+  /** <Form> bridge: react-hook-form injects its field's `onChange` here. Mirrors `onChange`. */
+  onChangeText?: (value: string | undefined) => void;
+  /** When true, shows a clear (X) control while a value is selected; pressing it clears the value. */
+  clearable?: boolean;
   disabled?: boolean;
   /** date-fns display pattern for the trigger text (default 'P'). iOS compact uses the OS format. */
   displayFormat?: string;

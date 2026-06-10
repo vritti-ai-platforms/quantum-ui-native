@@ -2,6 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import {
+  DateFieldClearButton,
   DateFieldTrigger,
   formatDateDisplay,
   parseIsoDate,
@@ -39,6 +40,8 @@ export function DateRangePicker({
   toPlaceholder = 'End date',
   value,
   onChange,
+  onChangeText,
+  clearable,
   disabled,
   displayFormat = DEFAULT_DISPLAY,
   minDate,
@@ -50,15 +53,19 @@ export function DateRangePicker({
   const { themeVariant, accentColor } = usePickerTheme();
   const [range, setRange] = useState<DateRange>(() => {
     const today = toIsoDate(new Date());
+    const fromFallback = clearable ? undefined : today;
+    const toFallback = clearable ? undefined : today;
     return {
-      from: value?.from && parseIsoDate(value.from) ? value.from : today,
-      to: value?.to && parseIsoDate(value.to) ? value.to : today,
+      from: value?.from && parseIsoDate(value.from) ? value.from : fromFallback,
+      to: value?.to && parseIsoDate(value.to) ? value.to : toFallback,
     };
   });
 
   const commit = (next: DateRange) => {
     setRange(next);
-    onChange?.(next.from == null && next.to == null ? undefined : next);
+    const resolved = next.from == null && next.to == null ? undefined : next;
+    onChange?.(resolved);
+    onChangeText?.(resolved);
   };
 
   const fromDate = parseIsoDate(range.from);
@@ -79,7 +86,7 @@ export function DateRangePicker({
               placeholder={fromPlaceholder}
               disabled={disabled}
               error={!!error}
-              icon={calIcon}
+              icon={clearable && range.from ? undefined : calIcon}
             />
             {!disabled ? (
               <View className="absolute inset-0 items-center justify-center" pointerEvents="box-none">
@@ -92,11 +99,14 @@ export function DateRangePicker({
                   minimumDate={minDate}
                   maximumDate={toDate ?? maxDate}
                   onChange={(event, date) => {
-                    if (event.type === 'set' && date) commit({ from: toIsoDate(date), to: range.to });
+                  if ((event.type === 'set' || event.type === 'dismissed') && date) commit({ from: toIsoDate(date), to: range.to });
                   }}
                   style={NATIVE_OVERLAY}
                 />
               </View>
+            ) : null}
+            {clearable && range.from && !disabled ? (
+              <DateFieldClearButton onClear={() => commit({ from: undefined, to: range.to })} />
             ) : null}
           </View>
         </View>
@@ -110,7 +120,7 @@ export function DateRangePicker({
               placeholder={toPlaceholder}
               disabled={disabled}
               error={!!error}
-              icon={calIcon}
+              icon={clearable && range.to ? undefined : calIcon}
             />
             {!disabled ? (
               <View className="absolute inset-0 items-center justify-center" pointerEvents="box-none">
@@ -123,11 +133,14 @@ export function DateRangePicker({
                   minimumDate={fromDate ?? minDate}
                   maximumDate={maxDate}
                   onChange={(event, date) => {
-                    if (event.type === 'set' && date) commit({ from: range.from, to: toIsoDate(date) });
+                    if ((event.type === 'set' || event.type === 'dismissed') && date) commit({ from: range.from, to: toIsoDate(date) });
                   }}
                   style={NATIVE_OVERLAY}
                 />
               </View>
+            ) : null}
+            {clearable && range.to && !disabled ? (
+              <DateFieldClearButton onClear={() => commit({ from: range.from, to: undefined })} />
             ) : null}
           </View>
         </View>

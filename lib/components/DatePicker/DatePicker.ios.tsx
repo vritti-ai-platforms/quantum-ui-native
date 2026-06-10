@@ -2,6 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import {
+  DateFieldClearButton,
   DateFieldTrigger,
   formatDateDisplay,
   parseIsoDate,
@@ -36,6 +37,8 @@ export function DatePicker({
   placeholder = 'Select date',
   value,
   onChange,
+  onChangeText,
+  clearable,
   disabled,
   displayFormat = DEFAULT_DISPLAY,
   minDate,
@@ -47,12 +50,13 @@ export function DatePicker({
   const fieldId = id ?? name ?? autoId;
   const { themeVariant, accentColor } = usePickerTheme();
   const [selected, setSelected] = useState<string | undefined>(
-    value && parseIsoDate(value) ? value : toIsoDate(new Date()),
+    value && parseIsoDate(value) ? value : undefined,
   );
 
   const commit = (next: string | undefined) => {
     setSelected(next);
     onChange?.(next);
+    onChangeText?.(next);
   };
 
   const selectedDate = parseIsoDate(selected);
@@ -66,7 +70,11 @@ export function DatePicker({
           placeholder={placeholder}
           disabled={disabled}
           error={!!error}
-          icon={<DynamicIcon icon={COMMON_ICONS.calendar} className="text-muted-foreground size-4 shrink-0 mr-4" />}
+          icon={
+            clearable && selected ? undefined : (
+              <DynamicIcon icon={COMMON_ICONS.calendar} className="text-muted-foreground size-4 shrink-0 mr-2" />
+            )
+          }
         />
         {!disabled ? (
           <View className="absolute inset-0 items-center justify-center" pointerEvents="box-none">
@@ -79,13 +87,14 @@ export function DatePicker({
               minimumDate={minDate}
               maximumDate={maxDate}
               onChange={(event, date) => {
-                if (event.type === 'set' && date) commit(toIsoDate(date));
+                if ((event.type === 'set' || event.type === 'dismissed') && date) commit(toIsoDate(date));
                 onBlur?.();
               }}
               style={NATIVE_OVERLAY}
             />
           </View>
         ) : null}
+        {clearable && selected && !disabled ? <DateFieldClearButton onClear={() => commit(undefined)} /> : null}
       </View>
       {error ? (
         <FieldError>{error}</FieldError>

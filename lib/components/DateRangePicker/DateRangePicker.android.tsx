@@ -2,6 +2,7 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
 import {
+  DateFieldClearButton,
   DateFieldTrigger,
   formatDateDisplay,
   parseIsoDate,
@@ -26,6 +27,8 @@ export function DateRangePicker({
   toPlaceholder = 'End date',
   value,
   onChange,
+  onChangeText,
+  clearable,
   disabled,
   displayFormat = DEFAULT_DISPLAY,
   minDate,
@@ -37,15 +40,19 @@ export function DateRangePicker({
   const { accentColor } = usePickerTheme();
   const [range, setRange] = useState<DateRange>(() => {
     const today = toIsoDate(new Date());
+    const fromFallback = clearable ? undefined : today;
+    const toFallback = clearable ? undefined : today;
     return {
-      from: value?.from && parseIsoDate(value.from) ? value.from : today,
-      to: value?.to && parseIsoDate(value.to) ? value.to : today,
+      from: value?.from && parseIsoDate(value.from) ? value.from : fromFallback,
+      to: value?.to && parseIsoDate(value.to) ? value.to : toFallback,
     };
   });
 
   const commit = (next: DateRange) => {
     setRange(next);
-    onChange?.(next.from == null && next.to == null ? undefined : next);
+    const resolved = next.from == null && next.to == null ? undefined : next;
+    onChange?.(resolved);
+    onChangeText?.(resolved);
   };
 
   const fromDate = parseIsoDate(range.from);
@@ -88,27 +95,37 @@ export function DateRangePicker({
           <Text variant="muted" className="text-xs">
             From
           </Text>
-          <DateFieldTrigger
-            value={formatDateDisplay(range.from, displayFormat)}
-            placeholder={fromPlaceholder}
-            onPress={openFrom}
-            disabled={disabled}
-            error={!!error}
-            icon={calIcon}
-          />
+          <View className="relative">
+            <DateFieldTrigger
+              value={formatDateDisplay(range.from, displayFormat)}
+              placeholder={fromPlaceholder}
+              onPress={openFrom}
+              disabled={disabled}
+              error={!!error}
+              icon={clearable && range.from ? undefined : calIcon}
+            />
+            {clearable && range.from && !disabled ? (
+              <DateFieldClearButton onClear={() => commit({ from: undefined, to: range.to })} />
+            ) : null}
+          </View>
         </View>
         <View className="gap-1">
           <Text variant="muted" className="text-xs">
             To
           </Text>
-          <DateFieldTrigger
-            value={formatDateDisplay(range.to, displayFormat)}
-            placeholder={toPlaceholder}
-            onPress={openTo}
-            disabled={disabled}
-            error={!!error}
-            icon={calIcon}
-          />
+          <View className="relative">
+            <DateFieldTrigger
+              value={formatDateDisplay(range.to, displayFormat)}
+              placeholder={toPlaceholder}
+              onPress={openTo}
+              disabled={disabled}
+              error={!!error}
+              icon={clearable && range.to ? undefined : calIcon}
+            />
+            {clearable && range.to && !disabled ? (
+              <DateFieldClearButton onClear={() => commit({ from: range.from, to: undefined })} />
+            ) : null}
+          </View>
         </View>
       </View>
       {error ? (
