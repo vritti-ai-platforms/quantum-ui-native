@@ -65,6 +65,16 @@
       "types": "./dist/typescript/lib/components/DateRangePicker/index.d.ts",
       "default": "./dist/module/components/DateRangePicker/index.js"
     },
+    "./DateTimePicker": {
+      "source": "./lib/components/DateTimePicker/index.ts",
+      "types": "./dist/typescript/lib/components/DateTimePicker/index.d.ts",
+      "default": "./dist/module/components/DateTimePicker/index.js"
+    },
+    "./DateTimeRangePicker": {
+      "source": "./lib/components/DateTimeRangePicker/index.ts",
+      "types": "./dist/typescript/lib/components/DateTimeRangePicker/index.d.ts",
+      "default": "./dist/module/components/DateTimeRangePicker/index.js"
+    },
     "./DynamicIcon": {
       "source": "./lib/components/DynamicIcon/index.ts",
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
@@ -79,6 +89,11 @@
       "source": "./lib/components/Form/index.ts",
       "types": "./dist/typescript/lib/components/Form/index.d.ts",
       "default": "./dist/module/components/Form/index.js"
+    },
+    "./FormattedDate": {
+      "source": "./lib/components/FormattedDate/index.ts",
+      "types": "./dist/typescript/lib/components/FormattedDate/index.d.ts",
+      "default": "./dist/module/components/FormattedDate/index.js"
     },
     "./Label": {
       "source": "./lib/components/Label/index.ts",

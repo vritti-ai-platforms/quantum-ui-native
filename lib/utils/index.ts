@@ -29,6 +29,15 @@ export {
   type MobileStorageAdapter,
   type ToastAdapter,
 } from './axios';
+export {
+  type CurrencyAmount,
+  type FormattedValue,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatString,
+} from './format';
 export { buildSlug, parseSlug, slugify } from './slug';
 export {
   chunk,

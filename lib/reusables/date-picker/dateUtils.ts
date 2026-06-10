@@ -39,3 +39,36 @@ export function formatDateDisplay(value: string | undefined, _displayFormat?: st
     return toIsoDate(date);
   }
 }
+
+// --- Instant (date + time) helpers for the DateTime pickers --------------------------------------
+// Still Intl-based and dependency-free (no date-fns). Instants are full UTC ISO strings; the native
+// pickers' `timeZoneName` handles wall-clock selection/display in the BU zone, and these only
+// parse/serialize the instant and format the trigger text.
+
+// Parse a UTC ISO instant string to a Date. Returns undefined for empty/invalid input.
+export function parseInstant(value: string | undefined): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+// Serialize an instant to a UTC ISO string (the value contract for the DateTime pickers).
+export function toInstantIso(date: Date): string {
+  return date.toISOString();
+}
+
+// Display an instant in the given IANA timezone (undefined ⇒ device zone). `locale` undefined ⇒
+// device locale. Falls back to the device zone if the runtime rejects the timezone.
+export function formatInstantDisplay(
+  value: string | undefined,
+  timeZone?: string,
+  locale?: string,
+): string | undefined {
+  const date = parseInstant(value);
+  if (!date) return undefined;
+  try {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(date);
+  } catch {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  }
+}
