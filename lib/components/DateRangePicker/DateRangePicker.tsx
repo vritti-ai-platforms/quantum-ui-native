@@ -1,12 +1,11 @@
 import { useId } from 'react';
 import { View } from 'react-native';
+import { useLocale } from '../../hooks/useLocale';
 import { DateFieldTrigger, formatDateDisplay, parseIsoDate, toIsoDate } from '../../reusables/date-picker';
 import { Field, FieldDescription, FieldError, FieldLabel } from '../../reusables/field';
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Text';
 import type { DateRangePickerProps } from './types';
-
-const DEFAULT_DISPLAY = 'P';
 
 // Web / SSR fallback — read-only From/To fields (no native picker). Type source for tsc. Defaults
 // From/To display to today to match the native variants (the component owns the selection).
@@ -19,11 +18,11 @@ export function DateRangePicker({
   toPlaceholder = 'End date',
   value,
   disabled,
-  displayFormat = DEFAULT_DISPLAY,
   id,
 }: DateRangePickerProps) {
   const autoId = useId();
   const fieldId = id ?? name ?? autoId;
+  const locale = useLocale();
   const today = toIsoDate(new Date());
   const from = value?.from && parseIsoDate(value.from) ? value.from : today;
   const to = value?.to && parseIsoDate(value.to) ? value.to : today;
@@ -38,7 +37,7 @@ export function DateRangePicker({
             From
           </Text>
           <DateFieldTrigger
-            value={formatDateDisplay(from, displayFormat)}
+            value={formatDateDisplay(from, locale ?? undefined)}
             placeholder={fromPlaceholder}
             disabled={disabled}
             error={!!error}
@@ -50,7 +49,7 @@ export function DateRangePicker({
             To
           </Text>
           <DateFieldTrigger
-            value={formatDateDisplay(to, displayFormat)}
+            value={formatDateDisplay(to, locale ?? undefined)}
             placeholder={toPlaceholder}
             disabled={disabled}
             error={!!error}

@@ -1,6 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
+import { useLocale } from '../../hooks/useLocale';
 import {
   DateFieldClearButton,
   DateFieldTrigger,
@@ -13,8 +14,6 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '../../reusables
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Text';
 import type { DateRange, DateRangePickerProps } from './types';
-
-const DEFAULT_DISPLAY = 'P';
 
 // The native compact control is transparent (opacity 0.02 — just above UIKit's 0.01 hit-test cutoff)
 // and centered in each field by the wrapper below, so its date pill sits at that field's horizontal
@@ -43,7 +42,6 @@ export function DateRangePicker({
   onChangeText,
   clearable,
   disabled,
-  displayFormat = DEFAULT_DISPLAY,
   minDate,
   maxDate,
   id,
@@ -51,6 +49,7 @@ export function DateRangePicker({
   const autoId = useId();
   const fieldId = id ?? name ?? autoId;
   const { themeVariant, accentColor } = usePickerTheme();
+  const locale = useLocale();
   const [range, setRange] = useState<DateRange>(() => {
     const today = toIsoDate(new Date());
     const fromFallback = clearable ? undefined : today;
@@ -82,7 +81,7 @@ export function DateRangePicker({
           </Text>
           <View className="relative">
             <DateFieldTrigger
-              value={formatDateDisplay(range.from, displayFormat)}
+              value={formatDateDisplay(range.from, locale ?? undefined)}
               placeholder={fromPlaceholder}
               disabled={disabled}
               error={!!error}
@@ -96,6 +95,7 @@ export function DateRangePicker({
                   display="compact"
                   themeVariant={themeVariant}
                   accentColor={accentColor}
+                  locale={locale ?? undefined}
                   minimumDate={minDate}
                   maximumDate={toDate ?? maxDate}
                   onChange={(event, date) => {
@@ -116,7 +116,7 @@ export function DateRangePicker({
           </Text>
           <View className="relative">
             <DateFieldTrigger
-              value={formatDateDisplay(range.to, displayFormat)}
+              value={formatDateDisplay(range.to, locale ?? undefined)}
               placeholder={toPlaceholder}
               disabled={disabled}
               error={!!error}
@@ -130,6 +130,7 @@ export function DateRangePicker({
                   display="compact"
                   themeVariant={themeVariant}
                   accentColor={accentColor}
+                  locale={locale ?? undefined}
                   minimumDate={fromDate ?? minDate}
                   maximumDate={maxDate}
                   onChange={(event, date) => {

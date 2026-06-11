@@ -27,14 +27,14 @@ export function toIsoDate(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-// Locale-aware display for the trigger (Android / fallback). iOS's native compact control formats
-// itself, so this only drives the Android trigger + web fallback text. `displayFormat` is accepted
-// for API compatibility but no longer used (Intl drives the locale format).
-export function formatDateDisplay(value: string | undefined, _displayFormat?: string): string | undefined {
+// Locale-aware display for the trigger text. `locale` is the active BCP-47 tag (from useLocale);
+// undefined ⇒ device default. (iOS's native compact control formats its own pill, so this mainly
+// drives the Android trigger + web fallback text and the date-only field display.)
+export function formatDateDisplay(value: string | undefined, locale?: string): string | undefined {
   const date = parseIsoDate(value);
   if (!date) return undefined;
   try {
-    return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
   } catch {
     return toIsoDate(date);
   }

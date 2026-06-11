@@ -1,6 +1,7 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
+import { useLocale } from '../../hooks/useLocale';
 import {
   DateFieldClearButton,
   DateFieldTrigger,
@@ -12,8 +13,6 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from '../../reusables/field';
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import type { DatePickerProps } from './types';
-
-const DEFAULT_DISPLAY = 'P';
 
 // Android: a read-only field that opens the native Material calendar dialog (imperative API).
 // The component owns the selection (internal state, defaults to today); `value` is an optional initial.
@@ -28,7 +27,6 @@ export function DatePicker({
   onChangeText,
   clearable,
   disabled,
-  displayFormat = DEFAULT_DISPLAY,
   minDate,
   maxDate,
   id,
@@ -38,6 +36,7 @@ export function DatePicker({
   const autoId = useId();
   const fieldId = id ?? name ?? autoId;
   const { accentColor } = usePickerTheme();
+  const locale = useLocale();
   const [selected, setSelected] = useState<string | undefined>(
     clearable
       ? value && parseIsoDate(value)
@@ -78,7 +77,7 @@ export function DatePicker({
       {label ? <FieldLabel nativeID={fieldId}>{label}</FieldLabel> : null}
       <View className="relative">
         <DateFieldTrigger
-          value={formatDateDisplay(selected, displayFormat)}
+          value={formatDateDisplay(selected, locale ?? undefined)}
           placeholder={placeholder}
           onPress={open}
           disabled={disabled}

@@ -1,6 +1,7 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View } from 'react-native';
+import { useLocale } from '../../hooks/useLocale';
 import {
   DateFieldClearButton,
   DateFieldTrigger,
@@ -13,8 +14,6 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '../../reusables
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Text';
 import type { DateRange, DateRangePickerProps } from './types';
-
-const DEFAULT_DISPLAY = 'P';
 
 // Android: two read-only fields (From / To), each opening the native Material calendar dialog.
 // The component owns the range (internal state, From/To default to today). Bounds linked — From ≤ To.
@@ -30,7 +29,6 @@ export function DateRangePicker({
   onChangeText,
   clearable,
   disabled,
-  displayFormat = DEFAULT_DISPLAY,
   minDate,
   maxDate,
   id,
@@ -38,6 +36,7 @@ export function DateRangePicker({
   const autoId = useId();
   const fieldId = id ?? name ?? autoId;
   const { accentColor } = usePickerTheme();
+  const locale = useLocale();
   const [range, setRange] = useState<DateRange>(() => {
     const today = toIsoDate(new Date());
     const fromFallback = clearable ? undefined : today;
@@ -97,7 +96,7 @@ export function DateRangePicker({
           </Text>
           <View className="relative">
             <DateFieldTrigger
-              value={formatDateDisplay(range.from, displayFormat)}
+              value={formatDateDisplay(range.from, locale ?? undefined)}
               placeholder={fromPlaceholder}
               onPress={openFrom}
               disabled={disabled}
@@ -115,7 +114,7 @@ export function DateRangePicker({
           </Text>
           <View className="relative">
             <DateFieldTrigger
-              value={formatDateDisplay(range.to, displayFormat)}
+              value={formatDateDisplay(range.to, locale ?? undefined)}
               placeholder={toPlaceholder}
               onPress={openTo}
               disabled={disabled}

@@ -1,6 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useId, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
+import { useLocale } from '../../hooks/useLocale';
 import {
   DateFieldClearButton,
   DateFieldTrigger,
@@ -12,8 +13,6 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from '../../reusables/field';
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import type { DatePickerProps } from './types';
-
-const DEFAULT_DISPLAY = 'P';
 
 // The native compact control is transparent (opacity 0.02 — just above UIKit's 0.01 hit-test cutoff)
 // and centered in the field by the wrapper below, so its date pill sits at the field's horizontal
@@ -40,7 +39,6 @@ export function DatePicker({
   onChangeText,
   clearable,
   disabled,
-  displayFormat = DEFAULT_DISPLAY,
   minDate,
   maxDate,
   id,
@@ -49,6 +47,7 @@ export function DatePicker({
   const autoId = useId();
   const fieldId = id ?? name ?? autoId;
   const { themeVariant, accentColor } = usePickerTheme();
+  const locale = useLocale();
   const [selected, setSelected] = useState<string | undefined>(
     value && parseIsoDate(value) ? value : undefined,
   );
@@ -66,7 +65,7 @@ export function DatePicker({
       {label ? <FieldLabel nativeID={fieldId}>{label}</FieldLabel> : null}
       <View className="relative">
         <DateFieldTrigger
-          value={formatDateDisplay(selected, displayFormat)}
+          value={formatDateDisplay(selected, locale ?? undefined)}
           placeholder={placeholder}
           disabled={disabled}
           error={!!error}
@@ -84,6 +83,7 @@ export function DatePicker({
               display="compact"
               themeVariant={themeVariant}
               accentColor={accentColor}
+              locale={locale ?? undefined}
               minimumDate={minDate}
               maximumDate={maxDate}
               onChange={(event, date) => {
