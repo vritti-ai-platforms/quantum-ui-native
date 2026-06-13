@@ -13,8 +13,14 @@ export interface TreeDataItem {
   actions?: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  draggable?: boolean;
   className?: string;
 }
+
+export type TreeReorderPayload = {
+  parentId: string | null;
+  orderedIds: string[];
+};
 
 export interface TreeRenderItemParams {
   item: TreeDataItem;
@@ -43,5 +49,9 @@ export interface TreeViewProps {
   defaultLeafIcon?: PlatformIconDescriptor;
   /** Custom row renderer; the chevron (for nodes) is still appended on the right. */
   renderItem?: (params: TreeRenderItemParams) => ReactNode;
+  /** Enable long-press drag to reorder siblings within a parent (no reparenting). Default `false`. */
+  draggable?: boolean;
+  /** Called on drop with the reordered sibling group. The consumer applies it to `data`. */
+  onReorder?: (payload: TreeReorderPayload) => void;
   className?: string;
 }

@@ -1,2 +1,2 @@
 export { TreeView } from './TreeView';
-export type { TreeDataItem, TreeRenderItemParams, TreeViewProps } from './types';
+export type { TreeDataItem, TreeReorderPayload, TreeRenderItemParams, TreeViewProps } from './types';
