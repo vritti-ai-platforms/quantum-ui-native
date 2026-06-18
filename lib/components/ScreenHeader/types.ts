@@ -23,6 +23,9 @@ interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {
   variant?: 'standard';
   leftActions?: ReactNode;
   rightActions?: ReactNode;
+  /** Show a collapsing search field below the title; its value is read via `useScreenSearch()`. */
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
 interface ScreenHeaderTabsProps extends ScreenHeaderCommonProps {

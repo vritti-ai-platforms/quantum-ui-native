@@ -3,6 +3,7 @@ export { useBUTimezone } from './useBUTimezone';
 export { type ConfirmOptions, useConfirm } from './useConfirm';
 export { useDialog } from './useDialog';
 export { type Formatters, useFormatters } from './useFormatters';
+export { type UseInfiniteListParams, type UseInfiniteListReturn, useInfiniteList } from './useInfiniteList';
 export { useIsMobile } from './useIsMobile';
 export { useLocale } from './useLocale';
 export { usePlatformInfo } from './usePlatformInfo';

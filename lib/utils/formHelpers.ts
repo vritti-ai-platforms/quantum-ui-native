@@ -25,9 +25,58 @@ export interface ApiErrorResponse {
   errors?: FieldError[];
 }
 
+// GraphQL (Apollo) error shape. Apollo v4 surfaces GraphQL errors as `error.errors`
+// (CombinedGraphQLErrors); v3 used `error.graphQLErrors`. Each entry carries the server-shaped
+// `extensions` (code/label/detail/fieldErrors). Duck-typed so this stays Apollo-dependency-free.
+interface GraphQLErrorLike {
+  message?: string;
+  extensions?: {
+    code?: string;
+    label?: string;
+    detail?: string;
+    fieldErrors?: FieldError[];
+  };
+}
+
+interface ApolloLikeError {
+  graphQLErrors?: GraphQLErrorLike[];
+  errors?: GraphQLErrorLike[];
+}
+
 export interface MapApiErrorsOptions {
   fieldMapping?: FieldMapping;
   setRootError?: boolean;
+}
+
+// Normalizes an Apollo/GraphQL error into the common ApiErrorResponse shape, or null if `error`
+// isn't a GraphQL error. Collects `extensions.fieldErrors` (so they surface inline) and the
+// label/detail from the GraphQL errors' extensions.
+function apiErrorFromGraphQL(error: object): ApiErrorResponse | null {
+  const apollo = error as ApolloLikeError;
+  const gqlErrors = apollo.graphQLErrors ?? apollo.errors;
+  if (!Array.isArray(gqlErrors) || gqlErrors.length === 0) {
+    return null;
+  }
+  // Only treat as GraphQL when entries carry `extensions` — distinguishes a GraphQL errors[] from
+  // an RFC-9457 `errors: [{ field, message }]` array (which has no `extensions`).
+  if (!gqlErrors.some((entry) => entry && typeof entry === 'object' && 'extensions' in entry)) {
+    return null;
+  }
+
+  const fieldErrors: FieldError[] = [];
+  let label: string | undefined;
+  let detail: string | undefined;
+
+  for (const gqlError of gqlErrors) {
+    const extensions = gqlError?.extensions;
+    if (Array.isArray(extensions?.fieldErrors)) {
+      fieldErrors.push(...extensions.fieldErrors);
+    }
+    label ??= extensions?.label ?? extensions?.code;
+    detail ??= extensions?.detail ?? gqlError?.message;
+  }
+
+  return { label, detail, errors: fieldErrors };
 }
 
 export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValues>(
@@ -47,9 +96,10 @@ export function mapApiErrorsToForm<TFieldValues extends FieldValues = FieldValue
     return;
   }
 
-  const axiosError = error as AxiosLikeError;
-  const errorData = axiosError.response?.data || error;
-  const apiError = errorData as ApiErrorResponse;
+  // GraphQL (Apollo) errors carry the server-shaped payload under `extensions`. Fall back to the
+  // axios RFC-9457 body at `response.data`, then to the error object itself.
+  const apiError: ApiErrorResponse =
+    apiErrorFromGraphQL(error) ?? (((error as AxiosLikeError).response?.data ?? error) as ApiErrorResponse);
 
   const errorTitle = apiError.label || apiError.title || 'Error';
   const generalMessage = apiError.detail;

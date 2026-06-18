@@ -1,8 +1,11 @@
-import type { ReactNode } from 'react';
-import { Image, type ImageSourcePropType, View } from 'react-native';
+import { useUnstableNativeVariable } from 'nativewind';
+import { type ReactNode, useState } from 'react';
+import { Image, type ImageSourcePropType, TextInput, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
+import { useScreenSearch } from '../ScreenContainer/screenSearchRegistry';
+import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 import { Text } from '../Text';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
 import { ScreenHeaderTabsBackground } from './ScreenHeaderTabsBackground';
@@ -12,10 +15,16 @@ import type { ScreenHeaderTabConfig, ScreenHeaderVariant } from './types';
 const BAR_HEIGHT = 44; // nav-bar row — reserved when there are actions
 const LARGE_TITLE_HEIGHT = 56; // collapsible large-title row (title + subtitle)
 const LARGE_TITLE_HEIGHT_NO_SUBTITLE = 40; // title-only — drops the subtitle row's vertical reservation
-const COLLAPSE_AT = 96; // scroll offset at which the header is fully collapsed
+const COLLAPSE_AT = 96; // scroll distance over which the large title collapses (after the search closes)
 const BOTTOM_GAP = 8; // breathing room below the nav-bar in the collapsed state (no-tabs only)
 const BACKDROP_FADE_AT = 20; // scroll offset over which a fading backdrop reaches full opacity
 const TITLE_TOP_MARGIN = 16; // collapses on scroll alongside the title opacity
+const SEARCH_ROW_HEIGHT = 52; // collapsible search row (pill + bottom gap)
+
+const SEARCH_ICON: PlatformIconDescriptor = { sfSymbol: 'magnifyingglass', materialIcon: 'search' };
+// MF-shared theme reader — className COLORS don't apply reliably across the federation boundary, so the
+// search pill resolves its fill/text/placeholder colors inline from the shared NativeWind variables.
+const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
 
 interface ScreenHeaderBaseProps {
   title: string;
@@ -23,6 +32,8 @@ interface ScreenHeaderBaseProps {
   variant: ScreenHeaderVariant;
   leftActions?: ReactNode;
   rightActions?: ReactNode;
+  searchable?: boolean;
+  searchPlaceholder?: string;
   tabs?: ScreenHeaderTabConfig[];
   backdrop?: ReactNode;
   overlay?: boolean;
@@ -37,6 +48,8 @@ export function ScreenHeaderBase({
   variant,
   leftActions,
   rightActions,
+  searchable = false,
+  searchPlaceholder = 'Search',
   tabs,
   backdrop,
   overlay = false,
@@ -46,25 +59,34 @@ export function ScreenHeaderBase({
 }: ScreenHeaderBaseProps) {
   const insets = useSafeAreaInsets();
   const scrollY = useScreenScrollY();
+  const { setQuery } = useScreenSearch();
+  const [searchText, setSearchText] = useState('');
+  const mutedVar = useVar('--muted');
+  const fgVar = useVar('--foreground');
+  const mutedFgVar = useVar('--muted-foreground');
 
   const hasTabs = variant === 'tabs' && (tabs?.length ?? 0) > 0;
   const hasActions = variant === 'standard' && (leftActions != null || rightActions != null);
-  // Reserve the nav-bar slot only when there are actions. Without actions the
-  // large title sits directly below the status bar — the compact title is
-  // absolutely positioned in the BAR_HEIGHT band, so it doesn't need a flex
-  // spacer to fade in.
+  const hasSearch = variant === 'standard' && searchable;
   const reserveBar = hasActions;
   const largeTitleHeight = subtitle ? LARGE_TITLE_HEIGHT : LARGE_TITLE_HEIGHT_NO_SUBTITLE;
-  const heroHeight = (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight + (hasTabs ? TABS_HEIGHT : 0);
+  const searchHeight = hasSearch ? SEARCH_ROW_HEIGHT : 0;
+  // The non-search part of the header (bar + large title) — what stays once the search has minimized.
+  const titleArea = (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight + (hasTabs ? TABS_HEIGHT : 0);
+  const heroHeight = titleArea + searchHeight;
   const collapsedTarget = hasTabs ? TABS_HEIGHT : BAR_HEIGHT + BOTTOM_GAP;
+  // Stage the collapse: scroll [0, searchHeight] MINIMIZES the search row (height → 0); only after that,
+  // scroll [searchHeight, searchHeight + COLLAPSE_AT] collapses the large title. (stage1 = 0 with no search.)
+  const stage1 = searchHeight;
 
   useRegisterScreenHeaderInset(overlay ? heroHeight : 0);
   useRegisterScreenHeaderTabs(hasTabs ? tabs : undefined);
 
-  const containerStyle = useAnimatedStyle(() => ({
-    height:
-      interpolate(scrollY.value, [0, COLLAPSE_AT], [heroHeight, collapsedTarget], Extrapolation.CLAMP) + insets.top,
-  }));
+  const containerStyle = useAnimatedStyle(() => {
+    const titleH = interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [titleArea, collapsedTarget], Extrapolation.CLAMP);
+    const searchH = hasSearch ? interpolate(scrollY.value, [0, stage1], [searchHeight, 0], Extrapolation.CLAMP) : 0;
+    return { height: titleH + searchH + insets.top };
+  });
 
   const backdropOpacityStyle = useAnimatedStyle(() => {
     if (!animateBackdrop) return { opacity: 1 };
@@ -74,17 +96,23 @@ export function ScreenHeaderBase({
   });
 
   const imageFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, COLLAPSE_AT], [1, 0], Extrapolation.CLAMP),
+    opacity: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [1, 0], Extrapolation.CLAMP),
   }));
 
   const largeTitleStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, COLLAPSE_AT * 0.6], [1, 0], Extrapolation.CLAMP),
-    marginTop: interpolate(scrollY.value, [0, COLLAPSE_AT], [TITLE_TOP_MARGIN, 0], Extrapolation.CLAMP),
-    transform: [{ translateY: interpolate(scrollY.value, [0, COLLAPSE_AT], [0, -12], Extrapolation.CLAMP) }],
+    opacity: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT * 0.6], [1, 0], Extrapolation.CLAMP),
+    marginTop: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [TITLE_TOP_MARGIN, 0], Extrapolation.CLAMP),
+    transform: [{ translateY: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [0, -12], Extrapolation.CLAMP) }],
+  }));
+
+  // Search MINIMIZES (height → 0), it does not fade — overflow-hidden + justify-end make the pill slide
+  // up and clip away (WhatsApp). This finishes before the title starts collapsing (staged above).
+  const searchRowStyle = useAnimatedStyle(() => ({
+    height: interpolate(scrollY.value, [0, SEARCH_ROW_HEIGHT], [SEARCH_ROW_HEIGHT, 0], Extrapolation.CLAMP),
   }));
 
   const compactTitleStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [COLLAPSE_AT * 0.55, COLLAPSE_AT], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(scrollY.value, [stage1 + COLLAPSE_AT * 0.55, stage1 + COLLAPSE_AT], [0, 1], Extrapolation.CLAMP),
   }));
 
   return (
@@ -117,6 +145,35 @@ export function ScreenHeaderBase({
           </Text>
         ) : null}
       </Animated.View>
+
+      {hasSearch ? (
+        // The row's height animates 52→0; the pill is flex-1 so it FILLS that height — the pill itself
+        // squishes/minimizes (it isn't a fixed-height pill being clipped). overflow-hidden clips the
+        // icon/input once the pill gets too short.
+        <Animated.View className="overflow-hidden px-4 pb-2" style={searchRowStyle}>
+          <View
+            className="flex-1 flex-row items-center gap-2 overflow-hidden rounded-full px-4"
+            style={{ backgroundColor: mutedVar ? `hsl(${mutedVar})` : undefined }}
+          >
+            <DynamicIcon icon={SEARCH_ICON} size={18} className="text-muted-foreground" />
+            <TextInput
+              className="flex-1 text-base"
+              style={{ color: fgVar ? `hsl(${fgVar})` : undefined, padding: 0 }}
+              placeholder={searchPlaceholder}
+              placeholderTextColor={mutedFgVar ? `hsl(${mutedFgVar})` : undefined}
+              value={searchText}
+              onChangeText={(text) => {
+                setSearchText(text);
+                setQuery(text);
+              }}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              clearButtonMode="while-editing"
+            />
+          </View>
+        </Animated.View>
+      ) : null}
 
       {hasTabs ? <ScreenHeaderTabs tabs={tabs ?? []} background={tabsBackground} /> : null}
 
