@@ -6,7 +6,7 @@ export {
   type SingleSelectOptionRenderProps,
 } from './components/SingleSelect';
 export { MultiSelect, type MultiSelectProps } from './components/MultiSelect';
-export { useSelect, type UseSelectProps, type UseSelectReturn } from './hooks/useSelect';
+export { useApolloSelect, type UseApolloSelectProps } from './hooks/useApolloSelect';
 export { useSingleSelect } from './hooks/useSingleSelect';
 export { useMultiSelect } from './hooks/useMultiSelect';
 export type {
@@ -16,4 +16,5 @@ export type {
   SelectOption,
   SelectOptionsResponse,
   SelectValue,
+  UseSelectReturn,
 } from './types';

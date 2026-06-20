@@ -1,10 +1,37 @@
+import { gql } from '@apollo/client';
 import { forwardRef } from 'react';
 import { Pressable, View } from 'react-native';
 import { COMMON_ICONS, DynamicIcon } from '../../components/DynamicIcon';
 import { Select, type SelectProps, type SingleSelectOptionRenderProps } from '@vritti/quantum-ui-native/Select';
 import { Text } from '../../components/Text';
 
-export type QuantSelectorProps = Omit<SelectProps, 'optionsEndpoint'>;
+export type QuantSelectorParams = { inventoryItemId?: string };
+
+export type QuantSelectorProps = Omit<SelectProps, 'optionsQuery' | 'optionsDataKey' | 'optionsEndpoint' | 'params'> & {
+  params?: QuantSelectorParams;
+};
+
+// GraphQL options query — forwards the shared SelectOptionsInput to the server's `inventoryItemQuantsOptions`
+// resolver, scoped to a single inventory item via the top-level `inventoryItemId` variable. `additionalKeys`
+// requests quantity/symbol so the custom row can render the on-hand amount + UOM.
+const INVENTORY_ITEM_QUANTS_OPTIONS = gql`
+  query InventoryItemQuantsOptions($input: SelectOptionsInput, $inventoryItemId: ID) {
+    inventoryItemQuantsOptions(input: $input, inventoryItemId: $inventoryItemId) {
+      options {
+        value
+        label
+        description
+        groupId
+        additionals
+      }
+      groups {
+        id
+        name
+      }
+      hasMore
+    }
+  }
+`;
 
 // Custom option row: label (lotNumber / item name) + description on the left, quantity + UOM symbol on
 // the right, a check when selected. Mirrors the web QuantSelector row. Tapping selects + closes the sheet
@@ -44,14 +71,16 @@ function QuantOptionRow({ option, selected, onSelect }: SingleSelectOptionRender
 }
 
 // Pre-configured Select for quant selection; pass params={{ inventoryItemId }} to scope to one item.
-// Hits GET /commerce-api/inventory-item-quants/select.
-export const QuantSelector = forwardRef<View, QuantSelectorProps>((props, ref) => (
+export const QuantSelector = forwardRef<View, QuantSelectorProps>(({ params, ...props }, ref) => (
   <Select
     ref={ref}
     label="Quant"
     placeholder="Select quant"
     searchable
-    optionsEndpoint="commerce-api/inventory-item-quants/select"
+    optionsQuery={INVENTORY_ITEM_QUANTS_OPTIONS}
+    optionsDataKey="inventoryItemQuantsOptions"
+    params={{ inventoryItemId: params?.inventoryItemId }}
+    fieldKeys={{ additionalKeys: 'quantity,symbol' }}
     renderOption={(p) => <QuantOptionRow {...p} />}
     {...props}
   />

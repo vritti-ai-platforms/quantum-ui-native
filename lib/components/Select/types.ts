@@ -37,3 +37,17 @@ export interface SelectFieldKeys {
   additionalKeys?: string;
   groupIdKey?: string;
 }
+
+// The return contract a Select data hook (static or Apollo) provides to <Select>. Lives here so it survives
+// the removal of the legacy TanStack `useSelect`; both `useSelect` and `useApolloSelect` implement it.
+export interface UseSelectReturn {
+  options: SelectOption[];
+  groups: SelectGroup[];
+  loading: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  // FlashList-driven pagination — fetches the next page when one is available
+  onEndReached: () => void;
+}

@@ -125,3 +125,6 @@ export function RadioGroup({
 }
 
 RadioGroup.displayName = 'RadioGroup';
+
+// Lets <Form> auto-wire by `name`: bind the RHF value to `value` and onChange to `onValueChange`.
+RadioGroup.fieldBinding = { valueProp: 'value', changeProp: 'onValueChange' };

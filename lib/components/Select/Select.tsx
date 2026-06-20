@@ -1,16 +1,21 @@
+import type { DocumentNode } from '@apollo/client';
 import * as React from 'react';
 import type { View } from 'react-native';
 import { MultiSelect, type MultiSelectProps } from './components/MultiSelect';
 import { SingleSelect, type SingleSelectProps } from './components/SingleSelect';
-import { useSelect } from './hooks/useSelect';
+import { useApolloSelect } from './hooks/useApolloSelect';
 import type { AsyncSelectState, SelectFieldKeys } from './types';
 
 interface SelectBaseProps {
-  optionsEndpoint?: string;
+  /** Apollo document for the entity's `<entity>Options(...)` query (the async option source). */
+  optionsQuery?: DocumentNode;
+  /** Top-level field on `optionsQuery` holding the SelectOptions result (e.g. 'categoriesOptions'). */
+  optionsDataKey?: string;
   searchDebounceMs?: number;
   limit?: number;
   fieldKeys?: SelectFieldKeys;
-  params?: Record<string, string | number | boolean>;
+  // Entity-specific query params (e.g. inventoryItemId). `undefined` values are simply omitted from the query.
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 export interface SelectProps extends Omit<SingleSelectProps & MultiSelectProps, 'value' | 'onChange'>, SelectBaseProps {
@@ -21,13 +26,14 @@ export interface SelectProps extends Omit<SingleSelectProps & MultiSelectProps, 
 
 // Unified select field supporting single/multi selection with optional async option loading
 export const Select = React.forwardRef<View, SelectProps>((props, ref) => {
-  const { multiple, optionsEndpoint, searchDebounceMs, limit, fieldKeys, params, onOpenChange, ...rest } = props;
+  const { multiple, optionsQuery, optionsDataKey, searchDebounceMs, limit, fieldKeys, params, onOpenChange, ...rest } = props;
   const [open, setOpen] = React.useState(false);
 
-  const selectData = useSelect({
+  const selectData = useApolloSelect({
     options: rest.options,
     groups: rest.groups,
-    optionsEndpoint,
+    optionsQuery,
+    dataKey: optionsDataKey,
     searchDebounceMs,
     limit,
     fieldKeys,
@@ -36,7 +42,7 @@ export const Select = React.forwardRef<View, SelectProps>((props, ref) => {
     enabled: open,
   });
 
-  const isAsync = !!optionsEndpoint;
+  const isAsync = !!optionsQuery;
 
   const asyncState: AsyncSelectState | undefined = isAsync
     ? {

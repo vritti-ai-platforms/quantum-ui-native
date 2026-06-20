@@ -21,10 +21,27 @@ export interface ListResponse<T> {
   count: number;
 }
 
-// Cursor/keyset-paginated page shape returned by infinite-feed endpoints — the contract `useInfiniteList`
-// consumes. `nextCursor` is an opaque continuation token; `hasMore` is false on the last page.
+// Cursor/keyset-paginated page shape returned by infinite-feed endpoints. `nextCursor` is an opaque
+// continuation token; `hasMore` is false on the last page.
 export interface CursorPage<T> {
   items: T[];
   nextCursor: string | null;
   hasMore: boolean;
+}
+
+// The return contract for an infinite-list driver — implemented by `useApolloInfiniteQuery`, consumed by
+// screens (so the data source can change without touching the screen). Lives here so it survives the
+// removal of the old TanStack `useInfiniteList`.
+export interface UseInfiniteListReturn<T> {
+  items: T[];
+  isLoading: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  /** Refetch all currently-loaded pages (consistency refresh). */
+  refetch: () => void;
+  /** Pull-to-refresh: reset to page 1 (keeps content on screen, no skeleton flash). */
+  refresh: () => void;
+  isRefetching: boolean;
+  isError: boolean;
 }

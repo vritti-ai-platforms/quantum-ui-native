@@ -230,11 +230,6 @@
       "types": "./dist/typescript/lib/selects/index.d.ts",
       "default": "./dist/module/selects/index.js"
     },
-    "./selects/bom": {
-      "source": "./lib/selects/bom/index.ts",
-      "types": "./dist/typescript/lib/selects/bom/index.d.ts",
-      "default": "./dist/module/selects/bom/index.js"
-    },
     "./selects/category": {
       "source": "./lib/selects/category/index.ts",
       "types": "./dist/typescript/lib/selects/category/index.d.ts",
@@ -304,6 +299,11 @@
       "source": "./lib/selects/supplier-item/index.ts",
       "types": "./dist/typescript/lib/selects/supplier-item/index.d.ts",
       "default": "./dist/module/selects/supplier-item/index.js"
+    },
+    "./selects/tax-group": {
+      "source": "./lib/selects/tax-group/index.ts",
+      "types": "./dist/typescript/lib/selects/tax-group/index.d.ts",
+      "default": "./dist/module/selects/tax-group/index.js"
     },
     "./selects/timezone": {
       "source": "./lib/selects/timezone/index.ts",
@@ -382,6 +382,7 @@
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
+    "@apollo/client": "^4.2.3",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.0.0",
     "@react-native-community/datetimepicker": "^8.0.0",
@@ -394,7 +395,6 @@
     "@release-it/conventional-changelog": "^10.0.6",
     "@shopify/flash-list": "^2.3.1",
     "@tailwindcss/postcss": "^4.2.0",
-    "@tanstack/react-query": "^5.96.2",
     "@types/lodash": "^4.17.0",
     "@types/react": "^19.2.0",
     "axios": "^1.14.0",
@@ -404,6 +404,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-ft-flow": "^3.0.11",
     "eslint-plugin-prettier": "^5.5.5",
+    "graphql": "^16.14.2",
     "jest": "^30.3.0",
     "lefthook": "^2.1.4",
     "nativewind": "5.0.0-preview.3",
@@ -427,13 +428,14 @@
     "typescript": "^6.0.2"
   },
   "peerDependencies": {
+    "@apollo/client": ">=4",
     "@callstack/liquid-glass": ">=0.7.0",
     "@react-native-community/datetimepicker": ">=8.0.0",
-    "@tanstack/react-query": ">=5",
     "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
     "@shopify/flash-list": ">=2.0.0",
+    "graphql": ">=16",
     "nativewind": ">=5.0.0-preview.1",
     "react": "*",
     "react-native": "*",
@@ -448,6 +450,12 @@
     "react-native-svg": ">=13.0.0"
   },
   "peerDependenciesMeta": {
+    "@apollo/client": {
+      "optional": true
+    },
+    "graphql": {
+      "optional": true
+    },
     "react-native-mmkv": {
       "optional": true
     }

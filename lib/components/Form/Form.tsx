@@ -1,4 +1,3 @@
-import type { UseMutationResult } from '@tanstack/react-query';
 import type React from 'react';
 import { Children, cloneElement, Fragment, isValidElement, useCallback } from 'react';
 import {
@@ -15,6 +14,24 @@ import { cn } from '../../utils/cn';
 import { type FieldMapping, mapApiErrorsToForm } from '../../utils/formHelpers';
 import { Button } from '../Button';
 import { StaticAlert } from '../StaticAlert';
+
+// A field component can declare how <Form> should bind react-hook-form to it: which prop receives the
+// value and which receives the change handler. Defaults to a text input (value + onChangeText). e.g.
+// RadioGroup → { valueProp: 'value', changeProp: 'onValueChange' }; Checkbox → { valueProp: 'checked',
+// changeProp: 'onCheckedChange' }. Attach it as a static on the component (read via child.type).
+export interface FieldBinding {
+  valueProp: string;
+  changeProp: string;
+  /** Also wire onBlur + ref (text inputs). */
+  blur?: boolean;
+}
+
+// Minimal mutation contract (decoupled from TanStack): anything exposing isPending + mutateAsync — an
+// Apollo mutation result, a TanStack mutation, or a hand-rolled one all satisfy this.
+export interface FormMutationLike<TData = unknown, TVariables = unknown> {
+  isPending: boolean;
+  mutateAsync: (variables: TVariables) => Promise<TData>;
+}
 
 function processChildren<
   TFieldValues extends FieldValues = FieldValues,
@@ -37,6 +54,12 @@ function processChildren<
 
     if (!isFragment && childProps.name && typeof childProps.name === 'string') {
       const name = childProps.name as FieldPath<TFieldValues>;
+      // Bind per the field component's declared contract; default to a text input.
+      const binding: FieldBinding = (child.type as { fieldBinding?: FieldBinding }).fieldBinding ?? {
+        valueProp: 'value',
+        changeProp: 'onChangeText',
+        blur: true,
+      };
 
       return (
         <Controller
@@ -44,19 +67,18 @@ function processChildren<
           control={control}
           name={name}
           render={({ field, fieldState }) => {
-            const fieldProps = {
-              value: field.value,
-              onChangeText: field.onChange,
-              onBlur: field.onBlur,
-              ref: field.ref,
-            };
-
-            return cloneElement(child, {
-              ...childProps,
-              ...fieldProps,
+            const fieldProps: Record<string, unknown> = {
+              [binding.valueProp]: field.value,
+              [binding.changeProp]: field.onChange,
               error: fieldState.error?.message || (fieldState.error ? 'Invalid' : undefined),
               name: undefined,
-            });
+            };
+            if (binding.blur) {
+              fieldProps.onBlur = field.onBlur;
+              fieldProps.ref = field.ref;
+            }
+
+            return cloneElement(child, { ...childProps, ...fieldProps });
           }}
         />
       );
@@ -107,7 +129,7 @@ export interface FormProps<
   rootErrorClassName?: string;
   rootErrorAction?: React.ReactNode;
   fieldMapping?: FieldMapping;
-  mutation?: UseMutationResult<TMutationData, TMutationError, TMutationVariables, unknown>;
+  mutation?: FormMutationLike<TMutationData, TMutationVariables>;
   transformSubmit?: (
     data: TTransformedValues extends undefined ? TFieldValues : TTransformedValues,
   ) => TMutationVariables;

@@ -1,3 +1,4 @@
+import { gql } from '@apollo/client';
 import { forwardRef } from 'react';
 import type { View } from 'react-native';
 import { Select, type SelectOption, type SelectProps } from '@vritti/quantum-ui-native/Select';
@@ -10,9 +11,42 @@ export type PurchaseOrderItemSelectorParams = {
   excludeOnGoodsReceiptId?: string;
 };
 
-export type PurchaseOrderItemSelectorProps = Omit<SelectProps, 'optionsEndpoint' | 'params'> & {
+export type PurchaseOrderItemSelectorProps = Omit<
+  SelectProps,
+  'optionsQuery' | 'optionsDataKey' | 'optionsEndpoint' | 'params'
+> & {
   params: PurchaseOrderItemSelectorParams;
 };
+
+// GraphQL options query — forwards the shared SelectOptionsInput plus the PO line params (purchaseOrderId,
+// excludeOnGoodsReceiptId) to the server's `purchaseOrderItemsOptions` resolver, which reuses the existing
+// purchase-order-items gateway `.select()`.
+const PURCHASE_ORDER_ITEMS_OPTIONS = gql`
+  query PurchaseOrderItemsOptions(
+    $input: SelectOptionsInput
+    $purchaseOrderId: String!
+    $excludeOnGoodsReceiptId: String
+  ) {
+    purchaseOrderItemsOptions(
+      input: $input
+      purchaseOrderId: $purchaseOrderId
+      excludeOnGoodsReceiptId: $excludeOnGoodsReceiptId
+    ) {
+      options {
+        value
+        label
+        description
+        groupId
+        additionals
+      }
+      groups {
+        id
+        name
+      }
+      hasMore
+    }
+  }
+`;
 
 const DEFAULT_FIELD_KEYS = {
   valueKey: 'id',
@@ -55,8 +89,6 @@ function defaultTransformDescription(value: string): string {
 
 // Pre-configured Select for purchase-order line items. The option `additionals` carry
 // (inventoryItemId, uomId, unitPrice, currencyCode, allowDecimal, symbol, orderedQuantity, receivedQuantity).
-// NOTE: this endpoint (commerce-api/purchase-order-items/select) has no core-server gateway route yet —
-// ported for web parity; it will not load until that route is added.
 export const PurchaseOrderItemSelector = forwardRef<View, PurchaseOrderItemSelectorProps>(
   ({ fieldKeys, params, ...props }, ref) => (
     <Select
@@ -64,8 +96,12 @@ export const PurchaseOrderItemSelector = forwardRef<View, PurchaseOrderItemSelec
       label="Purchase Order Item"
       placeholder="Select item from purchase order"
       searchable
-      optionsEndpoint="commerce-api/purchase-order-items/select"
-      params={params}
+      optionsQuery={PURCHASE_ORDER_ITEMS_OPTIONS}
+      optionsDataKey="purchaseOrderItemsOptions"
+      params={{
+        purchaseOrderId: params.purchaseOrderId,
+        ...(params.excludeOnGoodsReceiptId ? { excludeOnGoodsReceiptId: params.excludeOnGoodsReceiptId } : {}),
+      }}
       transformLabel={defaultTransformLabel}
       transformDescription={defaultTransformDescription}
       {...props}

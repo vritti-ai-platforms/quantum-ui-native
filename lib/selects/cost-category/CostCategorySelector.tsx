@@ -1,8 +1,30 @@
+import { gql } from '@apollo/client';
 import { forwardRef } from 'react';
 import type { View } from 'react-native';
 import { Select, type SelectOption, type SelectProps } from '@vritti/quantum-ui-native/Select';
 
-export type CostCategorySelectorProps = Omit<SelectProps, 'optionsEndpoint'>;
+export type CostCategorySelectorProps = Omit<SelectProps, 'optionsQuery' | 'optionsDataKey' | 'optionsEndpoint'>;
+
+// GraphQL options query — forwards the shared SelectOptionsInput to the server's `costCategoriesOptions`
+// resolver, which reuses the existing cost-category `select`. additionalKeys expose kind + code.
+const COST_CATEGORIES_OPTIONS = gql`
+  query CostCategoriesOptions($input: SelectOptionsInput) {
+    costCategoriesOptions(input: $input) {
+      options {
+        value
+        label
+        description
+        groupId
+        additionals
+      }
+      groups {
+        id
+        name
+      }
+      hasMore
+    }
+  }
+`;
 
 const DEFAULT_FIELD_KEYS = {
   valueKey: 'id',
@@ -17,9 +39,7 @@ function defaultTransformDescription(value: string, option: SelectOption): strin
 }
 
 // Pre-configured Select for cost-category selection. Description = the category's `kind` enum value
-// (item / freight / duty / insurance / service / other). NOTE: this endpoint
-// (commerce-api/cost-categories/select) has no core-server gateway route yet — ported for web parity;
-// it will not load until that route is added.
+// (item / freight / duty / insurance / service / other).
 export const CostCategorySelector = forwardRef<View, CostCategorySelectorProps>(
   ({ fieldKeys, ...props }, ref) => (
     <Select
@@ -27,7 +47,8 @@ export const CostCategorySelector = forwardRef<View, CostCategorySelectorProps>(
       label="Cost Category"
       placeholder="Select cost category"
       searchable
-      optionsEndpoint="commerce-api/cost-categories/select"
+      optionsQuery={COST_CATEGORIES_OPTIONS}
+      optionsDataKey="costCategoriesOptions"
       transformDescription={defaultTransformDescription}
       {...props}
       fieldKeys={{ ...DEFAULT_FIELD_KEYS, ...fieldKeys }}

@@ -1,3 +1,4 @@
+import { gql } from '@apollo/client';
 import { forwardRef } from 'react';
 import type { View } from 'react-native';
 import { Select, type SelectOption, type SelectProps } from '@vritti/quantum-ui-native/Select';
@@ -11,9 +12,44 @@ export type SupplierItemSelectorParams = {
   excludeOnGoodsReceiptId?: string;
 };
 
-export type SupplierItemSelectorProps = Omit<SelectProps, 'optionsEndpoint' | 'params'> & {
+export type SupplierItemSelectorProps = Omit<
+  SelectProps,
+  'optionsQuery' | 'optionsDataKey' | 'optionsEndpoint' | 'params'
+> & {
   params?: SupplierItemSelectorParams;
 };
+
+// GraphQL options query — forwards the shared SelectOptionsInput plus the supplier item params (supplierId,
+// excludeOnPurchaseOrderId, excludeOnGoodsReceiptId) to the server's `supplierItemsOptions` resolver, which
+// reuses the existing supplier-items gateway `.select()`.
+const SUPPLIER_ITEMS_OPTIONS = gql`
+  query SupplierItemsOptions(
+    $input: SelectOptionsInput
+    $supplierId: String
+    $excludeOnPurchaseOrderId: String
+    $excludeOnGoodsReceiptId: String
+  ) {
+    supplierItemsOptions(
+      input: $input
+      supplierId: $supplierId
+      excludeOnPurchaseOrderId: $excludeOnPurchaseOrderId
+      excludeOnGoodsReceiptId: $excludeOnGoodsReceiptId
+    ) {
+      options {
+        value
+        label
+        description
+        groupId
+        additionals
+      }
+      groups {
+        id
+        name
+      }
+      hasMore
+    }
+  }
+`;
 
 const DEFAULT_FIELD_KEYS = {
   valueKey: 'id',
@@ -54,8 +90,8 @@ function defaultTransformDescription(value: string): string {
 }
 
 // Pre-configured Select for inventory items offered by suppliers. Pass supplierId via `params` to scope
-// to a single supplier. NOTE: core-server serves this at /commerce-api/inventory-items/supplier-items/select
-// (the web package's "commerce-api/supplier-items/select" is a latent path mismatch).
+// to a single supplier; the option `additionals` carry (symbol, unitPrice, currencyCode, allowDecimal,
+// inventoryItemId, uomId).
 export const SupplierItemSelector = forwardRef<View, SupplierItemSelectorProps>(
   ({ fieldKeys, params, ...props }, ref) => (
     <Select
@@ -63,8 +99,13 @@ export const SupplierItemSelector = forwardRef<View, SupplierItemSelectorProps>(
       label="Supplier Item"
       placeholder="Select supplier item"
       searchable
-      optionsEndpoint="commerce-api/inventory-items/supplier-items/select"
-      params={params}
+      optionsQuery={SUPPLIER_ITEMS_OPTIONS}
+      optionsDataKey="supplierItemsOptions"
+      params={{
+        ...(params?.supplierId ? { supplierId: params.supplierId } : {}),
+        ...(params?.excludeOnPurchaseOrderId ? { excludeOnPurchaseOrderId: params.excludeOnPurchaseOrderId } : {}),
+        ...(params?.excludeOnGoodsReceiptId ? { excludeOnGoodsReceiptId: params.excludeOnGoodsReceiptId } : {}),
+      }}
       transformLabel={defaultTransformLabel}
       transformDescription={defaultTransformDescription}
       {...props}
