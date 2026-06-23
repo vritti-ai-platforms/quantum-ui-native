@@ -64,6 +64,15 @@ export function ScreenHeaderBase({
   const mutedVar = useVar('--muted');
   const fgVar = useVar('--foreground');
   const mutedFgVar = useVar('--muted-foreground');
+  // Deepen the muted fill so the search pill reads with more weight than the plain --muted token —
+  // localized to this pill (no colors.ts change). Stays theme-aware: darken in light, lighten in dark.
+  const pillFill = (() => {
+    if (!mutedVar) return undefined;
+    const [h, s, l] = mutedVar.trim().split(/\s+/);
+    const lightness = Number.parseFloat(l);
+    if (Number.isNaN(lightness)) return `hsl(${mutedVar})`;
+    return `hsl(${h} ${s} ${lightness > 50 ? lightness - 3: lightness + 3}%)`;
+  })();
 
   const hasTabs = variant === 'tabs' && (tabs?.length ?? 0) > 0;
   const hasActions = variant === 'standard' && (leftActions != null || rightActions != null);
@@ -152,13 +161,13 @@ export function ScreenHeaderBase({
         // icon/input once the pill gets too short.
         <Animated.View className="overflow-hidden px-4 pb-2" style={searchRowStyle}>
           <View
-            className="flex-1 flex-row items-center gap-2 overflow-hidden rounded-full px-4"
-            style={{ backgroundColor: mutedVar ? `hsl(${mutedVar})` : undefined }}
+            className="flex-1 flex-row items-center  gap-2 overflow-hidden rounded-full px-5"
+            style={{ backgroundColor: pillFill }}
           >
-            <DynamicIcon icon={SEARCH_ICON} size={18} className="text-muted-foreground" />
+            <DynamicIcon icon={SEARCH_ICON} size={14} style={{marginRight: 2,marginTop: 4}} className="text-muted-foreground" />
             <TextInput
-              className="flex-1 text-base"
-              style={{ color: fgVar ? `hsl(${fgVar})` : undefined, padding: 0 }}
+              className="flex-1 text-base "
+              style={{ color: fgVar ? `hsl(${fgVar})` : undefined, paddingLeft:2 }}
               placeholder={searchPlaceholder}
               placeholderTextColor={mutedFgVar ? `hsl(${mutedFgVar})` : undefined}
               value={searchText}

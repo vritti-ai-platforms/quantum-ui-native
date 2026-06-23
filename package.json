@@ -200,6 +200,11 @@
       "types": "./dist/typescript/lib/hooks/index.d.ts",
       "default": "./dist/module/hooks/index.js"
     },
+    "./apollo": {
+      "source": "./lib/apollo/index.ts",
+      "types": "./dist/typescript/lib/apollo/index.d.ts",
+      "default": "./dist/module/apollo/index.js"
+    },
     "./config": {
       "source": "./lib/config/index.ts",
       "types": "./dist/typescript/lib/config/index.d.ts",
@@ -556,6 +561,7 @@
     "@rn-primitives/select": "^1.4.0",
     "@rn-primitives/slot": "^1.4.0",
     "@rn-primitives/tooltip": "^1.4.0",
+    "apollo3-cache-persist": "^0.15.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
