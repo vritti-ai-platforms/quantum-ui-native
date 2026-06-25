@@ -10,6 +10,7 @@ export * from './FlashList';
 export * from './Form';
 export * from './Label';
 export * from './ListItem';
+export * from './MenuButton';
 export * from './PasswordField';
 export * from './Progress';
 export * from './PushNavigator';

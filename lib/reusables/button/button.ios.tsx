@@ -18,7 +18,10 @@ const buttonVariants = cva(
         success: 'bg-success',
         outline: 'bg-transparent border border-primary',
         ghost: 'bg-transparent',
-        glass: 'bg-transparent',
+        // overflow-visible so the native iOS-26 interactive grow/shimmer (and the shadow) aren't clipped
+        // by the base `overflow-hidden`. Safe: the LiquidGlassView self-rounds via its own borderRadius and
+        // glass is bg-transparent, so there's no square-corner/background leak.
+        glass: 'bg-transparent overflow-visible',
         link: 'bg-transparent shadow-none',
       },
       size: {
@@ -55,6 +58,11 @@ const buttonTextVariants = cva('text-foreground text-sm font-medium', {
       icon: '',
     },
   },
+  compoundVariants: [
+    // Glass ICON button: high-contrast icon (foreground = black in light / white in dark), not the brand
+    // `primary` used by glass text buttons. DynamicIcon resolves the winning text-color class from context.
+    { variant: 'glass', size: 'icon', className: 'text-foreground' },
+  ],
   defaultVariants: {
     variant: 'default',
     size: 'default',
@@ -135,7 +143,10 @@ function Button({
           <LiquidGlassView
             style={[StyleSheet.absoluteFillObject, { borderRadius: radius, borderCurve: 'continuous' }]}
             effect={resolvedVariant === 'glass' ? 'regular' : 'none'}
-            interactive={false}
+            // Native iOS-26 interactive glass: grows + shimmers on touch (UIGlassEffect.isInteractive).
+            // Glass only resolves on iOS >= 26 (older falls back to 'default'), so this stays off there.
+            // `interactive` is mount-only in @callstack/liquid-glass — fine, a button's variant is constant.
+            interactive={resolvedVariant === 'glass'}
           />
         )}
         <View className="z-10 flex-row items-center justify-center gap-2">{children}</View>
