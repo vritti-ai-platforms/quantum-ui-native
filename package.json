@@ -365,6 +365,7 @@
     "prepare": "pnpm run build",
     "nitrogen": "nitrogen",
     "typecheck": "tsc",
+    "generate:material-codepoints": "node scripts/generate-material-symbols-codepoints.mjs",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
     "release": "release-it --only-version"
@@ -396,7 +397,6 @@
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.0.0",
     "@react-native-community/datetimepicker": "^8.0.0",
-    "@react-native-vector-icons/material-icons": "^12.3.0",
     "@react-native/babel-preset": "0.83.0",
     "@react-native/eslint-config": "0.83.0",
     "@react-navigation/bottom-tabs": "8.0.0-alpha.22",
@@ -445,7 +445,6 @@
     "@apollo/client": ">=4",
     "@callstack/liquid-glass": ">=0.7.0",
     "@react-native-community/datetimepicker": ">=8.0.0",
-    "@react-native-vector-icons/material-icons": ">=12.0.0",
     "@react-navigation/bottom-tabs": ">=8.0.0-alpha.0",
     "@react-navigation/native": ">=8.0.0-alpha.0",
     "@shopify/flash-list": ">=2.0.0",

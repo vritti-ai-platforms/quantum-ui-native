@@ -9,7 +9,6 @@ import {
   requireMobileStorageAdapter,
   setMobileStorageAdapter,
   writeRefreshToken,
-  writeSelectedDeploymentBaseURL,
   writeStoredMobileBaseURL,
 } from './storage';
 
@@ -143,17 +142,6 @@ export async function setMobileBaseURL(baseURL: string): Promise<void> {
     storage,
   });
   await writeStoredMobileBaseURL(baseURL);
-}
-
-export async function setSelectedDeploymentBaseURL(baseURL: string): Promise<void> {
-  const storage = requireMobileStorageAdapter();
-
-  configureMobileAxios({
-    baseURL,
-    auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
-    storage,
-  });
-  await writeSelectedDeploymentBaseURL(baseURL);
 }
 
 export async function getStoredMobileBaseURL(): Promise<string | null> {

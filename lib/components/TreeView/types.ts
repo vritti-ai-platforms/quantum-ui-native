@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { PlatformIconDescriptor } from '../DynamicIcon';
 
 // Mirrors @vritti/quantum-ui's web TreeView API, RN-adapted: icons are PlatformIconDescriptors
-// (sfSymbol/materialIcon) rendered via DynamicIcon, not lucide components.
+// (sfSymbol/materialSymbol) rendered via DynamicIcon, not lucide components.
 export interface TreeDataItem {
   id: string;
   name: string;

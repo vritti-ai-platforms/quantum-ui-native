@@ -31,7 +31,8 @@
       "@vritti/quantum-ui-native/config": ["./lib/config/index"],
       "@vritti/quantum-ui-native/types": ["./lib/types/index"],
       "@vritti/quantum-ui-native/utils/axios": ["./lib/utils/axios"],
-      "@vritti/quantum-ui-native/utils/cn": ["./lib/utils/cn"]
+      "@vritti/quantum-ui-native/utils/cn": ["./lib/utils/cn"],
+      "nativewind": ["./node_modules/nativewind/dist/typescript/commonjs/src/index"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

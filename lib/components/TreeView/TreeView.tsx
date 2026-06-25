@@ -96,9 +96,9 @@ const SHIFT_MS = 160;
 // open folder (open, yellow), leaves get a file. iOS SF Symbols has NO open-folder glyph (folder.fill
 // is just the filled same-shape folder, so it reads as "same folder"), so the open state uses
 // `tray.full.fill` — a genuinely open container — on iOS; Android gets the real `folder-open`.
-const FOLDER: PlatformIconDescriptor = { sfSymbol: 'folder', materialIcon: 'folder' };
-const FOLDER_OPEN: PlatformIconDescriptor = { sfSymbol: 'folder.badge.plus', materialIcon: 'folder-open' };
-const FILE: PlatformIconDescriptor = { sfSymbol: 'doc', materialIcon: 'description' };
+const FOLDER: PlatformIconDescriptor = { sfSymbol: 'folder', materialSymbol: 'folder' };
+const FOLDER_OPEN: PlatformIconDescriptor = { sfSymbol: 'folder.badge.plus', materialSymbol: 'folder_open' };
+const FILE: PlatformIconDescriptor = { sfSymbol: 'doc', materialSymbol: 'description' };
 const FOLDER_OPEN_COLOR = '#EAB308'; // deliberate file-explorer folder-yellow (no yellow theme token)
 
 // Icon precedence: per-node selected/open/icon → consumer default node/leaf → built-in folder/file.

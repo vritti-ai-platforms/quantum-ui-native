@@ -23,8 +23,8 @@ import { useBottomSheetFullContext } from './BottomSheetFullContext';
 const HEADER_CONTENT_HEIGHT = 56;
 const MORPH_DISTANCE = 50;
 
-const CLOSE_ICON = { sfSymbol: 'chevron.down', materialIcon: 'keyboard-arrow-down' } as const;
-const GRABBER_ICON = { sfSymbol: 'chevron.compact.down', materialIcon: 'remove' } as const;
+const CLOSE_ICON = { sfSymbol: 'chevron.down', materialSymbol: 'keyboard_arrow_down' } as const;
+const GRABBER_ICON = { sfSymbol: 'chevron.compact.down', materialSymbol: 'remove' } as const;
 
 const IOS_HEADER_BG =
   Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.background, dark: THEME.dark.background }) : null;

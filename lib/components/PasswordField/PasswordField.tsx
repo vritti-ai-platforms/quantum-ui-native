@@ -50,8 +50,8 @@ function PasswordField({
       <DynamicIcon
         icon={
           showPassword
-            ? { sfSymbol: 'eye.slash', materialIcon: 'visibility-off' }
-            : { sfSymbol: 'eye', materialIcon: 'visibility' }
+            ? { sfSymbol: 'eye.slash', materialSymbol: 'visibility_off' }
+            : { sfSymbol: 'eye', materialSymbol: 'visibility' }
         }
         size={14}
         className="text-muted-foreground"
@@ -75,7 +75,7 @@ function PasswordField({
       {showMatchIndicator && passwordsMatch && !error && (
         <View className="flex-row items-center gap-1 mt-0.5">
           <DynamicIcon
-            icon={{ sfSymbol: 'checkmark.circle', materialIcon: 'check-circle' }}
+            icon={{ sfSymbol: 'checkmark.circle', materialSymbol: 'check_circle' }}
             size={12}
             className="text-success"
           />

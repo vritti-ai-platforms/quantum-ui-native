@@ -120,9 +120,6 @@ importers:
       '@react-native-menu/menu':
         specifier: 2.0.0
         version: 2.0.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@react-native-vector-icons/material-icons':
-        specifier: ^12.3.0
-        version: 12.5.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       '@react-native/babel-preset':
         specifier: 0.83.0
         version: 0.83.0(@babel/core@7.29.0)
@@ -255,9 +252,6 @@ importers:
       '@callstack/liquid-glass':
         specifier: ^0.7.1
         version: 0.7.1(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      '@react-native-vector-icons/material-icons':
-        specifier: ^12.3.0
-        version: 12.5.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       '@react-navigation/bottom-tabs':
         specifier: 8.0.0-alpha.22
         version: 8.0.0-alpha.22(9de762ea53b9d3a92dd11d90bd067819)
@@ -2585,25 +2579,6 @@ packages:
 
   '@react-native-menu/menu@2.0.0':
     resolution: {integrity: sha512-hb8Mirw6aKPGONhgo52IiNpwHtISVrgCT3rMdFX1qS7eOFNzOcQh8d2UDnaH5zVpxN+QuvWtaaiRMGFpIjzdtA==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
-  '@react-native-vector-icons/common@12.4.2':
-    resolution: {integrity: sha512-15ViuwfYdkQ79VE6PiQjsGyQcEvhv4lgguhIeQU4pXLXRAFhl89Q8FdKDrGZh7+a/8WMqT1v2+JtghdoGKDE6Q==}
-    engines: {node: '>=20.19.0 <21.0.0 || >=22.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@react-native-vector-icons/get-image': ^12.3.0
-      react: '*'
-      react-native: '*'
-    peerDependenciesMeta:
-      '@react-native-vector-icons/get-image':
-        optional: true
-
-  '@react-native-vector-icons/material-icons@12.5.0':
-    resolution: {integrity: sha512-OrtQ2ezxZQ+06J6RTlNS+i2FMssy+VduXnZrEOnW/ifLA7sVeUsCyaK4wh5u4ANKmPkg2EKlltKOk9QNLYy4sg==}
-    engines: {node: '>= 18.0.0'}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -5026,10 +5001,6 @@ packages:
     resolution: {integrity: sha512-v2ZsoEuVHYy8ZIlYqwPe/39Cy+cFDzp4dXPaxNvkEuouymu+2Jbz0PxpKarJHYJTmv2HWT3O382qY8l4jMWthw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  find-up@7.0.0:
-    resolution: {integrity: sha512-YyZM99iHrqLKjmt4LJDj58KI+fYyufRLBSYcqycxf//KpBk9FoewoGX0450m9nB44qrZnovzC2oeP5hUibxc/g==}
-    engines: {node: '>=18'}
-
   flat-cache@4.0.1:
     resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
     engines: {node: '>=16'}
@@ -5170,6 +5141,7 @@ packages:
   git-raw-commits@5.0.1:
     resolution: {integrity: sha512-Y+csSm2GD/PCSh6Isd/WiMjNAydu0VBiG9J7EdQsNA5P9uXvLayqjmTsNlK5Gs9IhblFZqOU0yid5Il5JPoLiQ==}
     engines: {node: '>=18'}
+    deprecated: Deprecated and no longer maintained. Use @conventional-changelog/git-client instead.
     hasBin: true
 
   git-up@8.1.1:
@@ -7797,10 +7769,6 @@ packages:
   unicode-property-aliases-ecmascript@2.2.0:
     resolution: {integrity: sha512-hpbDzxUY9BFwX+UeBnxv3Sh1q7HFxj48DTmXchNgRa46lO8uj3/1iEn3MiNUYTg1g9ctIqXCCERn8gYZhHC5lQ==}
     engines: {node: '>=4'}
-
-  unicorn-magic@0.1.0:
-    resolution: {integrity: sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ==}
-    engines: {node: '>=18'}
 
   unicorn-magic@0.3.0:
     resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
@@ -11074,22 +11042,6 @@ snapshots:
       react: 19.2.0
       react-native: 0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
 
-  '@react-native-vector-icons/common@12.4.2(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      find-up: 7.0.0
-      picocolors: 1.1.1
-      plist: 3.1.0
-      react: 19.2.0
-      react-native: 0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
-
-  '@react-native-vector-icons/material-icons@12.5.0(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@react-native-vector-icons/common': 12.4.2(react-native@0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-native: 0.83.0(@babel/core@7.29.0)(@react-native-community/cli@20.0.0(typescript@6.0.2))(@react-native/metro-config@0.83.0(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
-    transitivePeerDependencies:
-      - '@react-native-vector-icons/get-image'
-
   '@react-native/assets-registry@0.83.0': {}
 
   '@react-native/babel-plugin-codegen@0.83.0(@babel/core@7.29.0)':
@@ -13965,12 +13917,6 @@ snapshots:
     dependencies:
       locate-path: 7.2.0
       path-exists: 5.0.0
-
-  find-up@7.0.0:
-    dependencies:
-      locate-path: 7.2.0
-      path-exists: 5.0.0
-      unicorn-magic: 0.1.0
 
   flat-cache@4.0.1:
     dependencies:
@@ -17182,8 +17128,6 @@ snapshots:
   unicode-match-property-value-ecmascript@2.2.1: {}
 
   unicode-property-aliases-ecmascript@2.2.0: {}
-
-  unicorn-magic@0.1.0: {}
 
   unicorn-magic@0.3.0: {}
 

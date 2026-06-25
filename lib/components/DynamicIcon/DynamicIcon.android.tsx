@@ -1,11 +1,15 @@
-import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
-import { TextClassContext } from '../Text';
+import { Text } from 'react-native';
 import { cn } from '../../utils/index';
+import { TextClassContext } from '../Text';
+import codepoints from './materialSymbols.codepoints.json';
 import type { DynamicIconProps } from './types';
 
-// MaterialIcons reads `color` prop, not style.color — nativewind's lift to `color` is unreliable on Android v5-preview.
+const CODEPOINTS = codepoints as Record<string, number>;
+
+// Resolve the icon color inline from the className/nativewind var — nativewind's lift to `color` is
+// unreliable on Android v5-preview, so we pass an explicit `color` to the glyph <Text>.
 const CLASS_TO_VAR: Record<string, string> = {
   'text-foreground': '--foreground',
   'text-muted-foreground': '--muted-foreground',
@@ -54,13 +58,25 @@ export function DynamicIcon({
   const hsl = useVar(cssVar);
   const resolvedColor = color ?? (typeof hsl === 'string' ? `hsl(${hsl})` : undefined);
 
+  const cp = CODEPOINTS[icon.materialSymbol];
+  if (cp == null) return null;
+
   return (
-    <MaterialIcons
-      name={icon.materialIcon as MaterialIconsIconName}
-      color={resolvedColor}
-      size={size}
-      style={{ lineHeight: size, includeFontPadding: false }}
+    <Text
+      allowFontScaling={false}
+      style={{
+        // Android matches fontFamily by the bundled asset's FILE BASENAME (no res/font XML
+        // registration), so this must equal MaterialSymbols_400Regular.ttf — NOT the font's
+        // internal "Material Symbols" family name. Link via `npx react-native-asset`.
+        fontFamily: 'MaterialSymbols_400Regular',
+        fontSize: size,
+        lineHeight: size,
+        color: resolvedColor,
+        includeFontPadding: false,
+      }}
       {...props}
-    />
+    >
+      {String.fromCharCode(cp)}
+    </Text>
   );
 }

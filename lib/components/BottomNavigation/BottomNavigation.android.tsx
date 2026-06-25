@@ -1,4 +1,3 @@
-import { MaterialIcons, type MaterialIconsIconName } from '@react-native-vector-icons/material-icons';
 import {
   type BottomTabBarProps,
   type BottomTabNavigationOptions,
@@ -19,6 +18,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
+import codepoints from '../DynamicIcon/materialSymbols.codepoints.json';
 import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig } from './types';
@@ -27,10 +27,29 @@ const Tab = createBottomTabNavigator();
 
 const MAX_VISIBLE = 4;
 
+const CODEPOINTS = codepoints as Record<string, number>;
+
+// Renders a Material Symbols glyph (codepoint) as text in the bundled font — pure JS, reliable on old
+// Android (no native module, no ligatures). Mirrors DynamicIcon.android's approach.
+function MaterialSymbol({ name, size, color }: { name: string; size: number; color: string }) {
+  const cp = CODEPOINTS[name];
+  if (cp == null) return null;
+  return (
+    <Text
+      allowFontScaling={false}
+      // Android matches fontFamily by the bundled asset's FILE BASENAME (MaterialSymbols_400Regular.ttf),
+      // NOT the font's internal "Material Symbols" family name. Must match DynamicIcon.android.tsx.
+      style={{ fontFamily: 'MaterialSymbols_400Regular', fontSize: size, lineHeight: size, color, includeFontPadding: false }}
+    >
+      {String.fromCharCode(cp)}
+    </Text>
+  );
+}
+
 function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon'] {
   return {
     type: 'materialIcon',
-    name: route.icon.materialIcon ?? 'apps',
+    name: route.icon.materialSymbol ?? 'apps',
   } as unknown as BottomTabNavigationOptions['tabBarIcon'];
 }
 
@@ -54,14 +73,10 @@ function MoreListScreen() {
           android_ripple={{ color: theme.border }}
         >
           <View style={[styles.moreIconWrap, { backgroundColor: theme.muted }]}>
-            <MaterialIcons
-              name={(item.icon.materialIcon ?? 'apps') as MaterialIconsIconName}
-              size={22}
-              color={theme.foreground}
-            />
+            <MaterialSymbol name={item.icon.materialSymbol ?? 'apps'} size={22} color={theme.foreground} />
           </View>
           <Text style={[styles.rowLabel, { color: theme.foreground }]}>{item.label ?? item.name}</Text>
-          <MaterialIcons name={'chevron-right' as MaterialIconsIconName} size={20} color={theme.border} />
+          <MaterialSymbol name="chevron_right" size={20} color={theme.border} />
         </Pressable>
       ))}
     </ScreenContainer>
@@ -199,11 +214,10 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const isFocused = state.index === index;
 
           const iconOpt = options.tabBarIcon;
-          const iconName: MaterialIconsIconName = (
+          const iconName: string =
             iconOpt && typeof iconOpt === 'object' && !Array.isArray(iconOpt) && 'name' in iconOpt
               ? String((iconOpt as Record<string, unknown>).name)
-              : 'apps'
-          ) as MaterialIconsIconName;
+              : 'apps';
 
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -243,7 +257,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 interface TabButtonProps {
   index: number;
   progress: SharedValue<number>;
-  iconName: MaterialIconsIconName;
+  iconName: string;
   iconColor: string;
   activeIconColor: string;
   tabSize: number;
@@ -288,9 +302,9 @@ function TabButton({
       accessibilityLabel={accessibilityLabel}
     >
       <View style={[styles.iconSlot, { width: slotSize, height: slotSize }]}>
-        <MaterialIcons name={iconName} size={iconSize} color={iconColor} />
+        <MaterialSymbol name={iconName} size={iconSize} color={iconColor} />
         <Animated.View style={[styles.iconOverlay, activeIconStyle]} pointerEvents="none">
-          <MaterialIcons name={iconName} size={iconSize} color={activeIconColor} />
+          <MaterialSymbol name={iconName} size={iconSize} color={activeIconColor} />
         </Animated.View>
       </View>
     </Pressable>
@@ -414,7 +428,7 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
                 tabBarLabel: 'More',
                 tabBarIcon: {
                   type: 'materialIcon',
-                  name: 'more-horiz',
+                  name: 'more_horiz',
                 } as unknown as BottomTabNavigationOptions['tabBarIcon'],
               }}
             />

@@ -6,7 +6,6 @@ export interface MobileStorageAdapter {
 
 const REFRESH_TOKEN_KEY = 'vritti_refresh_token';
 const BASE_URL_KEY = 'vritti_api_base_url';
-const DEPLOYMENT_BASE_URL_KEY = 'vritti_deployment_base_url';
 
 let mobileStorage: MobileStorageAdapter | null = null;
 
@@ -53,12 +52,3 @@ export async function readStoredMobileBaseURL(): Promise<string | null> {
   return storage.getItem(BASE_URL_KEY);
 }
 
-export async function writeSelectedDeploymentBaseURL(baseURL: string): Promise<void> {
-  await requireMobileStorageAdapter().setItem(DEPLOYMENT_BASE_URL_KEY, baseURL);
-}
-
-export async function readSelectedDeploymentBaseURL(): Promise<string | null> {
-  const storage = getMobileStorageAdapter();
-  if (!storage) return null;
-  return storage.getItem(DEPLOYMENT_BASE_URL_KEY);
-}

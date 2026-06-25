@@ -42,7 +42,7 @@ export const BottomSheetBackgroundScalerProvider = ({ children }: { children: Re
   );
 };
 
-const CLOSE_ICON = { sfSymbol: 'xmark', materialIcon: 'close' } as const;
+const CLOSE_ICON = { sfSymbol: 'xmark', materialSymbol: 'close' } as const;
 const CLOSE_BUTTON_OFFSET = 56;
 
 // NativeWind className→variable lookup is unreliable inside LiquidGlassView on iOS 26+ — pass DynamicColorIOS so UIKit re-resolves at draw time.

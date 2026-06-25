@@ -1,12 +1,10 @@
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
-import type { MaterialSymbolProps } from '@react-navigation/native';
 import type React from 'react';
 import type { SFSymbol } from 'sf-symbols-typescript';
 
 export interface TabIcon {
   sfSymbol: SFSymbol;
-  materialSymbol?: MaterialSymbolProps['name'];
-  materialIcon?: string;
+  materialSymbol?: string;
 }
 
 interface RouteConfigBase {

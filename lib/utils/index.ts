@@ -1,34 +1,26 @@
-export { cn } from './cn';
-export {
-  type ApiErrorResponse,
-  type FieldError,
-  type FieldMapping,
-  type MapApiErrorsOptions,
-  mapApiErrorsToForm,
-} from './formHelpers';
 export {
   axios,
-  getAxios,
-  suppressErrorToasts,
-  restoreErrorToasts,
-  setToken,
-  getToken,
   clearToken,
-  setToastAdapter,
-  configureMobileAxios,
-  initializeMobileSession,
-  completeMobileLoginSession,
-  storeRefreshToken,
-  getRefreshToken,
   clearTokens,
-  setMobileBaseURL,
-  getStoredMobileBaseURL,
-  setSelectedDeploymentBaseURL,
+  completeMobileLoginSession,
+  configureMobileAxios,
+  getAxios,
   getOnSessionExpired,
+  getRefreshToken,
+  getStoredMobileBaseURL,
+  getToken,
+  initializeMobileSession,
   type MobileAxiosConfig,
   type MobileStorageAdapter,
+  restoreErrorToasts,
+  setMobileBaseURL,
+  setToastAdapter,
+  setToken,
+  storeRefreshToken,
+  suppressErrorToasts,
   type ToastAdapter,
 } from './axios';
+export { cn } from './cn';
 export {
   type CurrencyAmount,
   type FormattedValue,
@@ -38,7 +30,13 @@ export {
   formatNumber,
   formatString,
 } from './format';
-export { buildSlug, parseSlug, slugify } from './slug';
+export {
+  type ApiErrorResponse,
+  type FieldError,
+  type FieldMapping,
+  type MapApiErrorsOptions,
+  mapApiErrorsToForm,
+} from './formHelpers';
 export {
   chunk,
   cloneDeep,
@@ -63,3 +61,4 @@ export {
   uniqBy,
 } from './lodash';
 export { createMmkvStorageAdapter, createPreferences, type MMKV } from './mmkv';
+export { buildSlug, parseSlug, slugify } from './slug';

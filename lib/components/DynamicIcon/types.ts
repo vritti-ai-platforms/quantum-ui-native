@@ -1,6 +1,6 @@
 export interface PlatformIconDescriptor {
   sfSymbol: string;
-  materialIcon: string;
+  materialSymbol: string;
 }
 
 export interface DynamicIconProps {

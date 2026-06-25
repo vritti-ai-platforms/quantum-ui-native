@@ -21,7 +21,7 @@ const BACKDROP_FADE_AT = 20; // scroll offset over which a fading backdrop reach
 const TITLE_TOP_MARGIN = 16; // collapses on scroll alongside the title opacity
 const SEARCH_ROW_HEIGHT = 52; // collapsible search row (pill + bottom gap)
 
-const SEARCH_ICON: PlatformIconDescriptor = { sfSymbol: 'magnifyingglass', materialIcon: 'search' };
+const SEARCH_ICON: PlatformIconDescriptor = { sfSymbol: 'magnifyingglass', materialSymbol: 'search' };
 // MF-shared theme reader — className COLORS don't apply reliably across the federation boundary, so the
 // search pill resolves its fill/text/placeholder colors inline from the shared NativeWind variables.
 const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
