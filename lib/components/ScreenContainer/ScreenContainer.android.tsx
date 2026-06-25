@@ -1,10 +1,23 @@
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { useUnstableNativeVariable } from 'nativewind';
 import { type Context, createContext, type ReactNode, useContext } from 'react';
-import { type ScrollViewProps, View, type ViewProps } from 'react-native';
+import { type ScrollViewProps, useWindowDimensions, View, type ViewProps } from 'react-native';
 import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
+import { computeFloatingTabBarHeight } from '../BottomNavigation/tabBarInset';
 import { useScreenHeaderInset, useScreenScrollY } from './screenScrollRegistry';
+
+// Bottom space a screen must reserve. Inside the bottom-tab navigator (BottomTabBarHeightContext
+// is defined — react-navigation is a shared MF singleton, so this crosses the remote boundary)
+// reserve the floating pill's height, computed locally from insets+width (a host-provided context
+// would NOT reach a Module Federation remote). Outside tabs, reserve the system nav-bar inset.
+function useScreenBottomInset(): number {
+  const inTabs = useContext(BottomTabBarHeightContext) !== undefined;
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  return inTabs ? computeFloatingTabBarHeight(insets.bottom, width) : insets.bottom;
+}
 
 // HeaderShownContext via the same globalThis-keyed Map that
 // @react-navigation/elements uses internally (see the iOS file for the long
@@ -55,6 +68,9 @@ const ScrollableBody = ({
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
   const { top: safeAreaTop } = useSafeAreaInsets();
+  // Reserve bottom space so the last row clears the floating tab bar (or the system nav bar
+  // outside the tab navigator). See useScreenBottomInset for the MF-remote rationale.
+  const bottomPad = useScreenBottomInset();
   // useAnimatedScrollHandler writes scrollY (which drives a collapsing
   // ScreenHeader) on real scroll events.
   const onScroll = useAnimatedScrollHandler((event) => {
@@ -65,12 +81,15 @@ const ScrollableBody = ({
   // (heroHeight + insets.top). On iOS this gap is filled by
   // contentInsetAdjustmentBehavior="automatic", which has no effect on Android.
   const effectivePadding = headerInset > 0 ? headerInset + safeAreaTop : 0;
-  const composedContainerStyle =
-    effectivePadding > 0
-      ? contentContainerStyle != null
-        ? [{ paddingTop: effectivePadding }, contentContainerStyle]
-        : { paddingTop: effectivePadding }
-      : contentContainerStyle;
+  const padStyle: { paddingTop?: number; paddingBottom?: number } = {};
+  if (effectivePadding > 0) padStyle.paddingTop = effectivePadding;
+  if (bottomPad > 0) padStyle.paddingBottom = bottomPad;
+  const hasPad = padStyle.paddingTop != null || padStyle.paddingBottom != null;
+  const composedContainerStyle = hasPad
+    ? contentContainerStyle != null
+      ? [padStyle, contentContainerStyle]
+      : padStyle
+    : contentContainerStyle;
   return (
     <Animated.ScrollView
       showsVerticalScrollIndicator={false}
@@ -90,6 +109,8 @@ export const ScreenContainer = (props: ScreenContainerProps) => {
   const insets = useSafeAreaInsets();
   const isHeaderShown = useContext(HeaderShownContext) ?? false;
   const topPad = isHeaderShown ? 0 : insets.top;
+  // Floating tab bar height inside the tab navigator, else the system nav-bar inset.
+  const bottomPad = useScreenBottomInset();
 
   if (props.scrollable) {
     const { scrollable: _scrollable, className, style, ...rest } = props;
@@ -101,7 +122,12 @@ export const ScreenContainer = (props: ScreenContainerProps) => {
     <View
       {...rest}
       className={cn('flex-1', className)}
-      style={[{ backgroundColor: bgColor }, topPad > 0 ? { paddingTop: topPad } : null, style]}
+      style={[
+        { backgroundColor: bgColor },
+        topPad > 0 ? { paddingTop: topPad } : null,
+        bottomPad > 0 ? { paddingBottom: bottomPad } : null,
+        style,
+      ]}
     />
   );
 };

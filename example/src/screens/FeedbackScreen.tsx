@@ -1,33 +1,25 @@
-import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text } from '@vritti/quantum-ui-native/Text';
+import {
+  Chip,
+  CountBadge,
+  FormLabel,
+  KeyValue,
+  SectionHeader,
+  StatusDot,
+  TagGroup,
+} from '@vritti/quantum-ui-native/Label';
 import { Progress } from '@vritti/quantum-ui-native/Progress';
-import { Separator } from '@vritti/quantum-ui-native/Separator';
 import { Skeleton } from '@vritti/quantum-ui-native/Skeleton';
 import { Spinner } from '@vritti/quantum-ui-native/Spinner';
-import {
-  FormLabel,
-  Chip,
-  StatusDot,
-  SectionHeader,
-  CountBadge,
-  TagGroup,
-  KeyValue,
-} from '@vritti/quantum-ui-native/Label';
+import { Text } from '@vritti/quantum-ui-native/Text';
+import { useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
 
 export default function FeedbackScreen() {
-  const [chips, setChips] = useState([
-    'React Native',
-    'NativeWind',
-    'Tailwind',
-  ]);
+  const [chips, setChips] = useState(['React Native', 'NativeWind', 'Tailwind']);
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="p-5 pb-6 gap-6"
-    >
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-5 pb-6 gap-6">
       <Text variant="h2" className="text-foreground">
         Feedback
       </Text>
@@ -37,18 +29,6 @@ export default function FeedbackScreen() {
         <Progress value={65} />
         <Progress value={30} indicatorClassName="bg-success" />
         <Progress value={90} indicatorClassName="bg-destructive" />
-      </Section>
-
-      {/* Separator */}
-      <Section title="Separator">
-        <Text variant="muted">Above</Text>
-        <Separator />
-        <Text variant="muted">Below</Text>
-        <View className="flex-row items-center gap-3 h-6">
-          <Text variant="muted">Left</Text>
-          <Separator orientation="vertical" />
-          <Text variant="muted">Right</Text>
-        </View>
       </Section>
 
       {/* Skeleton */}
@@ -83,11 +63,7 @@ export default function FeedbackScreen() {
       <Section title="Chips">
         <View className="flex-row flex-wrap gap-2">
           {chips.map((chip) => (
-            <Chip
-              key={chip}
-              label={chip}
-              onRemove={() => setChips((c) => c.filter((t) => t !== chip))}
-            />
+            <Chip key={chip} label={chip} onRemove={() => setChips((c) => c.filter((t) => t !== chip))} />
           ))}
           <Chip label="Read-only" />
         </View>
@@ -104,11 +80,7 @@ export default function FeedbackScreen() {
 
       {/* SectionHeader */}
       <Section title="Section Header">
-        <SectionHeader
-          title="Recent Activity"
-          actionLabel="See All"
-          onAction={() => {}}
-        />
+        <SectionHeader title="Recent Activity" actionLabel="See All" onAction={() => {}} />
       </Section>
 
       {/* CountBadge */}

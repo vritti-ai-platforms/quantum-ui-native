@@ -46,6 +46,7 @@ export function DynamicIcon({
   color,
   size = 14,
   icon,
+  style,
   multicolor: _multicolor,
   scale: _scale,
   weight: _weight,
@@ -64,17 +65,22 @@ export function DynamicIcon({
   return (
     <Text
       allowFontScaling={false}
-      style={{
-        // Android matches fontFamily by the bundled asset's FILE BASENAME (no res/font XML
-        // registration), so this must equal MaterialSymbols_400Regular.ttf — NOT the font's
-        // internal "Material Symbols" family name. Link via `npx react-native-asset`.
-        fontFamily: 'MaterialSymbols_400Regular',
-        fontSize: size,
-        lineHeight: size,
-        color: resolvedColor,
-        includeFontPadding: false,
-      }}
       {...props}
+      // Caller `style` is MERGED after the glyph style (never replaces it) so an external
+      // marginTop/marginRight can't wipe fontFamily/fontSize/color and blank the glyph.
+      style={[
+        {
+          // Android matches fontFamily by the bundled asset's FILE BASENAME (no res/font XML
+          // registration), so this must equal MaterialSymbols_400Regular.ttf — NOT the font's
+          // internal "Material Symbols" family name. Link via `npx react-native-asset`.
+          fontFamily: 'MaterialSymbols_400Regular',
+          fontSize: size,
+          lineHeight: size,
+          color: resolvedColor,
+          includeFontPadding: false,
+        },
+        style,
+      ]}
     >
       {String.fromCharCode(cp)}
     </Text>

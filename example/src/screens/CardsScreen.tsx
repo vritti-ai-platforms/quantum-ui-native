@@ -1,22 +1,22 @@
 import { Button } from '@vritti/quantum-ui-native/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@vritti/quantum-ui-native/Card';
 import { CardPressable } from '@vritti/quantum-ui-native/CardPressable';
-import { ListItem } from '@vritti/quantum-ui-native/ListItem';
 import type { PlatformIconDescriptor } from '@vritti/quantum-ui-native/DynamicIcon';
 import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon';
 import { FlashList } from '@vritti/quantum-ui-native/FlashList';
+import { ListItem } from '@vritti/quantum-ui-native/ListItem';
 import { Text } from '@vritti/quantum-ui-native/Text';
 import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
 
 const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
-  account: { sfSymbol: 'person.crop.circle', materialIcon: 'person' },
+  account: { sfSymbol: 'person.crop.circle', materialSymbol: 'person' },
   alert: COMMON_ICONS.alertError,
-  bell: { sfSymbol: 'bell', materialIcon: 'notifications' },
-  mail: { sfSymbol: 'envelope', materialIcon: 'mail' },
-  phone: { sfSymbol: 'phone', materialIcon: 'phone' },
-  settings: { sfSymbol: 'gearshape', materialIcon: 'settings' },
-  upload: { sfSymbol: 'square.and.arrow.up', materialIcon: 'upload' },
+  bell: { sfSymbol: 'bell', materialSymbol: 'notifications' },
+  mail: { sfSymbol: 'envelope', materialSymbol: 'mail' },
+  phone: { sfSymbol: 'phone', materialSymbol: 'phone' },
+  settings: { sfSymbol: 'gearshape', materialSymbol: 'settings' },
+  upload: { sfSymbol: 'square.and.arrow.up', materialSymbol: 'upload' },
 };
 
 // Small leading-icon helper used in the ListItem demos.

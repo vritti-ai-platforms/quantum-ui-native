@@ -48,7 +48,7 @@ function MaterialSymbol({ name, size, color }: { name: string; size: number; col
 
 function resolveTabIcon(route: RouteConfig): BottomTabNavigationOptions['tabBarIcon'] {
   return {
-    type: 'materialIcon',
+    type: 'materialSymbol',
     name: route.icon.materialSymbol ?? 'apps',
   } as unknown as BottomTabNavigationOptions['tabBarIcon'];
 }
@@ -427,7 +427,7 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
               options={{
                 tabBarLabel: 'More',
                 tabBarIcon: {
-                  type: 'materialIcon',
+                  type: 'materialSymbol',
                   name: 'more_horiz',
                 } as unknown as BottomTabNavigationOptions['tabBarIcon'],
               }}

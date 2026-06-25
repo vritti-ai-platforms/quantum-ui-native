@@ -1,11 +1,11 @@
 import { useUnstableNativeVariable } from 'nativewind';
 import { type ReactNode, useState } from 'react';
-import { Image, type ImageSourcePropType, TextInput, View } from 'react-native';
+import { Image, type ImageSourcePropType, Platform, TextInput, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
 import { useScreenSearch } from '../ScreenContainer/screenSearchRegistry';
-import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 import { Text } from '../Text';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
 import { ScreenHeaderTabsBackground } from './ScreenHeaderTabsBackground';
@@ -71,7 +71,7 @@ export function ScreenHeaderBase({
     const [h, s, l] = mutedVar.trim().split(/\s+/);
     const lightness = Number.parseFloat(l);
     if (Number.isNaN(lightness)) return `hsl(${mutedVar})`;
-    return `hsl(${h} ${s} ${lightness > 50 ? lightness - 3: lightness + 3}%)`;
+    return `hsl(${h} ${s} ${lightness > 50 ? lightness - 3 : lightness + 3}%)`;
   })();
 
   const hasTabs = variant === 'tabs' && (tabs?.length ?? 0) > 0;
@@ -92,7 +92,12 @@ export function ScreenHeaderBase({
   useRegisterScreenHeaderTabs(hasTabs ? tabs : undefined);
 
   const containerStyle = useAnimatedStyle(() => {
-    const titleH = interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [titleArea, collapsedTarget], Extrapolation.CLAMP);
+    const titleH = interpolate(
+      scrollY.value,
+      [stage1, stage1 + COLLAPSE_AT],
+      [titleArea, collapsedTarget],
+      Extrapolation.CLAMP,
+    );
     const searchH = hasSearch ? interpolate(scrollY.value, [0, stage1], [searchHeight, 0], Extrapolation.CLAMP) : 0;
     return { height: titleH + searchH + insets.top };
   });
@@ -111,7 +116,9 @@ export function ScreenHeaderBase({
   const largeTitleStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT * 0.6], [1, 0], Extrapolation.CLAMP),
     marginTop: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [TITLE_TOP_MARGIN, 0], Extrapolation.CLAMP),
-    transform: [{ translateY: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [0, -12], Extrapolation.CLAMP) }],
+    transform: [
+      { translateY: interpolate(scrollY.value, [stage1, stage1 + COLLAPSE_AT], [0, -12], Extrapolation.CLAMP) },
+    ],
   }));
 
   // Search MINIMIZES (height → 0), it does not fade — overflow-hidden + justify-end make the pill slide
@@ -121,7 +128,12 @@ export function ScreenHeaderBase({
   }));
 
   const compactTitleStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [stage1 + COLLAPSE_AT * 0.55, stage1 + COLLAPSE_AT], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(
+      scrollY.value,
+      [stage1 + COLLAPSE_AT * 0.55, stage1 + COLLAPSE_AT],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
   }));
 
   return (
@@ -164,10 +176,17 @@ export function ScreenHeaderBase({
             className="flex-1 flex-row items-center  gap-2 overflow-hidden rounded-full px-5"
             style={{ backgroundColor: pillFill }}
           >
-            <DynamicIcon icon={SEARCH_ICON} size={14} style={{marginRight: 2,marginTop: 4}} className="text-muted-foreground" />
+            <DynamicIcon
+              icon={SEARCH_ICON}
+              size={14}
+              // items-center aligns the boxes, but the iOS SFSymbol's glyph sits optically high
+              // relative to the text — nudge it down a touch. Android's Text glyph needs no nudge.
+              style={{ marginRight: 2, marginTop: Platform.OS === 'ios' ? 2 : 0 }}
+              className="text-muted-foreground"
+            />
             <TextInput
-              className="flex-1 text-base "
-              style={{ color: fgVar ? `hsl(${fgVar})` : undefined, paddingLeft:2 }}
+              className="flex-1  "
+              style={{ color: fgVar ? `hsl(${fgVar})` : undefined, paddingLeft: 2 }}
               placeholder={searchPlaceholder}
               placeholderTextColor={mutedFgVar ? `hsl(${mutedFgVar})` : undefined}
               value={searchText}

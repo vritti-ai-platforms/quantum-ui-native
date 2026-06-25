@@ -6,19 +6,18 @@ import { COMMON_ICONS, DynamicIcon } from '@vritti/quantum-ui-native/DynamicIcon
 import { useTheme } from '@vritti/quantum-ui-native/hooks';
 import { StaticAlert } from '@vritti/quantum-ui-native/StaticAlert';
 import { Text } from '@vritti/quantum-ui-native/Text';
-import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Section } from '../components/Section';
 
 const SCREEN_ICONS: Record<string, PlatformIconDescriptor> = {
   arrowForward: COMMON_ICONS.arrowForward,
-  bell: { sfSymbol: 'bell', materialIcon: 'notifications' },
+  bell: { sfSymbol: 'bell', materialSymbol: 'notifications' },
   check: COMMON_ICONS.check,
-  favorite: { sfSymbol: 'heart', materialIcon: 'favorite' },
-  moon: { sfSymbol: 'moon.fill', materialIcon: 'dark-mode' },
-  settings: { sfSymbol: 'gearshape', materialIcon: 'settings' },
-  star: { sfSymbol: 'star.fill', materialIcon: 'star' },
-  sun: { sfSymbol: 'sun.max.fill', materialIcon: 'light-mode' },
+  favorite: { sfSymbol: 'heart', materialSymbol: 'favorite' },
+  moon: { sfSymbol: 'moon.fill', materialSymbol: 'dark_mode' },
+  settings: { sfSymbol: 'gearshape', materialSymbol: 'settings' },
+  star: { sfSymbol: 'star.fill', materialSymbol: 'star' },
+  sun: { sfSymbol: 'sun.max.fill', materialSymbol: 'light_mode' },
 };
 
 export default function ComponentsScreen() {
