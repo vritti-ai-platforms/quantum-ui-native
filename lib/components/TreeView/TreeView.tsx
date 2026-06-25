@@ -1,6 +1,6 @@
 import { useUnstableNativeVariable } from 'nativewind';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -198,7 +198,11 @@ function DraggableNode({
     let shift = 0;
     if (fromIndex < over && index > fromIndex && index <= over) shift = -ROW_PITCH;
     else if (fromIndex > over && index >= over && index < fromIndex) shift = ROW_PITCH;
-    return { transform: [{ translateY: withTiming(shift, { duration: SHIFT_MS }) }, { scale: 1 }], zIndex: 0, elevation: 0 };
+    return {
+      transform: [{ translateY: withTiming(shift, { duration: SHIFT_MS }) }, { scale: 1 }],
+      zIndex: 0,
+      elevation: 0,
+    };
   }, [isActiveGroup, isDragRow, fromIndex, index]);
 
   return (
@@ -278,7 +282,7 @@ export function TreeView({
 
   useEffect(() => {
     setOrderOverrides({});
-  }, [data]);
+  }, []);
 
   useEffect(() => {
     if (settlingKey === null) return;
@@ -300,7 +304,7 @@ export function TreeView({
     });
     // `items` is derived from `data`; depend on `data` to avoid an unstable array dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, expandAll, revealTargetId]);
+  }, [expandAll, revealTargetId, items]);
 
   const handleSelect = (item: TreeDataItem) => {
     if (!isControlled) setInternalSelected(item.id);
@@ -383,7 +387,8 @@ export function TreeView({
     const override = orderOverrides[parentKey];
     const ordered = override ? applyOrder(nodes, override) : nodes;
     // Web parity: reorderable only when enabled, ≥2 siblings, and none disabled / draggable:false.
-    const groupReorderable = draggable && ordered.length >= 2 && ordered.every((n) => !n.disabled && n.draggable !== false);
+    const groupReorderable =
+      draggable && ordered.length >= 2 && ordered.every((n) => !n.disabled && n.draggable !== false);
     const inActiveGroup = activeDrag?.parentKey === parentKey;
     // Suppress the node-level layout transition while this group is dragging (rows reflow via
     // transforms instead) and for the one settling render after a drop (snap, don't slide).
@@ -404,7 +409,11 @@ export function TreeView({
             <>
               <CardPressable
                 accessibilityRole="button"
-                accessibilityState={{ disabled: item.disabled, selected: isSelected, expanded: hasChildren ? isOpen : undefined }}
+                accessibilityState={{
+                  disabled: item.disabled,
+                  selected: isSelected,
+                  expanded: hasChildren ? isOpen : undefined,
+                }}
                 disabled={item.disabled}
                 onPress={() => {
                   // Body press = select only; expand/collapse lives on the right chevron adornment.
@@ -417,7 +426,14 @@ export function TreeView({
               >
                 <View className="flex-1 flex-row items-center">
                   {renderItem ? (
-                    renderItem({ item, level, isLeaf: !hasChildren, isSelected, isOpen: hasChildren ? isOpen : undefined, hasChildren })
+                    renderItem({
+                      item,
+                      level,
+                      isLeaf: !hasChildren,
+                      isSelected,
+                      isOpen: hasChildren ? isOpen : undefined,
+                      hasChildren,
+                    })
                   ) : (
                     <>
                       {/* DynamicIcon ignores layout className (margin/size) — reserve width + gap on a sized wrapper.
@@ -470,7 +486,10 @@ export function TreeView({
                   layout={nodeLayout}
                   // Indent + guide line only up to MAX_INDENT_DEPTH; deeper levels render flush so cards
                   // stay readable at any depth (the structural indent would otherwise accumulate forever).
-                  className={cn('overflow-hidden', level < MAX_INDENT_DEPTH && 'ml-2.5 border-l border-muted-foreground')}
+                  className={cn(
+                    'overflow-hidden',
+                    level < MAX_INDENT_DEPTH && 'ml-2.5 border-l border-muted-foreground',
+                  )}
                 >
                   {isOpen || closing.has(item.id) ? (
                     // While closing (!isOpen) the subtree is absolutely positioned so it leaves the
@@ -479,7 +498,13 @@ export function TreeView({
                     // this view's OWN pl (not the parent's) so the absolute box matches the in-flow width —
                     // an absolute child's inset-x-0 ignores the parent's padding (Yoga measures from the
                     // padding box), which would otherwise widen/shift the cards mid-close.
-                    <View className={cn('mt-1.5', level < MAX_INDENT_DEPTH && 'pl-2.5', !isOpen && 'absolute inset-x-0 top-0')}>
+                    <View
+                      className={cn(
+                        'mt-1.5',
+                        level < MAX_INDENT_DEPTH && 'pl-2.5',
+                        !isOpen && 'absolute inset-x-0 top-0',
+                      )}
+                    >
                       {renderNodes(item.children!, level + 1, item.id)}
                     </View>
                   ) : null}
