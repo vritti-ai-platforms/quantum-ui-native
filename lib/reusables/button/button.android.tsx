@@ -66,6 +66,8 @@ type ButtonProps = Omit<React.ComponentProps<typeof Pressable>, 'children'> &
   };
 
 function Button({ className, variant, size, onPressIn, onPressOut, ...props }: ButtonProps) {
+  // glass (liquid glass) is an iOS-26-only effect — render it as the ghost variant on Android.
+  const resolvedVariant = variant === 'glass' ? 'ghost' : variant;
   const [pressed, setPressed] = React.useState(false);
 
   const handlePressIn = React.useCallback(
@@ -84,7 +86,7 @@ function Button({ className, variant, size, onPressIn, onPressOut, ...props }: B
   );
 
   return (
-    <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
+    <TextClassContext.Provider value={buttonTextVariants({ variant: resolvedVariant, size })}>
       <Pressable
         android_ripple={{ color: 'rgba(0,0,0,0.14)', borderless: false }}
         onPressIn={handlePressIn}
@@ -92,7 +94,7 @@ function Button({ className, variant, size, onPressIn, onPressOut, ...props }: B
         className={cn(
           props.disabled && 'opacity-50',
           pressed && 'opacity-75',
-          buttonVariants({ variant, size }),
+          buttonVariants({ variant: resolvedVariant, size }),
           className,
         )}
         role="button"

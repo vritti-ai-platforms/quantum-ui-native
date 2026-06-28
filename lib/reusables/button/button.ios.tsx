@@ -87,8 +87,8 @@ function Button({
   ...props
 }: ButtonProps) {
   const { version } = usePlatformInfo();
-  // glass variant requires iOS 26 LiquidGlass — fall back to default on older devices
-  const resolvedVariant = variant === 'glass' && version < 26 ? 'default' : (variant ?? 'default');
+  // glass variant requires iOS 26 LiquidGlass — fall back to the ghost variant on older devices
+  const resolvedVariant = variant === 'glass' && version < 26 ? 'ghost' : (variant ?? 'default');
   // icon is rounded-full — the glass borderRadius must match (clamps to a circle) so the
   // specular rim follows the circular edge instead of being clipped to a rounded-square.
   const radius = size === 'icon' ? 9999 : size === 'sm' ? 16 : size === 'lg' ? 20 : 18;
@@ -143,9 +143,6 @@ function Button({
           <LiquidGlassView
             style={[StyleSheet.absoluteFillObject, { borderRadius: radius, borderCurve: 'continuous' }]}
             effect={resolvedVariant === 'glass' ? 'regular' : 'none'}
-            // Native iOS-26 interactive glass: grows + shimmers on touch (UIGlassEffect.isInteractive).
-            // Glass only resolves on iOS >= 26 (older falls back to 'default'), so this stays off there.
-            // `interactive` is mount-only in @callstack/liquid-glass — fine, a button's variant is constant.
             interactive={resolvedVariant === 'glass'}
           />
         )}

@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
+import { ScreenHeaderBackButton } from './ScreenHeaderBackButton';
 import { ScreenHeaderBase } from './ScreenHeaderBase';
 import type { ScreenHeaderProps } from './types';
 
@@ -67,8 +68,8 @@ export function ScreenHeader(props: ScreenHeaderProps) {
       animateBackdrop={animateBackdrop}
       tabsBackground={tabsBackground}
       backgroundImage={props.backgroundImage}
-      leftActions={props.variant === 'tabs' ? undefined : props.leftActions}
-      rightActions={props.variant === 'tabs' ? undefined : props.rightActions}
+      leftActions={props.leftActions ?? (props.backButton ? <ScreenHeaderBackButton /> : undefined)}
+      rightActions={props.rightActions}
       searchable={props.variant === 'tabs' ? undefined : props.searchable}
       searchPlaceholder={props.variant === 'tabs' ? undefined : props.searchPlaceholder}
       tabs={props.variant === 'tabs' ? props.tabs : undefined}

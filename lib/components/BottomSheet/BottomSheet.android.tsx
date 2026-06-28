@@ -244,7 +244,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
-                    <View key={scheme} className={isDark ? 'dark' : ''}>
+                    {/* No scheme key here: a scheme-keyed remount tears down a child FlashList (e.g. a
+                        Select's options list) mid-flight → FlashList "LayoutManager is not initialized"
+                        crash. VariableContextProvider re-themes the content reactively, so the remount
+                        isn't needed — never re-add key={scheme}. */}
+                    <View className={isDark ? 'dark' : ''}>
                       {children}
                     </View>
                   </VariableContextProvider>
@@ -259,7 +263,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               {themeCtx ? (
                 <ThemeContext.Provider value={themeCtx}>
                   <VariableContextProvider value={themeValues}>
-                    <View key={scheme} style={styles.fill} className={isDark ? 'dark' : ''}>
+                    {/* No scheme key — see the scrollable branch above (a remount would crash a child FlashList). */}
+                    <View style={styles.fill} className={isDark ? 'dark' : ''}>
                       {body}
                     </View>
                   </VariableContextProvider>

@@ -1,5 +1,6 @@
 import { useUnstableNativeVariable } from 'nativewind';
 import { View } from 'react-native';
+import { ScreenHeaderBackButton } from './ScreenHeaderBackButton';
 import { ScreenHeaderBase } from './ScreenHeaderBase';
 import type { ScreenHeaderProps } from './types';
 
@@ -18,8 +19,8 @@ export function ScreenHeader(props: ScreenHeaderProps) {
       animateBackdrop
       tabsBackground={undefined}
       backgroundImage={props.backgroundImage}
-      leftActions={props.variant === 'tabs' ? undefined : props.leftActions}
-      rightActions={props.variant === 'tabs' ? undefined : props.rightActions}
+      leftActions={props.leftActions ?? (props.backButton ? <ScreenHeaderBackButton /> : undefined)}
+      rightActions={props.rightActions}
       searchable={props.variant === 'tabs' ? undefined : props.searchable}
       searchPlaceholder={props.variant === 'tabs' ? undefined : props.searchPlaceholder}
       tabs={props.variant === 'tabs' ? props.tabs : undefined}

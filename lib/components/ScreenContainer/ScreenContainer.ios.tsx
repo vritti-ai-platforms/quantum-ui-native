@@ -52,7 +52,11 @@ export type ScreenContainerProps = ScrollableProps | StaticProps;
 // is relaid on a pop transition (contentInsetAdjustmentBehavior is forced to
 // "automatic" and cannot be disabled). Save the offset on blur and restore it
 // once the return transition settles so the list stays where the user left it.
-function useScrollRestore(scrollRef: AnimatedRef<Animated.ScrollView>, scrollY: SharedValue<number>): void {
+function useScrollRestore(
+  scrollRef: AnimatedRef<Animated.ScrollView>,
+  scrollY: SharedValue<number>,
+  normalizeOffset: number,
+): void {
   const navigation = useNavigation();
   const routeKey = useScreenRouteKey();
   useEffect(() => {
@@ -64,7 +68,9 @@ function useScrollRestore(scrollRef: AnimatedRef<Animated.ScrollView>, scrollY: 
       if (y <= 0) return;
       InteractionManager.runAfterInteractions(() => {
         runOnUI(() => {
-          scrollTo(scrollRef, 0, y, false);
+          // scrollY is normalized (0 at rest); the native content offset rests at -normalizeOffset, so
+          // scrollTo needs the raw offset (y - normalizeOffset). onScroll re-derives scrollY from it.
+          scrollTo(scrollRef, 0, y - normalizeOffset, false);
           scrollY.value = y;
         })();
       });
@@ -73,7 +79,7 @@ function useScrollRestore(scrollRef: AnimatedRef<Animated.ScrollView>, scrollY: 
       unsubscribeBlur();
       unsubscribeFocus();
     };
-  }, [navigation, routeKey, scrollRef, scrollY]);
+  }, [navigation, routeKey, scrollRef, scrollY, normalizeOffset]);
 }
 
 const ScrollableBody = ({
@@ -86,21 +92,22 @@ const ScrollableBody = ({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
-  useScrollRestore(scrollRef, scrollY);
-  // useAnimatedScrollHandler writes scrollY (which drives the ScreenHeader
-  // collapse) on real scroll events; useScrollRestore handles the native
-  // scroll-position loss across navigation.
+  const insets = useSafeAreaInsets();
+  // Full on-screen header height = hero height (excl. safe area) + the status-bar inset.
+  const headerFullHeight = headerInset > 0 ? headerInset + insets.top : 0;
+  useScrollRestore(scrollRef, scrollY, headerFullHeight);
+  // Mirror FlashList screenScroll's proven iOS inset strategy (correct on BOTH iOS 26 and pre-iOS 26):
+  // the header offset rides the scroll view's CONTENT INSET, not contentContainerStyle padding.
+  // react-native-screens forces contentInsetAdjustmentBehavior="automatic", which adds the safe-area
+  // inset on top — so contentInset only needs headerInset. (contentContainerStyle paddingTop did NOT pick
+  // up the automatic safe-area inset on pre-iOS 26 → content slid under the transparent header; padding by
+  // headerInset+insets.top then over-shot once automatic DID add its share. contentInset sidesteps both.)
   const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
+    // contentOffset rests at -headerFullHeight; normalize so the header-driving scrollY reads 0 at rest
+    // (else the first headerFullHeight of scroll is a dead zone where the collapse stays frozen).
+    scrollY.value = event.contentOffset.y + headerFullHeight;
   });
   const { contentContainerStyle, ...scrollViewProps } = rest;
-  const topInset = headerInset;
-  const composedContainerStyle =
-    topInset > 0
-      ? contentContainerStyle != null
-        ? [{ paddingTop: topInset }, contentContainerStyle]
-        : { paddingTop: topInset }
-      : contentContainerStyle;
   return (
     <Animated.ScrollView
       ref={scrollRef}
@@ -108,8 +115,9 @@ const ScrollableBody = ({
       {...scrollViewProps}
       className={cn('flex-1 bg-background', className)}
       contentInsetAdjustmentBehavior="automatic"
-      {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
-      {...(topInset > 0 ? { scrollIndicatorInsets: { top: topInset } } : {})}
+      {...(headerInset > 0 ? { contentInset: { top: headerInset } } : {})}
+      {...(contentContainerStyle != null ? { contentContainerStyle } : {})}
+      {...(headerFullHeight > 0 ? { scrollIndicatorInsets: { top: headerFullHeight } } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
     />

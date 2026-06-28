@@ -1,0 +1,18 @@
+diff --git a/dist/recyclerview/RecyclerViewManager.js b/dist/recyclerview/RecyclerViewManager.js
+index 1aa651d9d985a36d3c6ef69f20407f51ca0e3e6f..dd630b3023f340a44c7c2c9290084585742b7f2c 100644
+--- a/dist/recyclerview/RecyclerViewManager.js
++++ b/dist/recyclerview/RecyclerViewManager.js
+@@ -215,6 +215,13 @@ export class RecyclerViewManager {
+                 : this.computeVisibleIndices().toArray());
+     }
+     recordInteraction() {
++        // Guard: recordInteraction -> ViewabilityManager.updateViewableItems calls getWindowSize(),
++        // which throws "LayoutManager is not initialized" when the list is mounted but not yet laid out
++        // (e.g. remounted under a parent that re-keys on theme change). Bail until layout exists, matching
++        // the hasLayout() guard useBoundDetection already uses. Viewability is recomputed on first layout.
++        if (!this.hasLayout()) {
++            return;
++        }
+         this.itemViewabilityManager.recordInteraction();
+     }
+     recomputeViewableItems() {

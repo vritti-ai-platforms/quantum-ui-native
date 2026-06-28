@@ -17,6 +17,8 @@ interface ScreenHeaderCommonProps {
   title: string;
   subtitle?: string;
   backgroundImage?: ImageSourcePropType;
+  /** Render a built-in native-style back button as the left action (chevron on iOS, arrow on Android). Ignored when `leftActions` is provided. */
+  backButton?: boolean;
 }
 
 interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {
@@ -31,6 +33,9 @@ interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {
 interface ScreenHeaderTabsProps extends ScreenHeaderCommonProps {
   variant: 'tabs';
   tabs: ScreenHeaderTabConfig[];
+  /** Optional actions placed left/right of the centered title in the collapsing nav row (e.g. a back button). */
+  leftActions?: ReactNode;
+  rightActions?: ReactNode;
 }
 
 export type ScreenHeaderProps = ScreenHeaderStandardProps | ScreenHeaderTabsProps;

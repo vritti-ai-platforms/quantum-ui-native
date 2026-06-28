@@ -1,7 +1,7 @@
 import { useUnstableNativeVariable } from 'nativewind';
 import { type ReactNode, useState } from 'react';
 import { Image, type ImageSourcePropType, Platform, TextInput, View } from 'react-native';
-import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
@@ -75,13 +75,19 @@ export function ScreenHeaderBase({
   })();
 
   const hasTabs = variant === 'tabs' && (tabs?.length ?? 0) > 0;
-  const hasActions = variant === 'standard' && (leftActions != null || rightActions != null);
+  // Actions render in both variants: standard places them in the top nav-bar band above the large title;
+  // the tabs variant centers the title between them in a single collapsing nav row.
+  const hasActions = leftActions != null || rightActions != null;
   const hasSearch = variant === 'standard' && searchable;
-  const reserveBar = hasActions;
+  // Standard reserves a top nav-bar band for its (absolutely-placed) actions; the tabs nav row IS that band.
+  const reserveBar = variant === 'standard' && hasActions;
   const largeTitleHeight = subtitle ? LARGE_TITLE_HEIGHT : LARGE_TITLE_HEIGHT_NO_SUBTITLE;
   const searchHeight = hasSearch ? SEARCH_ROW_HEIGHT : 0;
-  // The non-search part of the header (bar + large title) — what stays once the search has minimized.
-  const titleArea = (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight + (hasTabs ? TABS_HEIGHT : 0);
+  // tabs: a centered nav-bar row (BAR_HEIGHT) sitting above the tabs row — collapses to just the tabs.
+  // standard: the (reserved bar) + the collapsible large title (no tabs row).
+  const titleArea = hasTabs
+    ? BAR_HEIGHT + TABS_HEIGHT
+    : (reserveBar ? BAR_HEIGHT : 0) + TITLE_TOP_MARGIN + largeTitleHeight;
   const heroHeight = titleArea + searchHeight;
   const collapsedTarget = hasTabs ? TABS_HEIGHT : BAR_HEIGHT + BOTTOM_GAP;
   // Stage the collapse: scroll [0, searchHeight] MINIMIZES the search row (height → 0); only after that,
@@ -121,6 +127,21 @@ export function ScreenHeaderBase({
     ],
   }));
 
+  // Tabs variant: the centered nav-bar row (title + actions) fades out as it collapses into the tabs.
+  const navBarFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, COLLAPSE_AT * 0.6], [1, 0], Extrapolation.CLAMP),
+  }));
+
+  // Once the nav row has faded out, stop it (and its now-invisible action buttons) from capturing touches,
+  // so taps land on the pinned tabs underneath. Threshold = where navBarFadeStyle reaches 0.
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  useAnimatedReaction(
+    () => scrollY.value >= COLLAPSE_AT * 0.6,
+    (collapsed, previous) => {
+      if (collapsed !== previous) runOnJS(setNavCollapsed)(collapsed);
+    },
+  );
+
   // Search MINIMIZES (height → 0), it does not fade — overflow-hidden + justify-end make the pill slide
   // up and clip away (WhatsApp). This finishes before the title starts collapsing (staged above).
   const searchRowStyle = useAnimatedStyle(() => ({
@@ -156,16 +177,32 @@ export function ScreenHeaderBase({
 
       {reserveBar ? <View className="h-11" pointerEvents="none" /> : null}
 
-      <Animated.View className="flex-1 justify-start gap-0.5 px-4 pb-1" style={largeTitleStyle} pointerEvents="none">
-        <Text className="text-2xl font-bold text-foreground" numberOfLines={1}>
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text className="text-sm text-muted-foreground" numberOfLines={1}>
-            {subtitle}
+      {hasTabs ? (
+        // Tabs variant: a centered title that fades as the nav row collapses into the tabs. The left/right
+        // actions are rendered at the CONTAINER level (below) — NOT here — so their iOS-26 glass mounts with a
+        // STABLE frame on first render. A frame inside this Reanimated-animated flex band isn't settled at
+        // mount, which left the glass buttons rendering as ghost until a relayout/remount.
+        <Animated.View
+          className="flex-1 items-center justify-center px-16"
+          style={navBarFadeStyle}
+          pointerEvents="none"
+        >
+          <Text className="text-lg font-semibold text-foreground" numberOfLines={1}>
+            {title}
           </Text>
-        ) : null}
-      </Animated.View>
+        </Animated.View>
+      ) : (
+        <Animated.View className="flex-1 justify-start gap-0.5 px-4 pb-1" style={largeTitleStyle} pointerEvents="none">
+          <Text className="text-2xl font-bold text-foreground" numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text className="text-sm text-muted-foreground" numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </Animated.View>
+      )}
 
       {hasSearch ? (
         // The row's height animates 52→0; the pill is flex-1 so it FILLS that height — the pill itself
@@ -218,9 +255,16 @@ export function ScreenHeaderBase({
         </Animated.View>
       ) : null}
 
-      {hasActions && leftActions ? (
+      {/* Header actions at the CONTAINER level (fixed top/height) for BOTH variants — a stable frame so the
+          iOS-26 glass mounts correctly on first render. CRITICAL: these are PLAIN Views, NEVER wrapped in an
+          animated opacity. A LiquidGlassView whose ancestor has alpha < 1 (even momentarily, mid-mount before
+          Reanimated commits) renders its glass effect DISABLED and stays that way until re-created — which is
+          exactly why the tabs buttons showed as ghost until a scroll/remount. So the tabs variant does NOT
+          fade the actions; it UNMOUNTS them once the nav row has collapsed (navCollapsed) — otherwise they'd
+          overlap the pinned tabs. z-10 keeps the press/bounce above the tabs row. */}
+      {leftActions && !(hasTabs && navCollapsed) ? (
         <View
-          className="absolute left-4 items-center justify-center"
+          className="absolute left-4 z-10 items-center justify-center"
           style={{ top: insets.top, height: BAR_HEIGHT }}
           pointerEvents="box-none"
         >
@@ -228,9 +272,9 @@ export function ScreenHeaderBase({
         </View>
       ) : null}
 
-      {hasActions && rightActions ? (
+      {rightActions && !(hasTabs && navCollapsed) ? (
         <View
-          className="absolute right-4 items-center justify-center"
+          className="absolute right-4 z-10 items-center justify-center"
           style={{ top: insets.top, height: BAR_HEIGHT }}
           pointerEvents="box-none"
         >
