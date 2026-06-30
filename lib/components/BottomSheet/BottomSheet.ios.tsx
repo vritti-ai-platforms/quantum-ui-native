@@ -150,6 +150,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       scrollable,
       backgroundColor,
       showCloseButton = true,
+      stackBehavior = 'push',
     },
     ref,
   ) => {
@@ -287,6 +288,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         enablePanDownToClose={dismissible}
         enableHandlePanningGesture={draggable}
         enableContentPanningGesture={enableContentPan}
+        stackBehavior={stackBehavior}
         handleComponent={renderHandle}
         backdropComponent={renderBackdrop}
         backgroundComponent={renderBackground}

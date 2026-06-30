@@ -4,6 +4,7 @@ import { type NativeScrollEvent, type NativeSyntheticEvent, Platform, type Refre
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
 import { ListItem } from '../ListItem';
+import { CardSkeleton } from '../Skeleton/CardSkeleton';
 import { useScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
 import { Text } from '../Text';
 
@@ -11,6 +12,12 @@ export interface FlashListProps<T> extends Omit<ShopifyFlashListProps<T>, 'ListE
   isLoading?: boolean;
   skeletonCount?: number;
   renderSkeletonItem?: () => ReactElement;
+  /**
+   * Shape of the built-in loading skeleton when `renderSkeletonItem` is not supplied. `'list'` (default) uses
+   * a `<ListItem>` row; `'card'` uses the generic `<CardSkeleton>` — use it for card lists so you never have to
+   * hand-write a per-card skeleton. Pass `renderSkeletonItem` only for a truly custom case.
+   */
+  skeletonVariant?: 'list' | 'card';
   emptyText?: string;
   EmptyComponent?: ReactElement;
   /**
@@ -29,6 +36,7 @@ function FlashList<T>({
   isLoading = false,
   skeletonCount = 6,
   renderSkeletonItem,
+  skeletonVariant = 'list',
   emptyText = 'No items found',
   EmptyComponent,
   className,
@@ -75,7 +83,8 @@ function FlashList<T>({
   // where the list moves but the header stays frozen and cards peek under the search).
   const scrollNormalize = isIos ? headerFullHeight : 0;
 
-  const skeletonRenderer = renderSkeletonItem ?? (() => <ListItem loading title="" />);
+  const skeletonRenderer =
+    renderSkeletonItem ?? (skeletonVariant === 'card' ? () => <CardSkeleton /> : () => <ListItem loading title="" />);
   const composedContentContainerStyle = androidHeaderPad
     ? contentContainerStyle != null
       ? [androidHeaderPad, contentContainerStyle]

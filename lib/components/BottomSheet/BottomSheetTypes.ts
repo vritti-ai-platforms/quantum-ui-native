@@ -40,6 +40,12 @@ export interface BottomSheetProps {
    * Set false when the sheet content provides its own close affordance (e.g. Select).
    */
   showCloseButton?: boolean;
+  /**
+   * How this sheet behaves when presented while another sheet is already open (gorhom modal stack).
+   * Defaults to `'push'` so a sheet opened from within another sheet (e.g. a Select inside a form sheet)
+   * stacks on top instead of dismissing/minimizing the one beneath it. Only affects nested presentation.
+   */
+  stackBehavior?: 'push' | 'switch' | 'replace';
 }
 
 /** Resolve the first detent to a concrete pixel height for the inline-header content box.

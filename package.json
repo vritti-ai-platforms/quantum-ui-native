@@ -80,6 +80,11 @@
       "types": "./dist/typescript/lib/components/DynamicIcon/index.d.ts",
       "default": "./dist/module/components/DynamicIcon/index.js"
     },
+    "./Fab": {
+      "source": "./lib/components/Fab/index.ts",
+      "types": "./dist/typescript/lib/components/Fab/index.d.ts",
+      "default": "./dist/module/components/Fab/index.js"
+    },
     "./FlashList": {
       "source": "./lib/components/FlashList/index.ts",
       "types": "./dist/typescript/lib/components/FlashList/index.d.ts",

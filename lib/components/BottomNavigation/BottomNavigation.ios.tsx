@@ -158,20 +158,37 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
         <Tab.Navigator
           key={navigatorKey}
           initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
-          screenOptions={{
-            headerShown: false,
-            // iOS 26+: 'systemDefault' tabBarBlurEffect lets UIKit apply liquid glass instead of overriding it.
-            ...(isIOS26Plus
-              ? {
-                  tabBarBlurEffect: 'systemDefault',
-                  tabBarStyle: { backgroundColor: 'transparent' as const },
-                }
-              : {
-                  tabBarActiveBackgroundColor: 'transparent',
-                  tabBarStyle,
-                }),
-            sceneStyle: { backgroundColor: sceneBackground },
-            ...screenOptions,
+          // Hide the tab bar when the focused tab has pushed past its initial route (same detection as
+          // BottomNavigation.android). We hide via tabBarStyle.display:'none' — NOT a custom `tabBar` — so the
+          // *native* tab bar (and its iOS-26 tabBarBlurEffect liquid glass) is what renders when visible; a
+          // custom tabBar would replace the native bar and lose the glass. screenOptions is a function so it
+          // re-evaluates when the focused tab's nested stack depth changes; display:'none' removes the bar so
+          // the pushed screen reflows to fill, and the glass bar reappears when the tab pops back to its root.
+          screenOptions={({ route, navigation }) => {
+            // route.state is stripped by React Navigation's useRouteCache (stashed on a private symbol), so
+            // it's always undefined here — read the LIVE nested stack depth from the navigator's own (uncached)
+            // state instead. navigation.getState() returns this tab navigator's state, whose routes each carry
+            // their nested .state. Re-runs on every nav-state change → reactive (the equivalent of the full
+            // props.state a custom tabBar would receive, without replacing the native glass bar).
+            const nested = navigation.getState().routes.find((r) => r.key === route.key)?.state as
+              | { index?: number }
+              | undefined;
+            const onPushed = (nested?.index ?? 0) > 0;
+            return {
+              headerShown: false,
+              // iOS 26+: 'systemDefault' tabBarBlurEffect lets UIKit apply liquid glass instead of overriding it.
+              ...(isIOS26Plus
+                ? {
+                    tabBarBlurEffect: 'systemDefault',
+                    tabBarStyle: onPushed ? { display: 'none' as const } : { backgroundColor: 'transparent' as const },
+                  }
+                : {
+                    tabBarActiveBackgroundColor: 'transparent',
+                    tabBarStyle: onPushed ? { display: 'none' as const } : tabBarStyle,
+                  }),
+              sceneStyle: { backgroundColor: sceneBackground },
+              ...screenOptions,
+            };
           }}
         >
           {visibleRoutes.map((route) => (
