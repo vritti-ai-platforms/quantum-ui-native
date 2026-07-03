@@ -1,11 +1,12 @@
 import { useUnstableNativeVariable } from 'nativewind';
 import * as React from 'react';
-import { SFSymbol } from 'react-native-sfsymbols';
-import { TextClassContext } from '../Text';
+import { Image, View } from 'react-native';
 import { cn } from '../../utils/index';
+import { TextClassContext } from '../Text';
+import { sfSymbolSource } from './sfSymbolSource';
 import type { DynamicIconProps } from './types';
 
-// nativewind v5-preview's lift to SFSymbol's tintColor prop isn't reliable — resolve the CSS variable ourselves.
+// nativewind v5-preview's lift to a native color prop isn't reliable — resolve the CSS variable ourselves.
 const CLASS_TO_VAR: Record<string, string> = {
   'text-foreground': '--foreground',
   'text-muted-foreground': '--muted-foreground',
@@ -37,15 +38,23 @@ function pickVariableFromClassName(className: string): string {
   return '--primary';
 }
 
+// Renders an SF Symbol as a Fabric-native <Image> (source = a native-rendered PNG data URI). This replaces
+// the legacy `react-native-sfsymbols` view manager, whose RCTLegacyViewManagerInteropComponentView aborted
+// under Fabric when a tab's subtree was unmounted during the ScreenHeader cross-fade. An <Image> is a core
+// Fabric component, so unmount is always safe. Color/weight are baked into the PNG (cached per combo); a
+// theme / dark-mode change re-resolves the color and swaps the source.
 export function DynamicIcon({
   className,
   color,
   size = 14,
   icon,
-  multicolor: _multicolor,
+  multicolor,
+  weight = 'regular',
   scale: _scale,
-  weight: _weight,
-  ...props
+  style,
+  testID,
+  accessibilityLabel,
+  accessible,
 }: DynamicIconProps) {
   const textClass = React.useContext(TextClassContext);
   const fullClassName = cn('text-foreground', textClass, className);
@@ -54,5 +63,28 @@ export function DynamicIcon({
   const hsl = useVar(cssVar);
   const resolvedColor = color ?? (typeof hsl === 'string' ? `hsl(${hsl})` : undefined);
 
-  return <SFSymbol name={icon.sfSymbol} size={size} color={resolvedColor} {...(props as Record<string, unknown>)} />;
+  const uri = sfSymbolSource(icon.sfSymbol, size, resolvedColor, weight ?? 'regular', multicolor ?? false);
+
+  // Missing symbol / unsupported OS → keep the icon's footprint so layout doesn't shift.
+  if (!uri) {
+    return (
+      <View
+        style={[{ width: size, height: size }, style]}
+        testID={testID}
+        accessibilityLabel={accessibilityLabel}
+        accessible={accessible}
+      />
+    );
+  }
+
+  return (
+    <Image
+      source={{ uri }}
+      resizeMode="contain"
+      style={[{ width: size, height: size }, style]}
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      accessible={accessible ?? !!accessibilityLabel}
+    />
+  );
 }

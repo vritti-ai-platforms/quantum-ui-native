@@ -1,11 +1,28 @@
-import { FlashList as ShopifyFlashList, type FlashListProps as ShopifyFlashListProps } from '@shopify/flash-list';
+import {
+  FlashList as ShopifyFlashList,
+  type FlashListProps as ShopifyFlashListProps,
+  type FlashListRef,
+} from '@shopify/flash-list';
 import { cloneElement, isValidElement, type ReactElement, useRef } from 'react';
-import { type NativeScrollEvent, type NativeSyntheticEvent, Platform, type RefreshControlProps, View } from 'react-native';
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Platform,
+  type RefreshControlProps,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
+import { resolveTopPadding } from '../../utils/resolveTopPadding';
 import { ListItem } from '../ListItem';
 import { CardSkeleton } from '../Skeleton/CardSkeleton';
-import { useScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
+import {
+  useMeasuredScreenHeaderHeight,
+  useScreenHeaderInset,
+  useScreenScrollY,
+} from '../ScreenContainer/screenScrollRegistry';
+import { useInScreenHeaderTabPage } from '../ScreenHeader/screenHeaderTabPageContext';
 import { Text } from '../Text';
 
 export interface FlashListProps<T> extends Omit<ShopifyFlashListProps<T>, 'ListEmptyComponent'> {
@@ -44,52 +61,92 @@ function FlashList<T>({
   contentContainerStyle,
   refreshControl,
   onEndReached,
+  onScrollBeginDrag,
   ...props
 }: FlashListProps<T>) {
-  // In screenScroll mode, only paginate AFTER a real user scroll — FlashList fires onEndReached once
-  // during the initial/relayout pass (e.g. a feature remount), which would auto-fetch the next page
-  // (or continue from the last cursor) with no user intent.
+  // In screenScroll mode, only track scroll / paginate AFTER a real user drag. FlashList fires spurious
+  // events during its initial/relayout pass — an onScroll and an onEndReached (which would auto-fetch
+  // page 2 with no user intent). Gating both on onScrollBeginDrag ignores the mount noise; drag +
+  // momentum events all follow a begin-drag, so real tracking is unaffected.
   const hasScrolledRef = useRef(false);
+  // Internal handle for the pre-drag rest correction below (no consumer passes a ref to this wrapper).
+  const listRef = useRef<FlashListRef<T> | null>(null);
   // Screen-scroll integration (only applied when `screenScroll`): writing the route's scrollY on scroll
-  // drives the ScreenHeader collapse, and the content is padded by the header's expanded height so the
+  // drives the ScreenHeader collapse, and the content is offset by the header's expanded height so the
   // list sits under the transparent header. Hooks are always called (cheap) to keep hook order stable.
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
+  const measuredHeader = useMeasuredScreenHeaderHeight();
   const insets = useSafeAreaInsets();
+  // Inside a ScreenHeader tabs pager page? The iOS inset regime differs per context (see
+  // screenHeaderTabPageContext): root screens use the long-proven 'automatic' + hero-only inset; pager
+  // pages (where 'automatic' contributes nothing) own the full inset with 'never' + initial contentOffset.
+  const inTabPage = useInScreenHeaderTabPage();
 
-  // The ScreenHeader reports `headerInset` = its hero height EXCLUDING the status-bar safe area. Mirror
-  // ScreenContainer's proven offset: on iOS `contentInsetAdjustmentBehavior="automatic"` (below — and
-  // react-native-screens forces it anyway) makes iOS add `insets.top` itself, so pad ONLY by headerInset
-  // (adding insets.top here too would double-count it → an extra status-bar-sized gap). Android has no
-  // automatic content inset, so include insets.top in the padding there.
-  // NOTE: this only lays out correctly because screenScroll mode disables FlashList v2's default
-  // `maintainVisibleContentPosition` (below). That anchor (minIndexForVisible: 0) pins item 0 and cancels
-  // the native safe-area inset shift, so the offset becomes a render-timing race (overlap at rest, or a
-  // double gap after scroll). Disabling it makes FlashList behave like ScreenContainer's plain ScrollView.
   const isIos = Platform.OS === 'ios';
-  // Full on-screen header height = hero height (excl. safe area) + the status-bar inset.
-  const headerFullHeight = screenScroll && headerInset > 0 ? headerInset + insets.top : 0;
-  // Offset strategy differs by platform ONLY because of how each positions the pull-to-refresh spinner:
-  // - iOS: put the header offset in the scroll view's CONTENT INSET (not contentContainerStyle padding). The
-  //   native UIRefreshControl + scroll indicator rest at the content inset, so this lands them at the header
-  //   bottom for free — no progressViewOffset/scrollIndicatorInsets pixel-tuning (tuning via padding left the
-  //   spinner stuck inside the header). contentInsetAdjustmentBehavior="automatic" adds the safe-area inset on
-  //   top, so the contentInset itself only needs headerInset.
-  // - Android: no contentInset → keep the header offset in content padding + progressViewOffset.
-  const screenContentInset = isIos && headerFullHeight > 0 ? { top: headerInset } : undefined;
-  const androidHeaderPad = !isIos && headerFullHeight > 0 ? { paddingTop: headerFullHeight } : null;
-  // contentOffset rests at -(adjustedContentInset.top): iOS = headerInset + insets.top, Android = 0. Normalize
-  // the header-driving scrollY so it reads 0 at rest (else the first inset's worth of scroll is a dead zone
+  // Full on-screen header height. Source of truth = the header's MEASURED painted height (registered from
+  // its onLayout — the collapsible-header standard); the constants+safe-area formula is only the first-frame
+  // fallback until the measurement lands, and gets corrected wherever the painted header differs from it.
+  const computedFullHeight = screenScroll && headerInset > 0 ? headerInset + insets.top : 0;
+  const headerFullHeight = screenScroll && measuredHeader > 0 ? measuredHeader : computedFullHeight;
+  // iOS header-offset strategy: the FULL height rides the PROP contentInset with
+  // `contentInsetAdjustmentBehavior='never'`, and the initial `contentOffset` prop places a fresh mount
+  // exactly at the rest position. This is fully deterministic — the alternative (partial inset +
+  // 'automatic' adding the safe area asynchronously) mis-rests fresh data mounts, because Fabric's
+  // first-mount state restore CLAMPS the offset to the PROP inset only
+  // (RCTScrollViewComponentView.mm updateState: `contentOffset.y = fmax(y, -contentInset.top)`, which runs
+  // right after updateProps and reverts the contentOffset prop), and programmatic scrollTo clamps to the
+  // same prop-only boundary. With the full height in the prop inset, updateProps, the updateState clamp,
+  // and scrollTo all agree the rest is exactly -headerFullHeight, on every mount path.
+  // (react-native-screens' Never→Automatic override only applies under its NATIVE tabs host; this app uses
+  // JS bottom-tabs, so 'never' sticks.)
+  // Android has no contentInset — the header offset is content padding (+ progressViewOffset for the
+  // refresh spinner).
+  // iOS inset per context: pager pages carry the FULL height in the prop inset; root screens carry only the
+  // hero height and let UIKit's 'automatic' add the safe-area share (the git-proven original behavior —
+  // forcing 'never'+full on root screens races iOS's nav scroll-view adoption and mis-rests the list).
+  const screenContentInset =
+    isIos && headerFullHeight > 0 ? { top: inTabPage ? headerFullHeight : headerInset } : undefined;
+  // Android: the header offset is a paddingTop LONGHAND merged into the contentContainerStyle, and Yoga
+  // resolves a longhand edge over a shorthand's implicit edge — a caller's `padding: 16` top would be
+  // silently swallowed (iOS keeps it, since its offset is a native contentInset OUTSIDE the content box).
+  // Bake the caller's declared top edge into our longhand so both platforms render header + callerTop.
+  const androidCallerTop =
+    !isIos && headerFullHeight > 0 ? resolveTopPadding(contentContainerStyle as Parameters<typeof resolveTopPadding>[0]) : 0;
+  const androidHeaderPad =
+    !isIos && headerFullHeight > 0 ? { paddingTop: headerFullHeight + androidCallerTop } : null;
+  // contentOffset rests at -contentInset.top on iOS (= headerFullHeight) and 0 on Android. Normalize the
+  // header-driving scrollY so it reads 0 at rest (else the first inset's worth of scroll is a dead zone
   // where the list moves but the header stays frozen and cards peek under the search).
   const scrollNormalize = isIos ? headerFullHeight : 0;
+  // Shared screenScroll layout props for both branches (skeleton + data): disable FlashList v2's default
+  // maintainVisibleContentPosition anchor (it pins item 0 and turns the top offset into a render-timing
+  // race), own the insets fully ('never'), and mount directly at the rest offset.
+  const screenScrollLayoutProps = screenScroll
+    ? {
+        maintainVisibleContentPosition: { disabled: true },
+        contentInsetAdjustmentBehavior: inTabPage ? ('never' as const) : ('automatic' as const),
+        ...(screenContentInset ? { contentInset: screenContentInset } : {}),
+        // Initial rest offset only in the pager regime — under 'automatic' UIKit settles the rest natively.
+        ...(screenContentInset && inTabPage ? { contentOffset: { x: 0, y: -headerFullHeight } } : {}),
+      }
+    : {};
+
+  // TEMPORARY diagnostics for the items-screen top-gap parity (iOS gap larger than Android with identical
+  // static formulas). One line per mount with the four numbers that pin the divergence; the pre-drag scroll
+  // branch below adds the actual rest offset on iOS. Remove after the measurement round.
+  // Android: ONE flattened plain object (no style arrays — removes any ambiguity about array/longhand
+  // resolution): every caller edge applies, and our top longhand (which already includes the caller's
+  // declared top edge) deterministically wins.
+  const composedContentContainerStyle = androidHeaderPad
+    ? {
+        ...StyleSheet.flatten(contentContainerStyle as Parameters<typeof resolveTopPadding>[0]),
+        ...androidHeaderPad,
+      }
+    : contentContainerStyle;
 
   const skeletonRenderer =
     renderSkeletonItem ?? (skeletonVariant === 'card' ? () => <CardSkeleton /> : () => <ListItem loading title="" />);
-  const composedContentContainerStyle = androidHeaderPad
-    ? contentContainerStyle != null
-      ? [androidHeaderPad, contentContainerStyle]
-      : androidHeaderPad
-    : contentContainerStyle;
 
   // Android: push the pull-to-refresh spinner below the transparent header (iOS rests it via contentInset).
   const screenRefreshControl =
@@ -99,23 +156,26 @@ function FlashList<T>({
         })
       : refreshControl;
 
+  // screenScroll lists must NOT be the screen's first-descendant scroll view: iOS navigation machinery
+  // (react-native-screens/UIKit large-title + scroll-edge integration) walks the first descendant chain,
+  // adopts that scroll view, and applies its own top adjustment (~a nav-bar height) ON TOP of our
+  // deterministic inset — the phantom extra gap on root screens (tab pages were immune because the pager
+  // breaks the chain; screens whose tabs wrapped FlashList in a View were immune for the same reason).
+  // A plain flex View between the screen and the list breaks the adoption on every screen uniformly.
+  const wrapScreenScroll = (list: ReactElement) =>
+    screenScroll ? <View className="flex-1">{list}</View> : list;
+
   if (isLoading) {
-    return (
+    return wrapScreenScroll(
       <ShopifyFlashList
         data={Array.from({ length: skeletonCount }, (_, i) => i)}
         renderItem={() => skeletonRenderer()}
         keyExtractor={String}
         scrollEnabled={false}
         className={cn(screenScroll && 'flex-1 bg-background', className)}
-        {...(screenScroll
-          ? {
-              contentInsetAdjustmentBehavior: 'automatic' as const,
-              maintainVisibleContentPosition: { disabled: true },
-              ...(screenContentInset ? { contentInset: screenContentInset } : {}),
-            }
-          : {})}
+        {...screenScrollLayoutProps}
         {...(composedContentContainerStyle != null ? { contentContainerStyle: composedContentContainerStyle } : {})}
-      />
+      />,
     );
   }
 
@@ -125,8 +185,9 @@ function FlashList<T>({
     </View>
   );
 
-  return (
+  const dataList = (
     <ShopifyFlashList
+      ref={listRef}
       data={data}
       ListEmptyComponent={emptyComponent}
       className={cn(screenScroll && 'flex-1 bg-background', className)}
@@ -140,34 +201,48 @@ function FlashList<T>({
       }
       {...(composedContentContainerStyle != null ? { contentContainerStyle: composedContentContainerStyle } : {})}
       {...props}
+      {...screenScrollLayoutProps}
       {...(screenScroll
         ? {
-            // Disable FlashList v2's default maintainVisibleContentPosition anchor (minIndexForVisible: 0).
-            // It pins item 0 and cancels the native safe-area inset, making the top offset a render-timing
-            // race (overlap at rest / double gap after scroll). Off → behaves like a plain ScrollView, so
-            // the inset offsets below resolve deterministically. (Append-pagination doesn't need it.)
-            maintainVisibleContentPosition: { disabled: true },
-            // Explicit "automatic" makes iOS apply the safe-area inset at rest (on top of contentInset).
-            contentInsetAdjustmentBehavior: 'automatic' as const,
-            // iOS: header offset rides the content inset (spinner/indicator follow it). Android: indicator is
-            // inset to the header bottom manually (its offset is content padding).
-            ...(screenContentInset ? { contentInset: screenContentInset } : {}),
             ...(androidHeaderPad ? { scrollIndicatorInsets: { top: headerFullHeight } } : {}),
+            // The gate: only a real user drag opens scroll tracking + pagination (see hasScrolledRef above).
+            onScrollBeginDrag: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+              hasScrolledRef.current = true;
+              onScrollBeginDrag?.(e);
+            },
             // JS handler is enough: writing the SharedValue propagates to the header's UI-thread animation.
             onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-              // Normalize: contentOffset.y rests at -(adjustedContentInset.top) on iOS (= headerFullHeight)
-              // and 0 on Android, so +scrollNormalize makes the header see 0 at rest and track real scroll
-              // distance. Without it the first inset's worth of scroll is a DEAD ZONE: the list slides up
-              // (cards peek under the search) while the header stays frozen (interpolations clamp negatives).
-              const y = e.nativeEvent.contentOffset.y + scrollNormalize;
-              if (y > 4) hasScrolledRef.current = true; // gates onEndReached until a real scroll
-              scrollY.value = y;
+              const rawY = e.nativeEvent.contentOffset.y;
+              if (!hasScrolledRef.current) {
+                // Pre-drag events are mount-pass noise, never header input. BIDIRECTIONAL rest settle:
+                // native mount choreography can leave the list off its rest in EITHER direction — above
+                // (content under the header) or below (extra top gap; iOS nav machinery adopting the scroll
+                // view pushes it past the inset, timing-dependent — instrumentation delaying the mount even
+                // masked it). Whatever the actor, its programmatic shift emits a scroll event; settle back
+                // on the next one. Self-limiting (the correction's own event lands within the tolerance),
+                // and unreachable once the user drags (gate above), so pulls/momentum are never fought.
+                // Only in the pager regime, where WE own the rest position ('never'); under 'automatic'
+                // UIKit manages the rest natively and must not be fought.
+                if (inTabPage && isIos && headerFullHeight > 0 && Math.abs(rawY + headerFullHeight) > 1) {
+                  listRef.current?.scrollToOffset({ offset: -headerFullHeight, animated: false });
+                }
+                return;
+              }
+              // Normalize: contentOffset.y rests at -contentInset.top on iOS (= headerFullHeight) and 0 on
+              // Android, so +scrollNormalize makes the header see 0 at rest and track real scroll distance.
+              // Without it the first inset's worth of scroll is a DEAD ZONE: the list slides up (cards peek
+              // under the search) while the header stays frozen (interpolations clamp negatives).
+              scrollY.value = rawY + scrollNormalize;
             },
             scrollEventThrottle: 16,
           }
-        : {})}
+        : onScrollBeginDrag != null
+          ? { onScrollBeginDrag }
+          : {})}
     />
   );
+
+  return wrapScreenScroll(dataList);
 }
 
 FlashList.displayName = 'FlashList';

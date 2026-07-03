@@ -30,11 +30,11 @@ export function Fab({ children, onPress, accessibilityLabel, variant, disabled }
   const resolvedVariant = variant ?? (os === 'ios' && version >= 26 ? 'glass' : 'default');
 
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', right: 16, bottom: insets.bottom + 16 }}>
+    <View pointerEvents="box-none" style={{ position: 'absolute', right: 16, bottom: 16}}>
       <Button
         variant={resolvedVariant}
         size="icon"
-        className="h-14 w-14"
+        className="h-16 w-16 "
         onPress={onPress}
         accessibilityLabel={accessibilityLabel}
         disabled={disabled}

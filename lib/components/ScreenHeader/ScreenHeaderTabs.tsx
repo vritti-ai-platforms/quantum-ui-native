@@ -163,11 +163,18 @@ interface TabItemProps {
 }
 
 function TabItem({ tab, active, scrollable, onPress, onLayout, onLabelLayout }: TabItemProps) {
-  const colorScheme = useColorScheme();
-  // Active accent: primary in light mode, foreground in dark mode. Picked in JS
-  // (not a dark: variant) because DynamicIcon resolves its tint from a single
-  // base text-* class and doesn't parse the dark: prefix.
-  const activeColor = colorScheme === 'dark' ? 'text-foreground' : 'text-primary';
+  const systemScheme = useColorScheme();
+  // Active accent: primary in light mode, foreground in dark mode. Picked in JS (not a dark: variant)
+  // because DynamicIcon resolves its tint from a single base text-* class and doesn't parse the dark:
+  // prefix. Darkness comes from the APP theme (the --background var's HSL lightness — same parsing
+  // ScreenHeaderBase uses for its search pill), NOT useColorScheme: that reads the SYSTEM scheme, which
+  // diverges from the app theme (app dark + system light showed a primary-colored selected tab on Android
+  // while iOS, whose system matched, showed foreground). System scheme is only the fallback when the var
+  // is unavailable.
+  const bgVar = (useUnstableNativeVariable as unknown as (name: string) => string | undefined)('--background');
+  const lightness = Number.parseFloat(bgVar?.trim().split(/\s+/)[2] ?? '');
+  const isDarkTheme = Number.isFinite(lightness) ? lightness < 50 : systemScheme === 'dark';
+  const activeColor = isDarkTheme ? 'text-foreground' : 'text-primary';
   return (
     <Pressable
       onPress={onPress}
@@ -176,11 +183,11 @@ function TabItem({ tab, active, scrollable, onPress, onLayout, onLabelLayout }: 
       accessibilityState={{ selected: active }}
       hitSlop={{ top: 12, bottom: 16, left: 6, right: 6 }}
       className={cn('items-center', scrollable ? 'px-3' : 'flex-1')}
-      style={{ gap: Platform.OS === 'android' ? 4 : 12 }}
+      style={{ gap: Platform.OS === 'android' ? 4 : 6 }}
     >
       <DynamicIcon
         icon={active ? (tab.activeIcon ?? tab.icon) : tab.icon}
-        size={18}
+        size={Platform.OS === 'android' ? 18 : 20}
         className={active ? activeColor : 'text-muted-foreground'}
       />
       <Text

@@ -1,4 +1,4 @@
-import { type DocumentNode, NetworkStatus, type TypedDocumentNode } from '@apollo/client';
+import { type DocumentNode, NetworkStatus, type TypedDocumentNode, type WatchQueryFetchPolicy } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useCallback, useMemo } from 'react';
 import type { UseInfiniteListReturn } from '../types';
@@ -19,6 +19,13 @@ export interface UseApolloInfiniteQueryParams<T> {
   /** The top-level query field holding the Relay connection — e.g. `'inventoryItems'`. */
   dataKey: string;
   enabled?: boolean;
+  /**
+   * Apollo fetch policy for the page-1 watch query. Omit to inherit the client default
+   * (`cache-and-network` when the cache is persisted). Pass `'cache-first'` for a feed that should be
+   * served from cache without a network round-trip on remount — e.g. a detail-screen tab that unmounts on
+   * tab switch — while pull-to-refresh (`refresh()`) still forces a network reload.
+   */
+  fetchPolicy?: WatchQueryFetchPolicy;
 }
 
 // Apollo-backed Relay-connection list driver. Same UseInfiniteListReturn contract as the old TanStack hook,
@@ -32,11 +39,13 @@ export function useApolloInfiniteQuery<T extends { id: string }>({
   getVariables,
   dataKey,
   enabled = true,
+  fetchPolicy,
 }: UseApolloInfiniteQueryParams<T>): UseInfiniteListReturn<T> {
   const { data, previousData, error, fetchMore, refetch, networkStatus } = useQuery(query, {
     variables: getVariables(undefined),
     skip: !enabled,
     notifyOnNetworkStatusChange: true,
+    fetchPolicy,
   });
 
   // Keep the last good connection visible while new variables / a refetch are in flight.

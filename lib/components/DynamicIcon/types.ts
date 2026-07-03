@@ -3,6 +3,20 @@ export interface PlatformIconDescriptor {
   materialSymbol: string;
 }
 
+// SF Symbol rendering options (local unions — no longer sourced from the legacy react-native-sfsymbols types).
+export type SfSymbolWeight =
+  | 'ultralight'
+  | 'thin'
+  | 'light'
+  | 'regular'
+  | 'medium'
+  | 'semibold'
+  | 'bold'
+  | 'heavy'
+  | 'black';
+
+export type SfSymbolScale = 'small' | 'medium' | 'large';
+
 export interface DynamicIconProps {
   icon: PlatformIconDescriptor;
   size?: number;
@@ -13,6 +27,6 @@ export interface DynamicIconProps {
   accessibilityLabel?: string;
   accessible?: boolean;
   multicolor?: boolean;
-  weight?: import('react-native-sfsymbols').SymbolWeight;
-  scale?: import('react-native-sfsymbols').SymbolScale;
+  weight?: SfSymbolWeight;
+  scale?: SfSymbolScale;
 }

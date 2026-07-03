@@ -11,10 +11,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
+import { useInScreenHeaderTabPage } from '../ScreenHeader/screenHeaderTabPageContext';
 import { cn } from '../../utils/cn';
 import {
   getScreenRestoreY,
   setScreenRestoreY,
+  useMeasuredScreenHeaderHeight,
   useScreenHeaderInset,
   useScreenRouteKey,
   useScreenScrollY,
@@ -92,30 +94,49 @@ const ScrollableBody = ({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
+  const measuredHeader = useMeasuredScreenHeaderHeight();
   const insets = useSafeAreaInsets();
-  // Full on-screen header height = hero height (excl. safe area) + the status-bar inset.
-  const headerFullHeight = headerInset > 0 ? headerInset + insets.top : 0;
+  // Full on-screen header height: the header's MEASURED painted height when available (offset source of
+  // truth — see screenScrollRegistry), else the constants+safe-area formula as the first-frame fallback.
+  const headerFullHeight = headerInset > 0 ? (measuredHeader > 0 ? measuredHeader : headerInset + insets.top) : 0;
   useScrollRestore(scrollRef, scrollY, headerFullHeight);
-  // Mirror FlashList screenScroll's proven iOS inset strategy (correct on BOTH iOS 26 and pre-iOS 26):
-  // the header offset rides the scroll view's CONTENT INSET, not contentContainerStyle padding.
-  // react-native-screens forces contentInsetAdjustmentBehavior="automatic", which adds the safe-area
-  // inset on top — so contentInset only needs headerInset. (contentContainerStyle paddingTop did NOT pick
-  // up the automatic safe-area inset on pre-iOS 26 → content slid under the transparent header; padding by
-  // headerInset+insets.top then over-shot once automatic DID add its share. contentInset sidesteps both.)
+  // Mirror FlashList screenScroll's deterministic iOS inset strategy under a transparent ScreenHeader:
+  // the FULL header height (hero + status bar) rides the PROP contentInset with
+  // contentInsetAdjustmentBehavior="never", and the initial contentOffset prop places a fresh mount exactly
+  // at the rest position. The previous split (contentInset = headerInset + 'automatic' adding the safe
+  // area) broke inside the ScreenHeader tabs' native pager: pager pages are child view controllers, where
+  // UIKit's automatic safe-area addition doesn't apply — content rested one status-bar short and slid
+  // under the transparent header (visible pre-iOS 26; masked by the glass header background on 26). Owning
+  // the whole inset removes UIKit's async choreography on every mount path (pager or plain screen).
+  // Screens WITHOUT a ScreenHeader inset keep 'automatic' — their safe-area handling is unchanged.
   const onScroll = useAnimatedScrollHandler((event) => {
     // contentOffset rests at -headerFullHeight; normalize so the header-driving scrollY reads 0 at rest
     // (else the first headerFullHeight of scroll is a dead zone where the collapse stays frozen).
     scrollY.value = event.contentOffset.y + headerFullHeight;
   });
   const { contentContainerStyle, ...scrollViewProps } = rest;
+  const hasHeader = headerInset > 0;
+  // iOS inset regime per context (see screenHeaderTabPageContext): inside a ScreenHeader tabs pager page,
+  // 'automatic' contributes nothing (child view controller) → own the FULL inset with 'never' + an initial
+  // contentOffset. On root screens, keep the git-proven original: 'automatic' + hero-only contentInset —
+  // UIKit adds the safe-area share and settles the rest natively (forcing 'never'+full there races iOS's
+  // nav scroll-view adoption and mis-rests the content, timing-dependently).
+  const inTabPage = useInScreenHeaderTabPage();
   return (
     <Animated.ScrollView
       ref={scrollRef}
       showsVerticalScrollIndicator={false}
       {...scrollViewProps}
       className={cn('flex-1 bg-background', className)}
-      contentInsetAdjustmentBehavior="automatic"
-      {...(headerInset > 0 ? { contentInset: { top: headerInset } } : {})}
+      contentInsetAdjustmentBehavior={hasHeader && inTabPage ? 'never' : 'automatic'}
+      {...(hasHeader
+        ? inTabPage
+          ? {
+              contentInset: { top: headerFullHeight },
+              contentOffset: { x: 0, y: -headerFullHeight },
+            }
+          : { contentInset: { top: headerInset } }
+        : {})}
       {...(contentContainerStyle != null ? { contentContainerStyle } : {})}
       {...(headerFullHeight > 0 ? { scrollIndicatorInsets: { top: headerFullHeight } } : {})}
       scrollEventThrottle={16}

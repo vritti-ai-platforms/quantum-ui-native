@@ -1,10 +1,17 @@
 import { useUnstableNativeVariable } from 'nativewind';
-import { type ReactNode, useState } from 'react';
-import { Image, type ImageSourcePropType, Platform, TextInput, View } from 'react-native';
+import { type ReactNode, useRef, useState } from 'react';
+import { Image, type ImageSourcePropType, type LayoutChangeEvent, Platform, TextInput, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePlatformInfo } from '../../hooks/usePlatformInfo';
+import { cn } from '../../utils/cn';
 import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
-import { useRegisterScreenHeaderInset, useScreenScrollY } from '../ScreenContainer/screenScrollRegistry';
+import {
+  setMeasuredScreenHeaderHeight,
+  useRegisterScreenHeaderInset,
+  useScreenRouteKey,
+  useScreenScrollY,
+} from '../ScreenContainer/screenScrollRegistry';
 import { useScreenSearch } from '../ScreenContainer/screenSearchRegistry';
 import { Text } from '../Text';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
@@ -59,6 +66,12 @@ export function ScreenHeaderBase({
 }: ScreenHeaderBaseProps) {
   const insets = useSafeAreaInsets();
   const scrollY = useScreenScrollY();
+  const { os, version } = usePlatformInfo();
+  // iOS 26's liquid-glass header stays translucent (the glass material masks content sliding beneath).
+  // Pre-iOS 26 and Android have NO material — the header region is fully transparent, so tab-pager swipes
+  // and scrolled keep-alive pages bleed through the chrome. A solid bg-background there is visually
+  // identical at rest (content is inset below the header on the same background) and hides the bleed.
+  const solidHeaderBg = !(os === 'ios' && version >= 26);
   const { setQuery } = useScreenSearch();
   const [searchText, setSearchText] = useState('');
   const mutedVar = useVar('--muted');
@@ -95,6 +108,16 @@ export function ScreenHeaderBase({
   const stage1 = searchHeight;
 
   useRegisterScreenHeaderInset(overlay ? heroHeight : 0);
+  // Measure-first (the collapsible-header standard): register the PAINTED expanded height as the offset
+  // source of truth for content — consumers prefer it over the constants+safe-area formula, healing any
+  // drift between computed and painted. First layout only (the height animates during collapse).
+  const routeKey = useScreenRouteKey();
+  const measuredOnceRef = useRef(false);
+  const handleHeaderLayout = (e: LayoutChangeEvent) => {
+    if (!overlay || measuredOnceRef.current) return;
+    measuredOnceRef.current = true;
+    setMeasuredScreenHeaderHeight(routeKey, e.nativeEvent.layout.height);
+  };
   useRegisterScreenHeaderTabs(hasTabs ? tabs : undefined);
 
   const containerStyle = useAnimatedStyle(() => {
@@ -158,7 +181,11 @@ export function ScreenHeaderBase({
   }));
 
   return (
-    <Animated.View className="relative overflow-hidden" style={[{ paddingTop: insets.top }, containerStyle]}>
+    <Animated.View
+      className={cn('relative overflow-hidden', solidHeaderBg && 'bg-background')}
+      style={[{ paddingTop: insets.top }, containerStyle]}
+      onLayout={handleHeaderLayout}
+    >
       {backdrop ? (
         <Animated.View className="absolute inset-0" style={backdropOpacityStyle} pointerEvents="none">
           {backdrop}

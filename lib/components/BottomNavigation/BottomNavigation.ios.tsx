@@ -1,8 +1,8 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { createContext, useContext, useMemo } from 'react';
-import { DynamicColorIOS, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { SFSymbol } from 'react-native-sfsymbols';
+import { DynamicColorIOS, Image, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { sfSymbolSource } from '../DynamicIcon/sfSymbolSource';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
@@ -38,7 +38,11 @@ function MoreListScreen() {
           onPress={() => push(item.name)}
         >
           <View style={[styles.iconWrap, { backgroundColor: theme.muted }]}>
-            <SFSymbol name={item.icon.sfSymbol} size={20} color={theme.foreground} />
+            <Image
+              source={{ uri: sfSymbolSource(item.icon.sfSymbol, 20, theme.foreground, 'regular', false) }}
+              resizeMode="contain"
+              style={{ width: 20, height: 20 }}
+            />
           </View>
           <Text style={[styles.rowLabel, { color: theme.foreground }]}>{item.label ?? item.name}</Text>
           <Text style={[styles.chevron, { color: theme.border }]}>›</Text>

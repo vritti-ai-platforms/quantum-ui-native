@@ -3,3 +3,14 @@
 export function multiply(a: number, b: number): number {
   return a * b;
 }
+
+// Web / non-native fallback — no SF Symbols off iOS; callers fall back to an empty icon box.
+export function renderSFSymbol(
+  _name: string,
+  _size: number,
+  _color: number,
+  _weight: string,
+  _multicolor: boolean,
+): string {
+  return '';
+}

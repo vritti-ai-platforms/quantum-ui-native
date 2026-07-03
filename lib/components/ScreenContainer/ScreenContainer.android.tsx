@@ -1,12 +1,13 @@
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { useUnstableNativeVariable } from 'nativewind';
 import { type Context, createContext, type ReactNode, useContext } from 'react';
-import { type ScrollViewProps, useWindowDimensions, View, type ViewProps } from 'react-native';
+import { type ScrollViewProps, StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native';
 import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../../utils/cn';
+import { resolveTopPadding } from '../../utils/resolveTopPadding';
 import { computeFloatingTabBarHeight } from '../BottomNavigation/tabBarInset';
-import { useScreenHeaderInset, useScreenScrollY } from './screenScrollRegistry';
+import { useMeasuredScreenHeaderHeight, useScreenHeaderInset, useScreenScrollY } from './screenScrollRegistry';
 
 // Bottom space a screen must reserve. Inside the bottom-tab navigator (BottomTabBarHeightContext
 // is defined — react-navigation is a shared MF singleton, so this crosses the remote boundary)
@@ -67,6 +68,7 @@ const ScrollableBody = ({
   const bgColor = typeof bgVar === 'string' ? `hsl(${bgVar})` : undefined;
   const scrollY = useScreenScrollY();
   const headerInset = useScreenHeaderInset();
+  const measuredHeader = useMeasuredScreenHeaderHeight();
   const { top: safeAreaTop } = useSafeAreaInsets();
   // Reserve bottom space so the last row clears the floating tab bar (or the system nav bar
   // outside the tab navigator). See useScreenBottomInset for the MF-remote rationale.
@@ -77,19 +79,24 @@ const ScrollableBody = ({
     scrollY.value = event.contentOffset.y;
   });
   const { contentContainerStyle, ...scrollViewProps } = rest;
-  // Add safeAreaTop so the effective padding matches the full header height
-  // (heroHeight + insets.top). On iOS this gap is filled by
-  // contentInsetAdjustmentBehavior="automatic", which has no effect on Android.
-  const effectivePadding = headerInset > 0 ? headerInset + safeAreaTop : 0;
-  const padStyle: { paddingTop?: number; paddingBottom?: number } = {};
-  if (effectivePadding > 0) padStyle.paddingTop = effectivePadding;
-  if (bottomPad > 0) padStyle.paddingBottom = bottomPad;
-  const hasPad = padStyle.paddingTop != null || padStyle.paddingBottom != null;
-  const composedContainerStyle = hasPad
-    ? contentContainerStyle != null
-      ? [padStyle, contentContainerStyle]
-      : padStyle
-    : contentContainerStyle;
+  // Add safeAreaTop so the effective padding matches the full header height (heroHeight + insets.top —
+  // iOS carries the same total in its prop contentInset). Our paddingTop is a LONGHAND merged into the same
+  // contentContainerStyle, and Yoga resolves it over a caller's `padding` shorthand top edge — so bake the
+  // caller's declared top into it, matching iOS where the caller's padding is additive to the contentInset.
+  // Header offset: the MEASURED painted height when available (offset source of truth — see
+  // screenScrollRegistry), else the constants+safe-area formula as the first-frame fallback.
+  const headerOffset = headerInset > 0 ? (measuredHeader > 0 ? measuredHeader : headerInset + safeAreaTop) : 0;
+  const callerTop = headerOffset > 0 ? resolveTopPadding(contentContainerStyle) : 0;
+  // ONE flattened plain object (no style arrays — removes any array/longhand resolution ambiguity):
+  // every caller edge applies; our top (which already includes the caller's declared top) wins
+  // deterministically; the bottom reserve applies only when the caller declared no bottom edge.
+  const flatCaller = StyleSheet.flatten(contentContainerStyle) ?? {};
+  const callerBottom = flatCaller.paddingBottom ?? flatCaller.paddingVertical ?? flatCaller.padding;
+  const composedContainerStyle = {
+    ...flatCaller,
+    ...(headerOffset > 0 ? { paddingTop: headerOffset + callerTop } : {}),
+    ...(callerBottom == null && bottomPad > 0 ? { paddingBottom: bottomPad } : {}),
+  };
   return (
     <Animated.ScrollView
       showsVerticalScrollIndicator={false}
