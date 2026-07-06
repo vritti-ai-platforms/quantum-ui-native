@@ -3,7 +3,13 @@
 // top-level eval, then `prependEdgeToConnection`/`removeEdgeFromConnection`/`evictEntity` in mutations.
 export { createApolloClient } from './createApolloClient';
 export { getApolloClient, requireApolloCache, requireApolloClient, setApolloClient } from './client';
-export { registerConnection, registerTypePolicies, type RegisterConnectionOptions } from './registry';
+export {
+  evictRegisteredConnections,
+  getRegisteredConnectionFields,
+  registerConnection,
+  type RegisterConnectionOptions,
+  registerTypePolicies,
+} from './registry';
 export {
   evictEntity,
   type EvictEntityOptions,

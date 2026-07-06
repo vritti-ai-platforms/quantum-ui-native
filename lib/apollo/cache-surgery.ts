@@ -12,6 +12,22 @@ interface ConnectionShape {
 interface ModifyDetails {
   readField(fieldName: string, from?: Reference): unknown;
   toReference(object: StoreObject): Reference | undefined;
+  /** The normalized field key including serialized keyArgs, e.g. `inventoryItems({"filters":[…]})`. */
+  storeFieldName: string;
+}
+
+// Extracts the serialized keyArgs object from a store field name (`field({...})`). Returns null when the
+// variant carries no args (the unfiltered connection) or the args can't be parsed.
+function parseVariantArgs(storeFieldName: string): Record<string, unknown> | null {
+  const open = storeFieldName.indexOf('(');
+  const close = storeFieldName.lastIndexOf(')');
+  if (open === -1 || close <= open) return null;
+  try {
+    const parsed = JSON.parse(storeFieldName.slice(open + 1, close));
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
 }
 
 // Structural subset of Apollo's InMemoryCache. We intentionally do NOT import `ApolloCache`: the
@@ -37,15 +53,32 @@ export interface PrependEdgeOptions {
   edgeTypename: string;
   /** Cursor for the new edge. Default `''`. */
   cursor?: string;
+  /**
+   * Optional per-variant guard. relayStylePagination keys a connection by its filter/search/sort args, so
+   * one connectionField may have several cached variants. Called with each variant's parsed args (null for
+   * the unfiltered variant); return false to SKIP inserting into that variant (e.g. the new entity doesn't
+   * match its filters). Omit to prepend into every variant (previous behavior).
+   */
+  matchesVariant?: (args: Record<string, unknown> | null) => boolean;
 }
 
-// Prepend a new entity's edge into EVERY cached variant of `connectionField` (relayStylePagination
-// keys connections by filter/search/sort, so there may be several). Dedupes by id. No refetch — the
-// mutation already returned the full entity, which Apollo normalized by id.
-export function prependEdgeToConnection({ cache, connectionField, entity, edgeTypename, cursor = '' }: PrependEdgeOptions): void {
+// Prepend a new entity's edge into cached variants of `connectionField` (relayStylePagination keys
+// connections by filter/search/sort, so there may be several). Dedupes by id. With `matchesVariant`,
+// only variants the entity belongs to are touched — a filtered list it doesn't match is left for its
+// next revalidation instead of showing a row that doesn't satisfy the filter. No refetch — the mutation
+// already returned the full entity, which Apollo normalized by id.
+export function prependEdgeToConnection({
+  cache,
+  connectionField,
+  entity,
+  edgeTypename,
+  cursor = '',
+  matchesVariant,
+}: PrependEdgeOptions): void {
   cache.modify({
     fields: {
-      [connectionField]: (existing: ConnectionShape | undefined, { toReference, readField }: ModifyDetails) => {
+      [connectionField]: (existing: ConnectionShape | undefined, { toReference, readField, storeFieldName }: ModifyDetails) => {
+        if (matchesVariant && !matchesVariant(parseVariantArgs(storeFieldName))) return existing;
         const conn = existing ?? {};
         const edges = conn.edges ?? [];
         const newId = (entity as { id?: string | number }).id;

@@ -17,8 +17,15 @@ export interface PersistenceConfig {
   key?: string;
   /** Debounce window (ms) for write-triggered persists. Default 1000. */
   debounce?: number;
-  /** Max serialized snapshot size in bytes before persistence self-disables for the session. Default 1 MiB. `false` removes the cap. */
+  /** Max serialized snapshot size in bytes before persistence self-disables for the session. Default 5 MiB. `false` removes the cap. */
   maxSize?: number | false;
+  /**
+   * Namespaces the physical snapshot key by tenant (e.g. `() => selectedBusinessUnitId`). Each distinct
+   * value keeps its OWN MMKV snapshot, so switching tenants swaps snapshots instead of overwriting one —
+   * enabling instant cold-start restore in both directions. Read fresh on every read/write, so it tracks
+   * the active tenant. Omit for a single shared snapshot.
+   */
+  namespace?: () => string | null | undefined;
 }
 
 // Host-injected connectivity source (e.g. @react-native-community/netinfo). Keeps the package free of
@@ -77,4 +84,12 @@ export interface CreatedApolloClient {
   purge: () => Promise<void>;
   /** Empties ONLY the persisted snapshot, leaving the live cache intact. Use on BU/tenant switch (keeps the no-flash refetch UX). */
   purgePersisted: () => Promise<void>;
+  /**
+   * Re-restore the persisted snapshot for the CURRENT `persistence.namespace` into the live cache. Use on a
+   * BU/tenant switch (after evicting the previous tenant's connections) to load the new tenant's snapshot
+   * instantly. No-op when persistence is disabled.
+   */
+  restore: () => Promise<void>;
+  /** Current serialized snapshot size in bytes for the active namespace, or null (persistence disabled / unwritten). */
+  getCacheSize: () => Promise<number | null>;
 }

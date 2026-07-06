@@ -9,6 +9,11 @@ export { useIsMobile } from './useIsMobile';
 export { useLocale } from './useLocale';
 export { usePlatformInfo } from './usePlatformInfo';
 export { usePushNavigator } from './usePushNavigator';
-export { useRevalidateOnceFetchPolicy } from './useRevalidateOnceFetchPolicy';
+export {
+  clearRevalidatedSession,
+  markRevalidated,
+  pickInitialRevalidateFetchPolicy,
+  useRevalidateOnceFetchPolicy,
+} from './useRevalidateOnceFetchPolicy';
 export { useTheme } from './useTheme';
 export { useTimer } from './useTimer';

@@ -1,6 +1,9 @@
 import { ApolloClient, CombinedGraphQLErrors, from, HttpLink, InMemoryCache } from '@apollo/client';
+import { ServerError } from '@apollo/client/errors';
 import { SetContextLink } from '@apollo/client/link/context';
 import { ErrorLink } from '@apollo/client/link/error';
+import { RetryLink } from '@apollo/client/link/retry';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { setApolloClient } from './client';
 import { setConnectivityProvider } from './offline/connectivity';
 import { createOfflineSyncEngine, getOfflineSyncEngine, setOfflineSyncEngine } from './offline/engine';
@@ -55,13 +58,28 @@ export function createApolloClient(config: CreateApolloClientConfig): CreatedApo
   // On the configured unauthenticated code, notify the host (it clears the session). All other errors
   // pass through untouched for callers to surface.
   const errorLink = new ErrorLink(({ error }) => {
-    if (!CombinedGraphQLErrors.is(error)) return;
-    for (const graphQLError of error.errors) {
-      if (graphQLError.extensions?.code === unauthenticatedCode) {
-        onUnauthenticated?.();
-        return;
-      }
-    }
+    const isGraphQLUnauth =
+      CombinedGraphQLErrors.is(error) && error.errors.some((e) => e.extensions?.code === unauthenticatedCode);
+    // A transport-level 401 (non-GraphQL error body, e.g. an auth proxy or an expired token rejected before
+    // the resolver) surfaces as a ServerError, not CombinedGraphQLErrors — handle it here too so the
+    // session-expiry path fires for both shapes (previously only GraphQL-shaped 401s triggered it).
+    const isTransportUnauth = ServerError.is(error) && error.statusCode === 401;
+    if (isGraphQLUnauth || isTransportUnauth) onUnauthenticated?.();
+  });
+
+  // Retry transient network failures (flaky mobile connectivity) on READ operations only — never
+  // mutations (which may not be idempotent). A GraphQL error (HTTP 200 with an `errors` array) is NOT a
+  // network error, so it is not retried here; those flow to errorLink / the caller.
+  const retryLink = new RetryLink({
+    delay: { initial: 300, max: 5000, jitter: true },
+    attempts: {
+      max: 3,
+      retryIf: (error, operation) => {
+        if (!error) return false;
+        const def = getMainDefinition(operation.query);
+        return def.kind === 'OperationDefinition' && def.operation === 'query';
+      },
+    },
   });
 
   // Static fallback used until a tenant base URL is stored; authLink overrides it per request.
@@ -76,8 +94,11 @@ export function createApolloClient(config: CreateApolloClientConfig): CreatedApo
   }
 
   // offlineLink sits before authLink: offline opted-in mutations short-circuit here (no wasted auth work);
-  // everything else forwards through auth → http.
-  const links = offline ? [errorLink, createOfflineLink(), authLink, httpLink] : [errorLink, authLink, httpLink];
+  // everything else forwards through auth → http. retryLink sits after the offline short-circuit so only
+  // real network reads (not offline-optimistic writes) are retried.
+  const links = offline
+    ? [errorLink, createOfflineLink(), retryLink, authLink, httpLink]
+    : [errorLink, retryLink, authLink, httpLink];
 
   const cache = new InMemoryCache({
     ...cacheConfig,
@@ -110,5 +131,15 @@ export function createApolloClient(config: CreateApolloClientConfig): CreatedApo
     if (persistor) await persistor.purge();
   };
 
-  return { client, cache, ready, purge, purgePersisted };
+  // Re-restore the snapshot for the CURRENT persistence.namespace (e.g. after a BU switch, the adapter
+  // now points at the new tenant's slot). No-op without persistence.
+  const restore = async (): Promise<void> => {
+    if (persistor) await persistor.restore();
+  };
+
+  // Current serialized snapshot size for the active namespace — lets the host monitor how close it is to
+  // the maxSize self-disable cliff.
+  const getCacheSize = async (): Promise<number | null> => (persistor ? persistor.getSize() : null);
+
+  return { client, cache, ready, purge, purgePersisted, restore, getCacheSize };
 }

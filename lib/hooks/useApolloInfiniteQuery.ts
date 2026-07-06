@@ -1,7 +1,8 @@
 import { type DocumentNode, NetworkStatus, type TypedDocumentNode, type WatchQueryFetchPolicy } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { UseInfiniteListReturn } from '../types';
+import { markRevalidated, pickInitialRevalidateFetchPolicy } from './useRevalidateOnceFetchPolicy';
 
 interface Connection<T> {
   edges: { node: T }[];
@@ -26,6 +27,15 @@ export interface UseApolloInfiniteQueryParams<T> {
    * tab switch — while pull-to-refresh (`refresh()`) still forces a network reload.
    */
   fetchPolicy?: WatchQueryFetchPolicy;
+  /**
+   * Revalidate-once behavior for a feed that unmounts/remounts (e.g. a detail-screen tab). When set, the
+   * FIRST mount of this key in the session uses `cache-and-network` (so freshly added rows appear over a
+   * stale/empty persisted connection) and later mounts use `cache-first` (instant, no request) — but the
+   * key is marked revalidated ONLY after the network fetch actually succeeds, so an offline/errored first
+   * mount still revalidates next time. Mutually exclusive with `fetchPolicy` (revalidateKey wins).
+   * Reset across logout / BU switch via `clearRevalidatedSession()`.
+   */
+  revalidateKey?: string;
 }
 
 // Apollo-backed Relay-connection list driver. Same UseInfiniteListReturn contract as the old TanStack hook,
@@ -40,13 +50,29 @@ export function useApolloInfiniteQuery<T extends { id: string }>({
   dataKey,
   enabled = true,
   fetchPolicy,
+  revalidateKey,
 }: UseApolloInfiniteQueryParams<T>): UseInfiniteListReturn<T> {
+  // Freeze the revalidate-once decision at mount (so it can't flip mid-mount). When revalidateKey is set
+  // it drives the fetch policy; otherwise the caller's explicit fetchPolicy is used unchanged.
+  const [frozenRevalidatePolicy] = useState<WatchQueryFetchPolicy | undefined>(() =>
+    revalidateKey ? pickInitialRevalidateFetchPolicy(revalidateKey) : undefined,
+  );
+  const effectiveFetchPolicy = revalidateKey ? frozenRevalidatePolicy : fetchPolicy;
+
   const { data, previousData, error, fetchMore, refetch, networkStatus } = useQuery(query, {
     variables: getVariables(undefined),
     skip: !enabled,
     notifyOnNetworkStatusChange: true,
-    fetchPolicy,
+    fetchPolicy: effectiveFetchPolicy,
   });
+
+  // Mark the key revalidated only once a network fetch has actually completed WITHOUT error, so an
+  // offline/errored first mount stays eligible to revalidate on its next mount.
+  useEffect(() => {
+    if (revalidateKey && !error && networkStatus === NetworkStatus.ready) {
+      markRevalidated(revalidateKey);
+    }
+  }, [revalidateKey, error, networkStatus]);
 
   // Keep the last good connection visible while new variables / a refetch are in flight.
   const effective = (data ?? previousData) as Record<string, Connection<T>> | undefined;
@@ -62,13 +88,18 @@ export function useApolloInfiniteQuery<T extends { id: string }>({
     return [...byId.values()];
   }, [connection]);
 
+  // A rejected fetchMore (transient network error paging forward) would otherwise be an unhandled promise
+  // rejection; capture it so the list surfaces an error state instead. Cleared on refresh.
+  const [fetchMoreError, setFetchMoreError] = useState<unknown>(null);
+
   const fetchNextPage = useCallback(() => {
     const pageInfo = connection?.pageInfo;
     if (!pageInfo?.hasNextPage || !pageInfo.endCursor) return;
-    void fetchMore({ variables: getVariables(pageInfo.endCursor) });
+    fetchMore({ variables: getVariables(pageInfo.endCursor) }).catch((e: unknown) => setFetchMoreError(e));
   }, [fetchMore, connection, getVariables]);
 
   const refresh = useCallback(() => {
+    setFetchMoreError(null);
     void refetch();
   }, [refetch]);
 
@@ -81,6 +112,6 @@ export function useApolloInfiniteQuery<T extends { id: string }>({
     refetch: refresh,
     refresh,
     isRefetching: networkStatus === NetworkStatus.refetch,
-    isError: !!error,
+    isError: !!error || !!fetchMoreError,
   };
 }
