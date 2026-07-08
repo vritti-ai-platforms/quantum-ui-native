@@ -25,4 +25,6 @@ export interface BottomNavigationProps {
   routes: RouteConfig[];
   initialRoute?: string;
   screenOptions?: BottomTabNavigationOptions;
+  /** Fired when the active tab changes (NOT on the initial focus). Host wires cache reset here. */
+  onActiveTabChange?: (currentRouteName: string, previousRouteName: string) => void;
 }

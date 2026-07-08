@@ -1,6 +1,6 @@
 import { type BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useRef } from 'react';
 import { DynamicColorIOS, Image, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { sfSymbolSource } from '../DynamicIcon/sfSymbolSource';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
@@ -99,7 +99,15 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 20, fontWeight: '300' },
 });
 
-export function BottomNavigation({ routes: allRoutes, initialRoute, screenOptions }: BottomNavigationProps) {
+export function BottomNavigation({
+  routes: allRoutes,
+  initialRoute,
+  screenOptions,
+  onActiveTabChange,
+}: BottomNavigationProps) {
+  // Tracks the currently-focused tab so screenListeners.focus can skip the initial (cold-launch) focus
+  // and only report genuine tab CHANGES to the host.
+  const activeRouteRef = useRef<string | null>(null);
   // Only split into a "More" tab when it would hold ≥2 items — a lone overflow item is shown directly.
   const useOverflow = allRoutes.length > MAX_VISIBLE + 1;
   const visibleRoutes = useMemo(
@@ -162,6 +170,17 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
         <Tab.Navigator
           key={navigatorKey}
           initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
+          // Report genuine tab changes to the host (e.g. to clear the Apollo cache per feature). Fires on
+          // the incoming tab's focus; the ref skips the very first focus so cold-launch boot isn't treated
+          // as a change.
+          screenListeners={({ route }) => ({
+            focus: () => {
+              const prev = activeRouteRef.current;
+              if (prev === route.name) return;
+              activeRouteRef.current = route.name;
+              if (prev !== null) onActiveTabChange?.(route.name, prev);
+            },
+          })}
           // Hide the tab bar when the focused tab has pushed past its initial route (same detection as
           // BottomNavigation.android). We hide via tabBarStyle.display:'none' — NOT a custom `tabBar` — so the
           // *native* tab bar (and its iOS-26 tabBarBlurEffect liquid glass) is what renders when visible; a

@@ -371,7 +371,15 @@ const styles = StyleSheet.create({
   rowLabel: { flex: 1, fontSize: 16 },
 });
 
-export function BottomNavigation({ routes: allRoutes, initialRoute, screenOptions }: BottomNavigationProps) {
+export function BottomNavigation({
+  routes: allRoutes,
+  initialRoute,
+  screenOptions,
+  onActiveTabChange,
+}: BottomNavigationProps) {
+  // Tracks the currently-focused tab so screenListeners.focus can skip the initial (cold-launch) focus
+  // and only report genuine tab CHANGES to the host.
+  const activeRouteRef = useRef<string | null>(null);
   // Only split into a "More" tab when it would hold ≥2 items — a lone overflow item is shown directly.
   const useOverflow = allRoutes.length > MAX_VISIBLE + 1;
   const visibleRoutes = useMemo(
@@ -399,6 +407,17 @@ export function BottomNavigation({ routes: allRoutes, initialRoute, screenOption
         <Tab.Navigator
           key={navigatorKey}
           initialRouteName={initialRoute ?? visibleRoutes[0]?.name}
+          // Report genuine tab changes to the host (e.g. to clear the Apollo cache per feature). Fires on
+          // the incoming tab's focus; the ref skips the very first focus so cold-launch boot isn't treated
+          // as a change. screenListeners is navigator-core, so it fires identically under the custom tabBar.
+          screenListeners={({ route }) => ({
+            focus: () => {
+              const prev = activeRouteRef.current;
+              if (prev === route.name) return;
+              activeRouteRef.current = route.name;
+              if (prev !== null) onActiveTabChange?.(route.name, prev);
+            },
+          })}
           tabBar={(props) => <FloatingTabBar {...props} />}
           screenOptions={{
             headerShown: false,
