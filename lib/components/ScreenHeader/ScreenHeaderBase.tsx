@@ -235,14 +235,14 @@ export function ScreenHeaderBase({
         // The row's height animates 52→0; the pill is flex-1 so it FILLS that height — the pill itself
         // squishes/minimizes (it isn't a fixed-height pill being clipped). overflow-hidden clips the
         // icon/input once the pill gets too short.
-        <Animated.View className="overflow-hidden px-4 pb-2" style={searchRowStyle}>
+        <Animated.View className="overflow-hidden px-4 py-1" style={searchRowStyle}>
           <View
             className="flex-1 flex-row items-center  gap-2 overflow-hidden rounded-full px-5"
             style={{ backgroundColor: pillFill }}
           >
             <DynamicIcon
               icon={SEARCH_ICON}
-              size={14}
+              size={18}
               // items-center aligns the boxes, but the iOS SFSymbol's glyph sits optically high
               // relative to the text — nudge it down a touch. Android's Text glyph needs no nudge.
               style={{ marginRight: 2, marginTop: Platform.OS === 'ios' ? 2 : 0 }}
