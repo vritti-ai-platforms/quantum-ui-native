@@ -20,6 +20,7 @@ export * from './ScreenHeader';
 export * from './Skeleton';
 export * from './Spinner';
 export * from './SplashScreen';
+export * from './Switch';
 export * from './StaticAlert';
 export * from './TextField';
 export * from './Text';

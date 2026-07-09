@@ -175,6 +175,11 @@
       "types": "./dist/typescript/lib/components/StaticAlert/index.d.ts",
       "default": "./dist/module/components/StaticAlert/index.js"
     },
+    "./Switch": {
+      "source": "./lib/components/Switch/index.ts",
+      "types": "./dist/typescript/lib/components/Switch/index.d.ts",
+      "default": "./dist/module/components/Switch/index.js"
+    },
     "./PasswordField": {
       "source": "./lib/components/PasswordField/index.ts",
       "types": "./dist/typescript/lib/components/PasswordField/index.d.ts",
