@@ -19,6 +19,13 @@ interface ScreenHeaderCommonProps {
   backgroundImage?: ImageSourcePropType;
   /** Render a built-in native-style back button as the left action (chevron on iOS, arrow on Android). Ignored when `leftActions` is provided. */
   backButton?: boolean;
+  /**
+   * Render a built-in create (+) button in the right action slot. The label is its accessibility label
+   * (e.g. "Add tax group"). Pressing it fires the screen body's registered create handler — register one with
+   * `useCreateEditSheet({ registerCreateAction: true })` or `useRegisterScreenCreateAction(...)`. Renders after
+   * any `rightActions`.
+   */
+  createLabel?: string;
 }
 
 interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {

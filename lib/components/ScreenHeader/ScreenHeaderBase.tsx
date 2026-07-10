@@ -5,7 +5,9 @@ import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedReaction, use
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { cn } from '../../utils/cn';
+import { Button } from '../Button';
 import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
+import { useScreenCreateAction } from '../ScreenContainer/screenActionRegistry';
 import {
   setMeasuredScreenHeaderHeight,
   useRegisterScreenHeaderInset,
@@ -29,6 +31,7 @@ const TITLE_TOP_MARGIN = 16; // collapses on scroll alongside the title opacity
 const SEARCH_ROW_HEIGHT = 52; // collapsible search row (pill + bottom gap)
 
 const SEARCH_ICON: PlatformIconDescriptor = { sfSymbol: 'magnifyingglass', materialSymbol: 'search' };
+const CREATE_ICON: PlatformIconDescriptor = { sfSymbol: 'plus', materialSymbol: 'add' };
 // MF-shared theme reader — className COLORS don't apply reliably across the federation boundary, so the
 // search pill resolves its fill/text/placeholder colors inline from the shared NativeWind variables.
 const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
@@ -39,6 +42,7 @@ interface ScreenHeaderBaseProps {
   variant: ScreenHeaderVariant;
   leftActions?: ReactNode;
   rightActions?: ReactNode;
+  createLabel?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
   tabs?: ScreenHeaderTabConfig[];
@@ -55,6 +59,7 @@ export function ScreenHeaderBase({
   variant,
   leftActions,
   rightActions,
+  createLabel,
   searchable = false,
   searchPlaceholder = 'Search',
   tabs,
@@ -87,10 +92,18 @@ export function ScreenHeaderBase({
     return `hsl(${h} ${s} ${lightness > 50 ? lightness - 3 : lightness + 3}%)`;
   })();
 
+  // Built-in create (+) button: fires the screen body's registered create handler (per-route action registry).
+  const createAction = useScreenCreateAction();
+  const createButton = createLabel ? (
+    <Button variant="glass" size="icon" onPress={() => createAction?.()} accessibilityLabel={createLabel} hitSlop={8}>
+      <DynamicIcon icon={CREATE_ICON} size={24} />
+    </Button>
+  ) : null;
+
   const hasTabs = variant === 'tabs' && (tabs?.length ?? 0) > 0;
   // Actions render in both variants: standard places them in the top nav-bar band above the large title;
   // the tabs variant centers the title between them in a single collapsing nav row.
-  const hasActions = leftActions != null || rightActions != null;
+  const hasActions = leftActions != null || rightActions != null || createButton != null;
   const hasSearch = variant === 'standard' && searchable;
   // Standard reserves a top nav-bar band for its (absolutely-placed) actions; the tabs nav row IS that band.
   const reserveBar = variant === 'standard' && hasActions;
@@ -299,13 +312,14 @@ export function ScreenHeaderBase({
         </View>
       ) : null}
 
-      {rightActions && !(hasTabs && navCollapsed) ? (
+      {(rightActions || createButton) && !(hasTabs && navCollapsed) ? (
         <View
-          className="absolute right-4 z-10 items-center justify-center"
+          className="absolute right-4 z-10 flex-row items-center justify-center gap-2"
           style={{ top: insets.top, height: BAR_HEIGHT }}
           pointerEvents="box-none"
         >
           {rightActions}
+          {createButton}
         </View>
       ) : null}
     </Animated.View>

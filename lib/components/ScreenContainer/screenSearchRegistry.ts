@@ -1,5 +1,5 @@
 import { NavigationRouteContext } from '@react-navigation/native';
-import { useCallback, useContext, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 
 // Per-route search query, keyed by route.key — mirrors screenScrollRegistry. Lets the ScreenHeader's
 // search field (rendered in the navigator header slot) and the screen body (the list/feed) share one
@@ -56,4 +56,20 @@ export function useScreenSearch(): ScreenSearch {
   const query = useSyncExternalStore(subscribe, () => getEntry(key).query);
   const setQuery = useCallback((q: string) => setScreenSearch(key, q), [key]);
   return { query, setQuery };
+}
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+// Debounced + trimmed screen-search query for list/feed screens: the debounce that every list screen used to
+// hand-roll (useState + a setTimeout useEffect) now lives here. Composes useScreenSearch (same per-route
+// registry), so the ScreenHeader search field drives it with no extra wiring — a screen just reads the result
+// and passes it to its data hook. Debounces every change including clearing; `debounceMs` overrides 300 ms.
+export function useDebouncedScreenSearch(debounceMs: number = SEARCH_DEBOUNCE_MS): string {
+  const { query } = useScreenSearch();
+  const [debounced, setDebounced] = useState(() => query.trim());
+  useEffect(() => {
+    const handle = setTimeout(() => setDebounced(query.trim()), debounceMs);
+    return () => clearTimeout(handle);
+  }, [query, debounceMs]);
+  return debounced;
 }
