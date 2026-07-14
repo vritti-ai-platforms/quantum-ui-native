@@ -1,4 +1,4 @@
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { BottomTabBarHeightContext } from 'react-native-bottom-tabs';
 import { useUnstableNativeVariable } from 'nativewind';
 import { type Context, createContext, type ReactNode, useContext } from 'react';
 import { type ScrollViewProps, StyleSheet, useWindowDimensions, View, type ViewProps } from 'react-native';
