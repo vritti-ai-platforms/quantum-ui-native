@@ -78,7 +78,13 @@ const ScrollableBody = ({
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
-  const { contentContainerStyle, ...scrollViewProps } = rest;
+  // Pull out the caller's content className + children. On Android we can't put contentContainerClassName
+  // AND our own inset contentContainerStyle on the same Animated.ScrollView — they collide and the className
+  // is dropped (iOS avoids this by carrying its inset on the native `contentInset` prop instead). So the
+  // insets stay on the scroll content container and the caller's className goes on an inner content View.
+  const { contentContainerStyle, contentContainerClassName, children, ...scrollViewProps } = rest as typeof rest & {
+    contentContainerClassName?: string;
+  };
   // Add safeAreaTop so the effective padding matches the full header height (heroHeight + insets.top —
   // iOS carries the same total in its prop contentInset). Our paddingTop is a LONGHAND merged into the same
   // contentContainerStyle, and Yoga resolves it over a caller's `padding` shorthand top edge — so bake the
@@ -106,7 +112,9 @@ const ScrollableBody = ({
       {...(composedContainerStyle != null ? { contentContainerStyle: composedContainerStyle } : {})}
       scrollEventThrottle={16}
       onScroll={onScroll}
-    />
+    >
+      {contentContainerClassName ? <View className={contentContainerClassName}>{children}</View> : children}
+    </Animated.ScrollView>
   );
 };
 
