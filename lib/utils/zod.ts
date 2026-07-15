@@ -145,15 +145,18 @@ export interface CodeFieldOptions {
   dotted?: boolean;
   max?: number;
   required?: string;
+  message?: string;
 }
 
 // A lowercase-kebab code field; { dotted: true } allows dot-separated segments (permission codes).
+// `message` overrides the default format error (e.g. 'Enter a valid SKU').
 export function zodCodeField(options: CodeFieldOptions = {}) {
-  const { dotted = false, max, required = 'Code is required' } = options;
+  const { dotted = false, max, required = 'Code is required', message } = options;
   const pattern = dotted ? DOTTED_CODE_PATTERN : CODE_PATTERN;
-  const message = dotted
-    ? 'Dot-separated lowercase words (e.g. add.salt)'
-    : 'Single lowercase word, hyphens allowed (e.g. inventory-items)';
-  const schema = z.string().min(1, required).regex(pattern, message);
+  const defaultMessage = dotted ? 'Lowercase words separated by dots' : 'Lowercase letters, numbers, and hyphens only';
+  const schema = z
+    .string()
+    .min(1, required)
+    .regex(pattern, message ?? defaultMessage);
   return max != null ? schema.max(max, `Code must be ${max} characters or less`) : schema;
 }
