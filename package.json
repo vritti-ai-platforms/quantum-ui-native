@@ -240,6 +240,11 @@
       "types": "./dist/typescript/lib/utils/cn.d.ts",
       "default": "./dist/module/utils/cn.js"
     },
+    "./zod": {
+      "source": "./lib/utils/zod.ts",
+      "types": "./dist/typescript/lib/utils/zod.d.ts",
+      "default": "./dist/module/utils/zod.js"
+    },
     "./utils": {
       "source": "./lib/utils/index.ts",
       "types": "./dist/typescript/lib/utils/index.d.ts",
@@ -402,6 +407,8 @@
     "@apollo/client": "^4.2.3",
     "@callstack/liquid-glass": "^0.7.1",
     "@commitlint/config-conventional": "^20.5.0",
+    "@hookform/resolvers": "^5.2.2",
+    "zod": "^4.3.6",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
@@ -455,6 +462,7 @@
   },
   "peerDependencies": {
     "@apollo/client": ">=4",
+    "@hookform/resolvers": ">=5.0.0",
     "@callstack/liquid-glass": ">=0.7.0",
     "@react-native-community/datetimepicker": ">=8.0.0",
     "@react-native-menu/menu": ">=2.0.0",
@@ -478,7 +486,8 @@
     "react-native-screens": ">=4.20.0",
     "react-native-sfsymbols": ">=1.0.0",
     "react-native-svg": ">=13.0.0",
-    "zeego": ">=3.0.0"
+    "zeego": ">=3.0.0",
+    "zod": ">=4.0.0"
   },
   "peerDependenciesMeta": {
     "@apollo/client": {
