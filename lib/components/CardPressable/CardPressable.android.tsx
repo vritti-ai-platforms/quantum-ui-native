@@ -1,8 +1,8 @@
 import type * as React from 'react';
 import { Pressable, type PressableProps, useColorScheme } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { TextClassContext } from '../Text';
 import { cn } from '../../utils/cn';
+import { TextClassContext } from '../Text';
 
 export interface CardPressableProps extends Omit<PressableProps, 'children'> {
   selected?: boolean;
@@ -44,7 +44,7 @@ function CardPressable({
         // overflow-hidden sets clipToOutline so the foreground ripple is clipped by borderRadius.
         className={cn(
           'shadow-sm bg-card border border-border rounded-xl overflow-hidden',
-          selected && 'bg-secondary/40',
+          selected && 'bg-secondary/40 bg-card',
           disabled && 'opacity-50',
           className,
         )}

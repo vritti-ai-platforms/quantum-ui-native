@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable, type PressableProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { TextClassContext } from '../Text';
 import { cn } from '../../utils/cn';
+import { TextClassContext } from '../Text';
 
 export interface CardPressableProps extends Omit<PressableProps, 'children'> {
   selected?: boolean;
@@ -58,7 +58,7 @@ function CardPressable({
         onPressOut={handlePressOut}
         className={cn(
           'shadow-sm bg-card border border-border rounded-xl',
-          selected && 'bg-primary/5',
+          selected && 'bg-primary/5 bg-card',
           disabled && 'opacity-50',
           pressed && 'opacity-70',
           className,
