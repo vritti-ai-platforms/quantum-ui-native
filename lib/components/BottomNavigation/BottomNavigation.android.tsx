@@ -61,11 +61,14 @@ function makeScreen(route: RouteConfig): ComponentType {
   const Comp = route.component ?? NullScreen;
   const header = route.header;
   if (!header) return Comp;
+  // Name the nested stack's root distinctly from the tab (route.name) so react-navigation doesn't warn
+  // about same-name nesting (HomeTabs > /uom > /uom). It's an internal root; detail pushes use their own names.
+  const rootName = `${route.name}::view`;
   const screens: ReadonlyArray<PushScreenConfig> = [
-    { name: route.name, component: Comp, initialParams: route.params, header },
+    { name: rootName, component: Comp, initialParams: route.params, header },
   ];
   return function TabStack() {
-    return <PushNavigator initialRoute={route.name} screens={screens} />;
+    return <PushNavigator initialRoute={rootName} screens={screens} />;
   };
 }
 

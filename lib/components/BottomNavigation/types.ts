@@ -31,6 +31,12 @@ interface RouteConfigBase {
    * `component` is optional (the tab has no scene of its own).
    */
   onPress?: () => void;
+  /**
+   * Marks the tab's feature as permission-locked. On iOS it surfaces as a native top-trailing badge (🔒);
+   * the badge bubble color is system-controlled there (iOS can't tint it — that prop is Android-only). The
+   * Android custom bar does not render it yet.
+   */
+  locked?: boolean;
 }
 
 export interface RouteConfig extends RouteConfigBase {

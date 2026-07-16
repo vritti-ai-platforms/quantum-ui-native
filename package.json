@@ -200,6 +200,11 @@
       "types": "./dist/typescript/lib/components/TreeView/index.d.ts",
       "default": "./dist/module/components/TreeView/index.js"
     },
+    "./Upsell": {
+      "source": "./lib/components/Upsell/index.ts",
+      "types": "./dist/typescript/lib/components/Upsell/index.d.ts",
+      "default": "./dist/module/components/Upsell/index.js"
+    },
     "./theme": {
       "source": "./lib/theme/index.ts",
       "types": "./dist/typescript/lib/theme/index.d.ts",

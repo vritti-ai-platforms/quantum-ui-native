@@ -111,6 +111,7 @@ export type ThemePalette = {
   border: string;
   notification: string;
   muted: string;
+  mutedForeground: string;
   sidebar: string;
   destructive: string;
 };
@@ -133,6 +134,7 @@ function createThemePalette(tokens: ThemeTokens): ThemePalette {
     border: toHsl(tokens['--border']),
     notification: toHsl(tokens['--ring']),
     muted: toHsl(tokens['--muted']),
+    mutedForeground: toHsl(tokens['--muted-foreground']),
     sidebar: toHsl(tokens['--sidebar']),
     destructive: toHsl(tokens['--destructive']),
   };
