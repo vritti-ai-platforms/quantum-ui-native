@@ -1,4 +1,4 @@
-export type SelectValue = string | number | boolean;
+export type SelectValue = string | number | boolean | null;
 
 export interface SelectOption {
   value: SelectValue;

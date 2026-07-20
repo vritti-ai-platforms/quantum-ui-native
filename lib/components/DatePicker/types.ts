@@ -11,9 +11,9 @@ export interface DatePickerProps {
   /** ISO date-only string, `yyyy-MM-dd`. Optional initial value — the component owns the selection. */
   value?: string;
   /** Called when the user picks a date. */
-  onChange?: (value: string | undefined) => void;
+  onChange?: (value: string | null) => void;
   /** <Form> bridge: react-hook-form injects its field's `onChange` here. Mirrors `onChange`. */
-  onChangeText?: (value: string | undefined) => void;
+  onChangeText?: (value: string | null) => void;
   /** When true, shows a clear (X) control while a value is selected; pressing it clears the value. */
   clearable?: boolean;
   disabled?: boolean;

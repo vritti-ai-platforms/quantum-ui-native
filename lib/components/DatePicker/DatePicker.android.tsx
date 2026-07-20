@@ -47,8 +47,8 @@ export function DatePicker({
         : toIsoDate(new Date()),
   );
 
-  const commit = (next: string | undefined) => {
-    setSelected(next);
+  const commit = (next: string | null) => {
+    setSelected(next ?? undefined);
     onChange?.(next);
     onChangeText?.(next);
   };
@@ -88,7 +88,7 @@ export function DatePicker({
             )
           }
         />
-        {clearable && selected && !disabled ? <DateFieldClearButton onClear={() => commit(undefined)} /> : null}
+        {clearable && selected && !disabled ? <DateFieldClearButton onClear={() => commit(null)} /> : null}
       </View>
       {error ? (
         <FieldError>{error}</FieldError>
