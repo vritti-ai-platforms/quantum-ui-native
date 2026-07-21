@@ -26,6 +26,12 @@ interface ScreenHeaderCommonProps {
    * any `rightActions`.
    */
   createLabel?: string;
+  /**
+   * Permission code gating the create button (e.g. 'org.uom.dim.add'), resolved via the host's
+   * permission gate. Not granted → the button is hidden; granted but locked → an amber lock icon
+   * replaces the + and pressing is a no-op. Omitted → button renders normally (fail open).
+   */
+  createPermission?: string;
 }
 
 interface ScreenHeaderStandardProps extends ScreenHeaderCommonProps {

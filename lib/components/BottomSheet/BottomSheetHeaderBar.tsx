@@ -1,6 +1,6 @@
-import { DynamicColorIOS, Platform, View } from 'react-native';
+import { useUnstableNativeVariable } from 'nativewind';
+import { Platform, View } from 'react-native';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
-import { THEME } from '../../theme/colors';
 import { Button } from '../Button';
 import { COMMON_ICONS, DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Text';
@@ -19,9 +19,10 @@ const LiquidGlassAvailable =
       })()
     : false;
 
-// Neutral icon color for the glass close button (NativeWind var lookup is unreliable inside glass).
-const IOS_FG =
-  Platform.OS === 'ios' ? DynamicColorIOS({ light: THEME.light.foreground, dark: THEME.dark.foreground }) : null;
+// APP-theme foreground for the glass close button. Resolved from the shared NativeWind variable — NOT
+// DynamicColorIOS/Appearance, which follow the SYSTEM scheme and painted the ✕ black when the app was
+// dark over a light system. Same var-read pattern as ScreenHeaderBase/DynamicIcon.
+const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
 
 export interface BottomSheetHeaderBarProps {
   title?: string;
@@ -36,6 +37,8 @@ export interface BottomSheetHeaderBarProps {
 export function BottomSheetHeaderBar({ title, onClose }: BottomSheetHeaderBarProps) {
   const platform = usePlatformInfo();
   const isIos26 = platform.os === 'ios' && platform.version >= 26 && LiquidGlassAvailable;
+  const fgVar = useVar('--foreground');
+  const iosFg = typeof fgVar === 'string' ? `hsl(${fgVar})` : undefined;
 
   return (
     <View className="flex-row items-center pb-3">
@@ -45,7 +48,7 @@ export function BottomSheetHeaderBar({ title, onClose }: BottomSheetHeaderBarPro
       </Text>
       {isIos26 ? (
         <Button variant="glass" size="icon" onPress={onClose} accessibilityLabel="Close">
-          <DynamicIcon icon={COMMON_ICONS.close} size={18} color={IOS_FG as unknown as string} />
+          <DynamicIcon icon={COMMON_ICONS.close} size={18} color={iosFg} />
         </Button>
       ) : (
         <Button variant="secondary" size="icon" onPress={onClose} accessibilityLabel="Close">

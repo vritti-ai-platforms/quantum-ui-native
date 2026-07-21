@@ -20,6 +20,11 @@
       "types": "./dist/typescript/lib/components/Avatar/index.d.ts",
       "default": "./dist/module/components/Avatar/index.js"
     },
+    "./ActionCard": {
+      "source": "./lib/components/ActionCard/index.ts",
+      "types": "./dist/typescript/lib/components/ActionCard/index.d.ts",
+      "default": "./dist/module/components/ActionCard/index.js"
+    },
     "./Badge": {
       "source": "./lib/components/Badge/index.ts",
       "types": "./dist/typescript/lib/components/Badge/index.d.ts",

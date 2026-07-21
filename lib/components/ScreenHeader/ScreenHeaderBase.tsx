@@ -3,6 +3,7 @@ import { type ReactNode, useRef, useState } from 'react';
 import { Image, type ImageSourcePropType, type LayoutChangeEvent, Platform, TextInput, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePermission } from '../../context/PermissionGateContext';
 import { usePlatformInfo } from '../../hooks/usePlatformInfo';
 import { cn } from '../../utils/cn';
 import { Button } from '../Button';
@@ -16,6 +17,7 @@ import {
 } from '../ScreenContainer/screenScrollRegistry';
 import { useScreenSearch } from '../ScreenContainer/screenSearchRegistry';
 import { Text } from '../Text';
+import { lockVariant, presentUpsellSheet } from '../Upsell';
 import { ScreenHeaderTabs, TABS_HEIGHT } from './ScreenHeaderTabs';
 import { ScreenHeaderTabsBackground } from './ScreenHeaderTabsBackground';
 import { useRegisterScreenHeaderTabs } from './screenHeaderTabsRegistry';
@@ -32,6 +34,9 @@ const SEARCH_ROW_HEIGHT = 52; // collapsible search row (pill + bottom gap)
 
 const SEARCH_ICON: PlatformIconDescriptor = { sfSymbol: 'magnifyingglass', materialSymbol: 'search' };
 const CREATE_ICON: PlatformIconDescriptor = { sfSymbol: 'plus', materialSymbol: 'add' };
+// Outlined on both platforms: SF `lock` is the outline symbol; the bundled Material Symbols font is
+// outline-style (`lock_outline` shares the same codepoint).
+const LOCK_ICON: PlatformIconDescriptor = { sfSymbol: 'lock', materialSymbol: 'lock' };
 // MF-shared theme reader — className COLORS don't apply reliably across the federation boundary, so the
 // search pill resolves its fill/text/placeholder colors inline from the shared NativeWind variables.
 const useVar = useUnstableNativeVariable as unknown as (name: string) => string | undefined;
@@ -43,6 +48,7 @@ interface ScreenHeaderBaseProps {
   leftActions?: ReactNode;
   rightActions?: ReactNode;
   createLabel?: string;
+  createPermission?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
   tabs?: ScreenHeaderTabConfig[];
@@ -60,6 +66,7 @@ export function ScreenHeaderBase({
   leftActions,
   rightActions,
   createLabel,
+  createPermission,
   searchable = false,
   searchPlaceholder = 'Search',
   tabs,
@@ -93,10 +100,45 @@ export function ScreenHeaderBase({
   })();
 
   // Built-in create (+) button: fires the screen body's registered create handler (per-route action registry).
+  // iOS 26 renders the LiquidGlass circle; Android + pre-26 iOS (where glass falls back to a bare ghost
+  // icon) get a solid primary circle instead — `default` variant + icon size is already rounded-full, and
+  // the Button's TextClassContext paints the + glyph primary-foreground.
+  // Permission gating (createPermission, resolved via the host gate; fails open when absent): not granted →
+  // no button; granted but locked → an amber outlined lock replaces the + and pressing is a no-op. NOT the
+  // Button `disabled` prop — its opacity-50 over the iOS-26 LiquidGlassView triggers the glass-ghost artifact.
   const createAction = useScreenCreateAction();
-  const createButton = createLabel ? (
-    <Button variant="glass" size="icon" onPress={() => createAction?.()} accessibilityLabel={createLabel} hitSlop={8}>
-      <DynamicIcon icon={CREATE_ICON} size={24} />
+  const createGate = usePermission(createPermission);
+  const isLiquidGlass = os === 'ios' && version >= 26;
+  const createButton = createLabel && createGate.granted ? (
+    <Button
+      variant={isLiquidGlass ? 'glass' : 'default'}
+      size="icon"
+      onPress={() => {
+        // Locked → the create action never fires; the locked surface explains why (upsell for a plan lock,
+        // "Not enabled for this site" for a site lock).
+        if (createGate.locked) {
+          presentUpsellSheet({
+            featureName: createGate.featureName ?? title,
+            unlockPlans: createGate.unlockPlans,
+            variant: lockVariant(createGate.reason),
+          });
+          return;
+        }
+        createAction?.();
+      }}
+      accessibilityLabel={createLabel}
+      accessibilityState={createGate.locked ? { disabled: true } : undefined}
+      hitSlop={8}
+    >
+      {createGate.locked ? (
+        <DynamicIcon
+          icon={LOCK_ICON}
+          size={22}
+          className={lockVariant(createGate.reason) === 'site' ? 'text-destructive' : 'text-warning'}
+        />
+      ) : (
+        <DynamicIcon icon={CREATE_ICON} size={24} />
+      )}
     </Button>
   ) : null;
 

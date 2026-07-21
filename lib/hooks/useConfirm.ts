@@ -17,7 +17,20 @@ const DEFAULTS: Required<ConfirmOptions> = {
   variant: 'default',
 };
 
-export function useConfirm(): (options?: ConfirmOptions) => Promise<boolean> {
+export type ConfirmFn = (options?: ConfirmOptions) => Promise<boolean>;
+
+// Shared destructive-confirm copy for delete actions (ActionCard, MenuButton, …) — one source for the
+// "Delete {name}?" title + default body, so the wording stays consistent everywhere.
+export function confirmDelete(confirm: ConfirmFn, name: string, message?: string): Promise<boolean> {
+  return confirm({
+    title: `Delete ${name}?`,
+    description: message ?? `${name} will be removed. This can't be undone.`,
+    confirmLabel: 'Delete',
+    variant: 'destructive',
+  });
+}
+
+export function useConfirm(): ConfirmFn {
   return useCallback((options?: ConfirmOptions) => {
     const merged = { ...DEFAULTS, ...options };
     return new Promise<boolean>((resolve) => {

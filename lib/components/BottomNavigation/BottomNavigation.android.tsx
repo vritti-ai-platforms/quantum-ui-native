@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushNavigator } from '../../hooks/usePushNavigator';
 import { useTheme } from '../../hooks/useTheme';
 import codepoints from '../DynamicIcon/materialSymbols.codepoints.json';
+import { hasNestedPush } from './hasNestedPush';
 import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
 import { ScreenContainer } from '../ScreenContainer';
 import type { BottomNavigationProps, RouteConfig } from './types';
@@ -165,9 +166,9 @@ function FloatingTabBar({ state, navigation, tabMeta }: BottomTabBarProps & { ta
   // Position of the focused route within the MAIN list (−1 while a detached tab is transiently focused).
   const focusedMain = mainEntries.findIndex((e) => e.stateIndex === state.index);
 
-  // Hide both capsules when the focused tab's nested navigator has pushed past its initial route.
-  const nestedState = state.routes[state.index]?.state as { index?: number } | undefined;
-  const isOnPushedScreen = typeof nestedState?.index === 'number' && nestedState.index > 0;
+  // Hide both capsules when any navigator nested under the focused tab has pushed past its root
+  // (feature tabs nest twice: header-wrapper stack → the remote's own PushNavigator).
+  const isOnPushedScreen = hasNestedPush(state);
 
   const barBottomGap = Math.max(insets.bottom, 6) + 6;
   const slideDistance = tabSize + pillPad * 2 + barBottomGap + 8;

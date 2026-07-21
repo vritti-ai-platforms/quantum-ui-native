@@ -19,6 +19,7 @@ export function ScreenHeader(props: ScreenHeaderProps) {
       leftActions={props.variant === 'tabs' ? undefined : props.leftActions}
       rightActions={props.variant === 'tabs' ? undefined : props.rightActions}
       createLabel={props.createLabel}
+      createPermission={props.createPermission}
       searchable={props.variant === 'tabs' ? undefined : props.searchable}
       searchPlaceholder={props.variant === 'tabs' ? undefined : props.searchPlaceholder}
       tabs={props.variant === 'tabs' ? props.tabs : undefined}

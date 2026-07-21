@@ -1,3 +1,4 @@
+import { NavigationContext } from '@react-navigation/native';
 import * as React from 'react';
 import { type GestureResponderEvent, Pressable, type PressableProps } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -9,10 +10,19 @@ export interface CardPressableProps extends Omit<PressableProps, 'children'> {
   children?: React.ReactNode;
 }
 
+// Press feedback with THREE independent clear paths, so no single lost event can strand the card in
+// its pressed style. History of this bug (iOS, cards whose onPress navigates): RN Pressability DELAYS
+// onPressOut on quick taps (~130ms min press duration) — onPress fires first and starts the native-stack
+// transition, and the delayed press-out can be lost in it. Both a plain useState+pressOut pattern and
+// NativeWind's `active:` variant (which also clears ONLY on onPressOut) got stuck that way. Clears:
+//  1. onPressOut — the normal path;
+//  2. onPress — the moment the action fires (before navigation), the feedback has served its purpose;
+//  3. the navigation 'focus' listener — heals any residue whenever the screen regains focus.
 function CardPressable({
   className,
   selected,
   disabled,
+  onPress,
   onPressIn,
   onPressOut,
   children,
@@ -21,6 +31,10 @@ function CardPressable({
 }: CardPressableProps) {
   const [pressed, setPressed] = React.useState(false);
   const { palette } = useTheme();
+  // Plain useContext — undefined (no throw) when the card renders outside a navigator.
+  const navigation = React.useContext(NavigationContext);
+
+  React.useEffect(() => navigation?.addListener('focus', () => setPressed(false)), [navigation]);
 
   const handlePressIn = React.useCallback(
     (e: GestureResponderEvent) => {
@@ -38,6 +52,14 @@ function CardPressable({
     [onPressOut],
   );
 
+  const handlePress = React.useCallback(
+    (e: GestureResponderEvent) => {
+      setPressed(false);
+      onPress?.(e);
+    },
+    [onPress],
+  );
+
   // Inline borderColor — NativeWind v5-preview's `border-primary` resolver is unreliable on Pressable subtrees.
   const selectedShadow = selected
     ? {
@@ -50,23 +72,27 @@ function CardPressable({
       }
     : null;
 
+  // Pressed opacity as an INLINE style (not a className swap — the interop's class churn is unreliable
+  // on Pressable subtrees, and a style-function `state.pressed` never fires under the className interop).
+  const pressedStyle = pressed && !disabled ? { opacity: 0.7 } : null;
+
   return (
     <TextClassContext.Provider value="text-card-foreground">
       <Pressable
         disabled={disabled}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         className={cn(
           'shadow-sm bg-card border border-border rounded-xl',
           selected && 'bg-primary/5 bg-card',
           disabled && 'opacity-50',
-          pressed && 'opacity-70',
           className,
         )}
         style={
           typeof style === 'function'
-            ? (state) => [{ borderCurve: 'continuous' }, selectedShadow, style(state)]
-            : [{ borderCurve: 'continuous' }, selectedShadow, style]
+            ? (state) => [{ borderCurve: 'continuous' }, selectedShadow, pressedStyle, style(state)]
+            : [{ borderCurve: 'continuous' }, selectedShadow, pressedStyle, style]
         }
         {...props}
       >

@@ -13,10 +13,13 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePermission } from '../../context/PermissionGateContext';
 import { cn } from '../../utils/cn';
 import { resolveTopPadding } from '../../utils/resolveTopPadding';
+import { DynamicIcon, type PlatformIconDescriptor } from '../DynamicIcon';
 import { ListItem } from '../ListItem';
 import { CardSkeleton } from '../Skeleton/CardSkeleton';
+import { lockVariant, Upsell } from '../Upsell';
 import {
   useMeasuredScreenHeaderHeight,
   useScreenHeaderInset,
@@ -24,6 +27,9 @@ import {
 } from '../ScreenContainer/screenScrollRegistry';
 import { useInScreenHeaderTabPage } from '../ScreenHeader/screenHeaderTabPageContext';
 import { Text } from '../Text';
+
+// Role-denied view state icon (warning lock — same descriptor as ScreenHeader/ActionCard/Fab).
+const LOCK_ICON: PlatformIconDescriptor = { sfSymbol: 'lock', materialSymbol: 'lock' };
 
 export interface FlashListProps<T> extends Omit<ShopifyFlashListProps<T>, 'ListEmptyComponent'> {
   isLoading?: boolean;
@@ -46,6 +52,13 @@ export interface FlashListProps<T> extends Omit<ShopifyFlashListProps<T>, 'ListE
    */
   screenScroll?: boolean;
   className?: string;
+  /**
+   * Permission code guarding the list's VIEW (host gate). Role-denied (!granted) → the list area shows a
+   * lock + "you don't have permission" message. Granted-but-PLAN-locked → the Upsell paywall. Either way
+   * the screen's own chrome (header, search, tabs) stays. No gate / no code / SITE-locked → the list
+   * renders normally (fail-open). Mirrors the ActionCard/Fab/MenuButton axes at the data-surface level.
+   */
+  permission?: string;
 }
 
 function FlashList<T>({
@@ -58,12 +71,20 @@ function FlashList<T>({
   EmptyComponent,
   className,
   screenScroll = false,
+  permission,
   contentContainerStyle,
   refreshControl,
   onEndReached,
   onScrollBeginDrag,
   ...props
 }: FlashListProps<T>) {
+  // View-lock (fail-open — usePermission returns granted+unlocked when there's no gate/code):
+  //  • role-denied (!granted) → a lock + "no permission" message (upgrading can't help, so no upsell);
+  //  • locked → the Upsell paywall, themed by reason (PLAN → amber/upsell, SITE → destructive "Not
+  //    enabled for this site" via the Upsell `variant`).
+  const viewGate = usePermission(permission);
+  const viewDenied = !viewGate.granted;
+  const viewLocked = viewGate.granted && viewGate.locked;
   // In screenScroll mode, only track scroll / paginate AFTER a real user drag. FlashList fires spurious
   // events during its initial/relayout pass — an onScroll and an onEndReached (which would auto-fetch
   // page 2 with no user intent). Gating both on onScrollBeginDrag ignores the mount noise; drag +
@@ -131,6 +152,11 @@ function FlashList<T>({
         ...(screenContentInset && inTabPage ? { contentOffset: { x: 0, y: -headerFullHeight } } : {}),
       }
     : {};
+  // Plain (non-screenScroll) lists: PushNavigator's native-stack headers are TRANSPARENT on iOS 26+
+  // (Liquid Glass), so content must adopt UIKit's automatic bar insets or the first rows seat under the
+  // header. Harmless pre-26 (opaque header = no bar overlap) and in sheets (Select uses @shopify/flash-list
+  // directly). Callers can still override via their own contentInsetAdjustmentBehavior prop.
+  const plainInsetProps = !screenScroll && isIos ? { contentInsetAdjustmentBehavior: 'automatic' as const } : {};
 
   // TEMPORARY diagnostics for the items-screen top-gap parity (iOS gap larger than Android with identical
   // static formulas). One line per mount with the four numbers that pin the divergence; the pre-drag scroll
@@ -165,6 +191,42 @@ function FlashList<T>({
   const wrapScreenScroll = (list: ReactElement) =>
     screenScroll ? <View className="flex-1">{list}</View> : list;
 
+  // Role-denied: a lock + "no permission" message replaces the list (no upsell — a plan upgrade can't
+  // grant a role). Same container shell as the plan-lock branch so it sits in the list region.
+  if (viewDenied) {
+    return wrapScreenScroll(
+      <View
+        className="flex-1 items-center justify-center gap-3 bg-background px-6"
+        style={headerFullHeight > 0 ? { paddingTop: headerFullHeight } : undefined}
+      >
+        <DynamicIcon icon={LOCK_ICON} size={40} className="text-warning" />
+        <Text variant="muted" className="text-center">
+          {viewGate.featureName
+            ? `You don't have permission to view ${viewGate.featureName}.`
+            : "You don't have permission to view this."}
+        </Text>
+      </View>,
+    );
+  }
+
+  // View-locked: the paywall replaces rows/skeleton/empty (checked BEFORE isLoading so a locked+loading
+  // list shows the paywall, not the skeleton). On screenScroll screens pad by the header height so the
+  // centered paywall sits in the list region, not under the transparent header.
+  if (viewLocked) {
+    return wrapScreenScroll(
+      <View
+        className="flex-1 bg-background"
+        style={headerFullHeight > 0 ? { paddingTop: headerFullHeight } : undefined}
+      >
+        <Upsell
+          featureName={viewGate.featureName ?? ''}
+          unlockPlans={viewGate.unlockPlans}
+          variant={lockVariant(viewGate.reason)}
+        />
+      </View>,
+    );
+  }
+
   if (isLoading) {
     return wrapScreenScroll(
       <ShopifyFlashList
@@ -173,6 +235,7 @@ function FlashList<T>({
         keyExtractor={String}
         scrollEnabled={false}
         className={cn(screenScroll && 'flex-1 bg-background', className)}
+        {...plainInsetProps}
         {...screenScrollLayoutProps}
         {...(composedContentContainerStyle != null ? { contentContainerStyle: composedContentContainerStyle } : {})}
       />,
@@ -200,6 +263,7 @@ function FlashList<T>({
           : onEndReached
       }
       {...(composedContentContainerStyle != null ? { contentContainerStyle: composedContentContainerStyle } : {})}
+      {...plainInsetProps}
       {...props}
       {...screenScrollLayoutProps}
       {...(screenScroll

@@ -2,6 +2,7 @@ import { createNativeBottomTabNavigator } from '@bottom-tabs/react-navigation';
 import { type ComponentType, useMemo, useRef, useState } from 'react';
 import { useTheme } from '../../hooks/useTheme';
 import { PushNavigator, type PushScreenConfig } from '../PushNavigator';
+import { hasNestedPush, type NestedNavState } from './hasNestedPush';
 import type { BottomNavigationProps, RouteConfig } from './types';
 
 // The bridge's TypedNavigator resolves to the STATIC branch under @react-navigation/native@8-alpha
@@ -15,9 +16,6 @@ const Tab = createNativeBottomTabNavigator() as unknown as {
 // Action routes (onPress, no scene of their own) still need a Screen component for the navigator.
 const NullScreen: ComponentType = () => null;
 
-// Minimal shape of the tab-navigator state we read to detect a nested push: the focused tab is
-// routes[index], and its nested stack's own index > 0 means a detail screen was pushed over the root.
-type TabNavState = { index: number; routes: Array<{ state?: { index?: number } }> };
 
 // Native (SwiftUI) tabs have no header slot of their own. A route that supplies a header — the host's
 // per-tab `header` (e.g. RemoteHeader) — is wrapped in a one-screen nested native-stack so the header
@@ -75,7 +73,7 @@ export function BottomNavigation({ routes, initialRoute, onActiveTabChange }: Bo
         navigation,
         route,
       }: {
-        navigation: { getState: () => TabNavState };
+        navigation: { getState: () => NestedNavState };
         route: { name: string };
       }) => ({
         focus: () => {
@@ -85,12 +83,11 @@ export function BottomNavigation({ routes, initialRoute, onActiveTabChange }: Bo
           if (prev !== null) onActiveTabChange?.(route.name, prev);
         },
         // A nested push/pop mutates the tab navigator's state, so read the focused tab's nested depth
-        // here and hide the bar past its root. navigation.getState() is the only reliable source — the
-        // per-screen `route.state` is stripped from options/screenOptions by the route cache.
+        // here and hide the bar past any root. navigation.getState() is the only reliable source — the
+        // per-screen `route.state` is stripped from options/screenOptions by the route cache. The walk
+        // covers feature tabs' double nesting (header-wrapper stack → remote's own PushNavigator).
         state: () => {
-          const s = navigation.getState();
-          const nested = s.routes[s.index]?.state;
-          const pushed = typeof nested?.index === 'number' && nested.index > 0;
+          const pushed = hasNestedPush(navigation.getState());
           setTabBarHidden((prev) => (prev === pushed ? prev : pushed));
         },
         // Action routes (e.g. the detached workspace button) run their onPress on tap; preventsDefault
