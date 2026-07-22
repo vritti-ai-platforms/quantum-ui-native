@@ -1,6 +1,14 @@
 export { useBUCurrency } from './useBUCurrency';
 export { useBUTimezone } from './useBUTimezone';
-export { type ConfirmFn, type ConfirmOptions, confirmDelete, useConfirm } from './useConfirm';
+export {
+  type ConfirmFn,
+  type ConfirmOptions,
+  type ConfirmPresenter,
+  confirmDelete,
+  getConfirmPresenter,
+  setConfirmPresenter,
+  useConfirm,
+} from './useConfirm';
 export { type CreateEditSheet, type UseCreateEditSheetOptions, useCreateEditSheet } from './useCreateEditSheet';
 export { useDialog } from './useDialog';
 export { type Formatters, useFormatters } from './useFormatters';
