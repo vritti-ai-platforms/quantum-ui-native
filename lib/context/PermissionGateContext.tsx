@@ -1,7 +1,7 @@
 import type React from 'react';
 import { type Context, createContext, useContext } from 'react';
 
-export type PermissionLockReason = 'PLAN' | 'SITE';
+export type PermissionLockReason = 'PLAN' | 'SITE' | 'SERVICE';
 
 export interface PermissionGateResult {
   /** The user's role grants this permission (render axis). */

@@ -17,11 +17,16 @@ function showAlert(title: string, message: string): void {
   Alert.alert(title, message);
 }
 
-// Maps a lock reason to the visual treatment: PLAN → the amber upsell; ANY other non-null reason (SITE,
-// and any future backend reason) → the destructive "Not enabled for this site" treatment (no upsell — a
-// plan upgrade can't lift it). Single source so every lock surface derives the variant the same way.
+// Maps a lock reason to the visual treatment: PLAN → the amber upsell; every other non-null reason
+// (SITE, SERVICE, and any future backend reason) → the destructive treatment, since no plan upgrade can
+// lift it. Single source so every lock surface derives the variant the same way.
 export function lockVariant(reason: PermissionLockReason | null): LockVariant {
-  return reason === 'PLAN' ? 'plan' : 'site';
+  switch (reason) {
+    case 'PLAN':
+      return 'plan';
+    default:
+      return 'site';
+  }
 }
 
 // Presents a locked action's surface, themed by the lock reason. 'sheet' presents the upsell/site bottom
@@ -36,7 +41,8 @@ export function presentLockedAction(
   const variant = lockVariant(result.reason);
   if (presentation === 'alert') {
     if (variant === 'site') {
-      showAlert(result.featureName ?? 'This feature', 'Not enabled for this site');
+      const detail = result.reason === 'SERVICE' ? 'Requires setup by your administrator' : 'Not enabled for this site';
+      showAlert(result.featureName ?? 'This feature', detail);
       return;
     }
     const availability = result.unlockPlans.length
