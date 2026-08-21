@@ -411,7 +411,8 @@
   },
   "homepage": "https://github.com/vritti-ai-platforms/quantum-ui-native#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@apollo/client": "^4.2.3",
