@@ -250,7 +250,7 @@ export function cancelTokenRefresh(): void {
 function buildMobileUserAgent(): string {
   const os = Platform.OS;
   const osVersion = Platform.Version;
-  return `VrittiCoreApp/1.0 (${os === 'ios' ? 'iOS' : 'Android'} ${osVersion})`;
+  return `VAP/1.0 (${os === 'ios' ? 'iOS' : 'Android'} ${osVersion})`;
 }
 
 function createAxiosInstance(): AxiosInstance {
