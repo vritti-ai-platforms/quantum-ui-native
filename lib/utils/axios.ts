@@ -1,6 +1,6 @@
 import Axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
-import { configureQuantumUI, getConfig } from '../config';
+import { configureQuantumUI, getConfig, type QuantumUIConfig, setAxiosBaseURL } from '../config';
 import {
   deleteRefreshToken,
   type MobileStorageAdapter,
@@ -54,14 +54,16 @@ function generateToastId(): string {
 let accessToken: string | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-export interface MobileAxiosConfig {
-  baseURL: string;
-  auth?: {
-    refreshEndpoint?: string;
-  };
+/**
+ * Everything quantum-ui-native needs, in one object applied by one call.
+ *
+ * The endpoints come from `QuantumUIConfig` so there is a single place an app declares them;
+ * `storage` and `onSessionExpired` are the native-only additions.
+ */
+export type QuantumUINativeConfig = QuantumUIConfig & {
   storage: MobileStorageAdapter;
   onSessionExpired?: () => void;
-}
+};
 
 let _onSessionExpired: (() => void) | null = null;
 
@@ -88,19 +90,24 @@ function syncAxiosDefaults(): void {
   }
 }
 
-export function configureMobileAxios(config: MobileAxiosConfig): void {
+/**
+ * The single configuration entry point. Call once during bootstrap, before anything else.
+ *
+ * One call rather than two: an earlier split let `configureMobileAxios` and `configureQuantumUI`
+ * each replace the other's state depending on call order, which is not a thing an app should have
+ * to know. Runtime changes go through the targeted setters below, never by reconfiguring.
+ */
+export function configureQuantumUINative(config: QuantumUINativeConfig): void {
+  configureQuantumUI(config);
   setMobileStorageAdapter(config.storage);
   _onSessionExpired = config.onSessionExpired ?? _onSessionExpired;
 
-  configureQuantumUI({
-    axios: { baseURL: config.baseURL },
-    auth: {
-      refreshEndpoint: config.auth?.refreshEndpoint ?? 'auth/mobile/refresh-tokens',
-    },
-    views: { viewsEndpoint: 'table-views', statesEndpoint: 'table-states' },
-  });
-
   syncAxiosDefaults();
+}
+
+// Swaps the session-expired handler without touching the rest of the configuration
+export function setOnSessionExpired(handler: () => void): void {
+  _onSessionExpired = handler;
 }
 
 export const setToken = (token: string): void => {
@@ -133,14 +140,12 @@ export function getOnSessionExpired(): (() => void) | null {
   return _onSessionExpired;
 }
 
+// Points the app at a tenant's deployment and remembers it across launches
 export async function setMobileBaseURL(baseURL: string): Promise<void> {
-  const storage = requireMobileStorageAdapter();
+  requireMobileStorageAdapter();
 
-  configureMobileAxios({
-    baseURL,
-    auth: { refreshEndpoint: getConfig().auth.refreshEndpoint },
-    storage,
-  });
+  setAxiosBaseURL(baseURL);
+  syncAxiosDefaults();
   await writeStoredMobileBaseURL(baseURL);
 }
 
@@ -198,16 +203,13 @@ async function refreshMobileSession(options?: {
   }
 }
 
-export async function initializeMobileSession(config: MobileAxiosConfig): Promise<boolean> {
-  setMobileStorageAdapter(config.storage);
-
+// Restores a stored session, repointing axios at the tenant's own deployment when one is stored
+export async function initializeMobileSession(): Promise<boolean> {
   const storedBaseURL = await readStoredMobileBaseURL();
-  const effectiveBaseURL = storedBaseURL ?? config.baseURL;
-
-  configureMobileAxios({
-    ...config,
-    baseURL: effectiveBaseURL,
-  });
+  if (storedBaseURL) {
+    setAxiosBaseURL(storedBaseURL);
+    syncAxiosDefaults();
+  }
 
   const refreshToken = await getRefreshToken();
   if (!refreshToken) {

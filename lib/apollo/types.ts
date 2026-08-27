@@ -49,11 +49,9 @@ export interface OfflineQueueConfig {
 }
 
 export interface CreateApolloClientConfig {
-  /** Static fallback endpoint when no tenant baseURL resolves yet (pre-login). Default `/graphql`. */
-  httpEndpoint?: string;
   /** Returns the per-request bearer token. Host wires `getToken`. */
   getToken: () => string | null | Promise<string | null>;
-  /** Returns the tenant base URL (no `/graphql` suffix). Host wires `getStoredMobileBaseURL`. */
+  /** Returns the tenant base URL (no GraphQL path suffix). Host wires `getStoredMobileBaseURL`. */
   resolveBaseURL: () => string | null | Promise<string | null>;
   /** Extra per-request headers (e.g. `X-Platform`, `x-bu-id`). `Authorization` is added by the factory from the token. */
   buildHeaders?: (ctx: ApolloHeaderContext) => Record<string, string> | Promise<Record<string, string>>;

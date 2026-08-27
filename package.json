@@ -1,6 +1,6 @@
 {
   "name": "@vritti/quantum-ui-native",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vritti React Native UI component library",
   "main": "./dist/module/index.js",
   "types": "./dist/typescript/lib/index.d.ts",

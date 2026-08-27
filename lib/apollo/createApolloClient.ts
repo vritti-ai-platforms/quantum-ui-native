@@ -4,6 +4,7 @@ import { SetContextLink } from '@apollo/client/link/context';
 import { ErrorLink } from '@apollo/client/link/error';
 import { RetryLink } from '@apollo/client/link/retry';
 import { getMainDefinition } from '@apollo/client/utilities';
+import { getConfig } from '../config';
 import { setApolloClient } from './client';
 import { setConnectivityProvider } from './offline/connectivity';
 import { createOfflineSyncEngine, getOfflineSyncEngine, setOfflineSyncEngine } from './offline/engine';
@@ -18,8 +19,11 @@ import type { CreateApolloClientConfig, CreatedApolloClient } from './types';
 // the cache, and optional MMKV persistence. No micro-app schema lives here — entities register their
 // own type policies at runtime via `registerConnection`/`registerTypePolicies`.
 export function createApolloClient(config: CreateApolloClientConfig): CreatedApolloClient {
+  // Which GraphQL surface this app talks to. Read from configureQuantumUI rather than passed
+  // per call or hardcoded — the same place csrf/auth/views endpoints live.
+  const { httpEndpoint } = getConfig().graphql;
+
   const {
-    httpEndpoint = '/graphql',
     getToken,
     resolveBaseURL,
     buildHeaders,
@@ -51,7 +55,7 @@ export function createApolloClient(config: CreateApolloClientConfig): CreatedApo
     if (token) headers.Authorization = `Bearer ${token}`;
     return {
       headers,
-      ...(baseURL ? { uri: `${baseURL}/graphql` } : {}),
+      ...(baseURL ? { uri: `${baseURL}${httpEndpoint}` } : {}),
     };
   });
 
