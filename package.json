@@ -1,6 +1,6 @@
 {
   "name": "@vritti/quantum-ui-native",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Vritti React Native UI component library",
   "main": "./dist/module/index.js",
   "types": "./dist/typescript/lib/index.d.ts",
@@ -419,7 +419,7 @@
     "@callstack/liquid-glass": "^0.7.1",
     "@commitlint/config-conventional": "^20.5.0",
     "@hookform/resolvers": "^5.2.2",
-    "zod": "^4.3.6",
+    "zod": "4.5.4",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
