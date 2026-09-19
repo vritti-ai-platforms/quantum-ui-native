@@ -115,7 +115,7 @@ export function ScreenHeaderBase({
       size="icon"
       onPress={() => {
         // Locked → the create action never fires; the locked surface explains why (upsell for a plan lock,
-        // "Not enabled for this site" for a site lock).
+        // "Not enabled for {workspace}" for a workspace lock).
         if (createGate.locked) {
           presentUpsellSheet({
             featureName: createGate.featureName ?? title,
@@ -134,7 +134,7 @@ export function ScreenHeaderBase({
         <DynamicIcon
           icon={LOCK_ICON}
           size={22}
-          className={lockVariant(createGate.reason) === 'site' ? 'text-destructive' : 'text-warning'}
+          className={lockVariant(createGate.reason) === 'workspace' ? 'text-destructive' : 'text-warning'}
         />
       ) : (
         <DynamicIcon icon={CREATE_ICON} size={24} />

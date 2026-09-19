@@ -1,12 +1,14 @@
 import type React from 'react';
 import { type Context, createContext, useContext } from 'react';
 
-export type PermissionLockReason = 'PLAN' | 'SITE' | 'SERVICE';
+export type PermissionLockReason = 'PLAN' | 'WORKSPACE' | 'SERVICE';
+
+export type WorkspaceScope = 'ORG' | 'LE' | 'SITE_GROUP' | 'SITE';
 
 export interface PermissionGateResult {
   /** The user's role grants this permission (render axis). */
   granted: boolean;
-  /** Granted but plan/site-locked (enable axis). */
+  /** Granted but plan/workspace-locked (enable axis). */
   locked: boolean;
   reason: PermissionLockReason | null;
   /** Plan codes that unlock it (populated when reason is PLAN). */
@@ -15,6 +17,10 @@ export interface PermissionGateResult {
   available: boolean;
   /** Display name of the feature the code belongs to. */
   featureName: string | null;
+  /** Name of the workspace holding the lock, when the host resolved one. */
+  workspaceLabel: string | null;
+  /** Scope of that workspace, used when no name is available. */
+  workspaceScope: WorkspaceScope | null;
 }
 
 /** Resolves a "[scope.]feature.permission" code against the host's live permission state. */
@@ -29,6 +35,8 @@ const OPEN_RESULT: PermissionGateResult = {
   unlockPlans: [],
   available: true,
   featureName: null,
+  workspaceLabel: null,
+  workspaceScope: null,
 };
 
 // Module Federation: each bundle that imports this file would otherwise get its OWN `createContext()`

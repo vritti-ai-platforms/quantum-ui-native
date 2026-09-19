@@ -1,8 +1,9 @@
 import { Alert } from 'react-native';
 import type { PermissionGateResult, PermissionLockReason } from '../../context/PermissionGateContext';
 import { getConfirmPresenter } from '../../hooks/useConfirm';
-import type { LockVariant } from './UpsellContent';
 import { presentUpsellSheet } from './UpsellBottomSheet';
+import type { LockVariant } from './UpsellContent';
+import { workspaceNoun } from './workspaceNoun';
 
 export type LockedPresentation = 'sheet' | 'alert';
 
@@ -18,21 +19,21 @@ function showAlert(title: string, message: string): void {
 }
 
 // Maps a lock reason to the visual treatment: PLAN → the amber upsell; every other non-null reason
-// (SITE, SERVICE, and any future backend reason) → the destructive treatment, since no plan upgrade can
+// (WORKSPACE, SERVICE, and any future backend reason) → the destructive treatment, since no plan upgrade can
 // lift it. Single source so every lock surface derives the variant the same way.
 export function lockVariant(reason: PermissionLockReason | null): LockVariant {
   switch (reason) {
     case 'PLAN':
       return 'plan';
     default:
-      return 'site';
+      return 'workspace';
   }
 }
 
 // Presents a locked action's surface, themed by the lock reason. 'sheet' presents the upsell/site bottom
 // sheet; 'alert' (actions whose real surface is an alert, e.g. delete confirms) shows a native alert.
 // Copy mirrors web lockedTip. `actionLabel` names the specific locked action in the PLAN alert title
-// (e.g. "Delete unit" → "Unlock delete unit"); site locks always read "Not enabled for this site".
+// (e.g. "Delete unit" → "Unlock delete unit"); workspace locks name the workspace.
 export function presentLockedAction(
   result: PermissionGateResult,
   presentation: LockedPresentation = 'sheet',
@@ -40,8 +41,11 @@ export function presentLockedAction(
 ) {
   const variant = lockVariant(result.reason);
   if (presentation === 'alert') {
-    if (variant === 'site') {
-      const detail = result.reason === 'SERVICE' ? 'Requires setup by your administrator' : 'Not enabled for this site';
+    if (variant === 'workspace') {
+      const detail =
+        result.reason === 'SERVICE'
+          ? 'Requires setup by your administrator'
+          : `Not enabled for ${workspaceNoun(result.workspaceLabel, result.workspaceScope)}`;
       showAlert(result.featureName ?? 'This feature', detail);
       return;
     }

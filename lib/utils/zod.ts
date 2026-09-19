@@ -137,7 +137,7 @@ export function zodPhoneField(
 }
 
 // Canonical entity "code" format — keep in sync with @vritti/api-sdk/decorators (code-pattern.ts).
-const CODE_SEGMENT = '[a-z][a-z0-9-]*';
+const CODE_SEGMENT = '[a-z0-9][a-z0-9-]*';
 export const CODE_PATTERN = new RegExp(`^${CODE_SEGMENT}$`);
 export const DOTTED_CODE_PATTERN = new RegExp(`^${CODE_SEGMENT}(\\.${CODE_SEGMENT})*$`);
 
@@ -159,4 +159,28 @@ export function zodCodeField(options: CodeFieldOptions = {}) {
     .min(1, required)
     .regex(pattern, message ?? defaultMessage);
   return max != null ? schema.max(max, `Code must be ${max} characters or less`) : schema;
+}
+
+export interface CodeArrayFieldOptions extends CodeFieldOptions {
+  min?: number;
+  minMessage?: string;
+}
+
+// A list of codes for a token/chip input, where each entry is stored verbatim as a code. Offending
+// entries are named in one message on the array itself, since a token list has nowhere to show a
+// per-item error.
+export function zodCodeArrayField(options: CodeArrayFieldOptions = {}) {
+  const { dotted = false, max, min = 1, minMessage = 'Add at least one value', message } = options;
+  const pattern = dotted ? DOTTED_CODE_PATTERN : CODE_PATTERN;
+  const hint = dotted ? 'Use lowercase words separated by dots.' : 'Use lowercase letters, numbers, and hyphens.';
+  const item = z.string().min(1);
+  return z
+    .array(max != null ? item.max(max, `A value must be ${max} characters or less`) : item)
+    .min(min, minMessage)
+    .superRefine((values, ctx) => {
+      const invalid = values.filter((value) => !pattern.test(value));
+      if (invalid.length > 0) {
+        ctx.addIssue({ code: 'custom', message: message ?? `Not valid codes: ${invalid.join(', ')}. ${hint}` });
+      }
+    });
 }

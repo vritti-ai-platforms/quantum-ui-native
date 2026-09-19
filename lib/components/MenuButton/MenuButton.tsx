@@ -154,7 +154,7 @@ export const MenuButton = ({
         {visibleActions.map(({ action, result }) => {
           const locked = result != null && result.granted && result.locked;
           // Site (non-PLAN) locks tint the lock destructive; plan locks amber.
-          const lockHex = result && lockVariant(result.reason) === 'site' ? destructiveHex : warningHex;
+          const lockHex = result && lockVariant(result.reason) === 'workspace' ? destructiveHex : warningHex;
           // Keyed dispatch (no ternary chain): locked → upsell surface; confirm → native confirm then run;
           // plain → run directly. Lock precedes confirm so a locked item never shows the confirm.
           const mode = locked ? 'locked' : action.confirm ? 'confirm' : 'plain';

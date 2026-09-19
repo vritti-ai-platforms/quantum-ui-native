@@ -41,7 +41,7 @@ export function Fab({ anchor, onPress, accessibilityLabel, variant, disabled, pe
   // Role axis: no permission → no FAB at all (fail-open when there's no gate/code).
   if (!gate.granted) return null;
   const locked = gate.granted && gate.locked;
-  const siteLocked = locked && lockVariant(gate.reason) === 'site';
+  const workspaceLocked = locked && lockVariant(gate.reason) === 'workspace';
   // Glass only where it actually renders (iOS 26+ LiquidGlass); elsewhere use the solid primary button
   // rather than the Button's generic glass→ghost fallback, which would read as a faint, low-affordance FAB.
   const resolvedVariant = variant ?? (os === 'ios' && version >= 26 ? 'glass' : 'default');
@@ -64,7 +64,7 @@ export function Fab({ anchor, onPress, accessibilityLabel, variant, disabled, pe
         disabled={disabled}
       >
         {locked ? (
-          <DynamicIcon icon={LOCK_ICON} size={24} className={siteLocked ? 'text-destructive' : 'text-warning'} />
+          <DynamicIcon icon={LOCK_ICON} size={24} className={workspaceLocked ? 'text-destructive' : 'text-warning'} />
         ) : (
           (anchor ?? <DynamicIcon icon={PLUS_ICON} size={24} />)
         )}

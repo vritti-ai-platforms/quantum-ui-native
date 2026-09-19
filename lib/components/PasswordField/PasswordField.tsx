@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { Text } from '../Text';
 import { DynamicIcon } from '../DynamicIcon';
+import { Text } from '../Text';
 import { TextField, type TextFieldProps } from '../TextField';
 
 export interface PasswordFieldProps extends Omit<TextFieldProps, 'secureTextEntry' | 'endAdornment'> {

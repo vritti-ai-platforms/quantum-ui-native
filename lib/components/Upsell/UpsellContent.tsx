@@ -4,8 +4,11 @@ import { Badge } from '../Badge';
 import { DynamicIcon } from '../DynamicIcon';
 import { Text } from '../Text';
 
-/** Lock treatment theme: 'plan' = amber + upsell copy; 'site' = destructive + "Not enabled for this site". */
-export type LockVariant = 'plan' | 'site';
+/** Lock treatment theme: 'plan' = amber + upsell copy; 'workspace' = destructive + "Not enabled for …". */
+import { workspaceNoun } from './workspaceNoun';
+import type { WorkspaceScope } from '../../context/PermissionGateContext';
+
+export type LockVariant = 'plan' | 'workspace';
 
 export interface UpsellContentProps {
   /** Feature display name, e.g. "UOM". */
@@ -14,8 +17,12 @@ export interface UpsellContentProps {
   unlockPlans: string[];
   /** Visual scale: 'default' for the full-screen paywall, 'sm' for the bottom sheet. */
   size?: 'default' | 'sm';
-  /** 'plan' (default) → amber medallion + upsell; 'site' → destructive medallion + "Not enabled for this site". */
+  /** 'plan' (default) → amber medallion + upsell; 'workspace' → destructive medallion + "Not enabled for …". */
   variant?: LockVariant;
+  /** Name of the workspace holding the lock; falls back to its scope noun when absent. */
+  workspaceLabel?: string | null;
+  /** Scope of that workspace, used when no name is available. */
+  workspaceScope?: WorkspaceScope | null;
 }
 
 // Full gradient class strings per variant × size — react-native-css needs contiguous gradient literals
@@ -28,7 +35,7 @@ const GLOW = {
     sm: 'absolute size-64 bg-radial from-warning/25 via-warning/10 via-35% to-transparent to-70%',
     default: 'absolute size-80 bg-radial from-warning/15 via-warning/5 via-35% to-transparent to-70%',
   },
-  site: {
+  workspace: {
     sm: 'absolute size-64 bg-radial from-destructive/25 via-destructive/10 via-35% to-transparent to-70%',
     default: 'absolute size-80 bg-radial from-destructive/15 via-destructive/5 via-35% to-transparent to-70%',
   },
@@ -39,21 +46,28 @@ const DISC = {
     sm: 'size-20 items-center justify-center rounded-full bg-radial from-warning/40 via-warning/25 to-warning/15',
     default: 'size-32 items-center justify-center rounded-full bg-radial from-warning/30 via-warning/15 to-warning/10',
   },
-  site: {
+  workspace: {
     sm: 'size-20 items-center justify-center rounded-full bg-radial from-destructive/40 via-destructive/25 to-destructive/15',
     default: 'size-32 items-center justify-center rounded-full bg-radial from-destructive/30 via-destructive/15 to-destructive/10',
   },
 } as const;
 
 // The shared lock visuals (lock medallion + copy). variant 'plan' → amber, "Plan upgrade" pill,
-// "Unlock {name}", availability. variant 'site' → destructive medallion + "Not enabled for this site"
+// "Unlock {name}", availability. variant 'workspace' → destructive medallion + "Not enabled for {workspace}"
 // (no pill / no availability — a plan upgrade can't lift a site lock). Container-agnostic: the full-screen
 // Upsell wraps it in ScreenContainer; UpsellSheetHost wraps it in bottom-sheet padding.
-export function UpsellContent({ featureName, unlockPlans, size = 'default', variant = 'plan' }: UpsellContentProps) {
+export function UpsellContent({
+  featureName,
+  unlockPlans,
+  size = 'default',
+  variant = 'plan',
+  workspaceLabel = null,
+  workspaceScope = null,
+}: UpsellContentProps) {
   const sm = size === 'sm';
   const key = sm ? 'sm' : 'default';
-  const isSite = variant === 'site';
-  const accentText = isSite ? 'text-destructive' : 'text-warning';
+  const isWorkspace = variant === 'workspace';
+  const accentText = isWorkspace ? 'text-destructive' : 'text-warning';
   const availability = unlockPlans.length ? `Available in ${unlockPlans.join(', ')}` : 'Not included in your plan';
 
   return (
@@ -66,7 +80,7 @@ export function UpsellContent({ featureName, unlockPlans, size = 'default', vari
           className={cn(
             'items-center justify-center rounded-full border',
             sm ? 'size-32' : 'size-48',
-            isSite ? 'border-destructive/30' : 'border-warning/30',
+            isWorkspace ? 'border-destructive/30' : 'border-warning/30',
           )}
         >
           <View className={DISC[variant][key]}>
@@ -76,7 +90,7 @@ export function UpsellContent({ featureName, unlockPlans, size = 'default', vari
       </View>
 
       <View className={sm ? 'items-center gap-2' : 'items-center gap-3'}>
-        {isSite ? null : (
+        {isWorkspace ? null : (
           <Badge variant="outline" className="gap-1.5 rounded-full border-warning bg-warning/10 px-3 py-1.5">
             <DynamicIcon icon={{ sfSymbol: 'sparkles', materialSymbol: 'auto_awesome' }} className="text-warning" size={14} />
             <Text className="text-sm font-semibold text-warning">Plan upgrade</Text>
@@ -85,9 +99,9 @@ export function UpsellContent({ featureName, unlockPlans, size = 'default', vari
 
         <View className="items-center gap-1">
           <Text className={sm ? 'text-lg font-bold text-foreground' : 'text-xl font-bold text-foreground'}>
-            {isSite ? 'Not enabled for this site' : `Unlock ${featureName}`}
+            {isWorkspace ? `Not enabled for ${workspaceNoun(workspaceLabel, workspaceScope)}` : `Unlock ${featureName}`}
           </Text>
-          {isSite ? null : <Text className="text-sm text-muted-foreground">{availability}</Text>}
+          {isWorkspace ? null : <Text className="text-sm text-muted-foreground">{availability}</Text>}
         </View>
       </View>
     </>

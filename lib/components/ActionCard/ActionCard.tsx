@@ -66,7 +66,7 @@ function ActionIconButton({
   if (!gate.granted) return null;
   const locked = gate.granted && gate.locked;
   // Site (non-PLAN) locks use the destructive accent; plan locks use amber.
-  const siteLocked = locked && lockVariant(gate.reason) === 'site';
+  const workspaceLocked = locked && lockVariant(gate.reason) === 'workspace';
   return (
     <Button
       variant="ghost"
@@ -77,7 +77,7 @@ function ActionIconButton({
       className={cn(
         'h-10 w-10 rounded-sm border',
         locked
-          ? siteLocked
+          ? workspaceLocked
             ? 'border-destructive'
             : 'border-warning'
           : tone === 'destructive'
@@ -94,7 +94,7 @@ function ActionIconButton({
       }}
     >
       {locked ? (
-        <DynamicIcon icon={LOCK_ICON} size={14} className={siteLocked ? 'text-destructive' : 'text-warning'} />
+        <DynamicIcon icon={LOCK_ICON} size={14} className={workspaceLocked ? 'text-destructive' : 'text-warning'} />
       ) : (
         <DynamicIcon
           icon={icon}

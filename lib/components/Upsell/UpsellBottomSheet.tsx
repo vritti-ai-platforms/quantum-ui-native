@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
+import type { WorkspaceScope } from '../../context/PermissionGateContext';
 import { BottomSheet, type BottomSheetRef } from '../BottomSheet';
 import { type LockVariant, UpsellContent } from './UpsellContent';
 
@@ -8,8 +9,10 @@ export interface UpsellSheetProps {
   featureName: string;
   /** Plan codes that unlock the action (from the permission gate result). */
   unlockPlans: string[];
-  /** 'plan' (default) → amber upsell; 'site' → destructive "Not enabled for this site". */
+  /** 'plan' (default) → amber upsell; 'workspace' → destructive "Not enabled for …". */
   variant?: LockVariant;
+  workspaceLabel?: string | null;
+  workspaceScope?: WorkspaceScope | null;
 }
 
 type Presenter = (props: UpsellSheetProps) => void;
@@ -53,7 +56,14 @@ export function UpsellSheetHost() {
     <BottomSheet ref={sheetRef} variant="inline" detents={['auto']}>
       <View className="items-center gap-6 px-6 pb-10 pt-6">
         {props ? (
-          <UpsellContent featureName={props.featureName} unlockPlans={props.unlockPlans} variant={props.variant} size="sm" />
+          <UpsellContent
+            featureName={props.featureName}
+            unlockPlans={props.unlockPlans}
+            variant={props.variant}
+            workspaceLabel={props.workspaceLabel}
+            workspaceScope={props.workspaceScope}
+            size="sm"
+          />
         ) : null}
       </View>
     </BottomSheet>

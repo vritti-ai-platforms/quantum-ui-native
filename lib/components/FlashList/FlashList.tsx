@@ -81,7 +81,7 @@ function FlashList<T>({
   // View-lock (fail-open — usePermission returns granted+unlocked when there's no gate/code):
   //  • role-denied (!granted) → a lock + "no permission" message (upgrading can't help, so no upsell);
   //  • locked → the Upsell paywall, themed by reason (PLAN → amber/upsell, SITE → destructive "Not
-  //    enabled for this site" via the Upsell `variant`).
+  //    enabled for {workspace}" via the Upsell `variant`).
   const viewGate = usePermission(permission);
   const viewDenied = !viewGate.granted;
   const viewLocked = viewGate.granted && viewGate.locked;
