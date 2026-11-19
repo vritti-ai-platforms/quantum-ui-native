@@ -112,6 +112,10 @@ module.exports = (env) => {
           root,
           'lib/components/Progress/index.ts'
         ),
+        [`${pak.name}/QuantityField`]: path.resolve(
+          root,
+          'lib/components/QuantityField/index.ts'
+        ),
         [`${pak.name}/RadioGroup`]: path.resolve(
           root,
           'lib/components/RadioGroup/index.ts'

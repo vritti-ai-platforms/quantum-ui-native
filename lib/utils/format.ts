@@ -7,6 +7,8 @@
 // These take all locale/timezone/currency context as options and never call hooks; the
 // useFormatters() hook adapts them to FormatContext.
 
+import Decimal from 'decimal.js';
+
 export type CurrencyAmount = { currency: string; value: string };
 export type FormattedValue = { primary: string; secondary?: string };
 
@@ -78,10 +80,8 @@ export function formatCurrency(
   const primary = currencyFormat(amount, value.currency, options.localeTag);
 
   const { buCurrency, exchangeRate } = options;
-  // Plain Number math for the BU-currency equivalent — adequate for mobile display. (Web uses
-  // Decimal/dinero for bigint precision, which isn't available in this bundle.)
   if (exchangeRate != null && Number.isFinite(exchangeRate) && buCurrency && buCurrency !== value.currency) {
-    const converted = amount * exchangeRate;
+    const converted = new Decimal(value.value).times(exchangeRate).toNumber();
     if (Number.isFinite(converted)) {
       return { primary, secondary: `≈ ${currencyFormat(converted, buCurrency, options.localeTag)}` };
     }

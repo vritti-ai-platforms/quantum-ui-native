@@ -15,6 +15,7 @@ export * from './MenuButton';
 export * from './PasswordField';
 export * from './Progress';
 export * from './PushNavigator';
+export * from './QuantityField';
 export * from './RadioGroup';
 export * from './ScreenContainer';
 export * from './ScreenHeader';
